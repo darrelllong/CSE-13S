@@ -1,0 +1,41 @@
+\section{Output}
+\epigraph{\emph{Creative output, you know, is just pain. I'm going to be cliche for a minute and say that great art comes from pain.}}{---Kanye West}
+
+\noindent
+The output your test harness produces \emph{must} be formatted like in
+the following examples:
+
+\begin{shlisting}{}
+$ ./sorting -q -n 1000 -p 0
+Quick Sort, 1000 elements, 18642 moves, 10531 compares
+$ ./sorting -ie -n 15 -p 0
+Heap Sort, 15 elements, 144 moves, 70 compares
+Insertion Sort, 15 elements, 82 moves, 65 compares
+$ ./sorting -a -n 15
+Heap Sort, 15 elements, 144 moves, 70 compares
+     34732749     42067670     54998264    102476060    104268822
+    134750049    182960600    538219612    629948093    783585680
+    954916333    966879077    989854347    994582085   1072766566
+Shell Sort, 15 elements, 90 moves, 59 compares
+     34732749     42067670     54998264    102476060    104268822
+    134750049    182960600    538219612    629948093    783585680
+    954916333    966879077    989854347    994582085   1072766566
+Insertion Sort, 15 elements, 82 moves, 65 compares
+     34732749     42067670     54998264    102476060    104268822
+    134750049    182960600    538219612    629948093    783585680
+    954916333    966879077    989854347    994582085   1072766566
+Quick Sort, 15 elements, 135 moves, 51 compares
+     34732749     42067670     54998264    102476060    104268822
+    134750049    182960600    538219612    629948093    783585680
+    954916333    966879077    989854347    994582085   1072766566
+\end{shlisting}
+
+For each sort that was specified, print its name, the statistics for the
+run, then the specified number of array elements to print. The array
+elements should be printed out in a table with 5 columns. Each array
+element should be printed with a width of 13. You should make use of the
+following \texttt{printf()} statement:
+
+\begin{clisting}{}
+printf("%13" PRIu32); // Include <inttypes.h> for PRIu32.
+\end{clisting}

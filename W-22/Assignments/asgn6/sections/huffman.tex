@@ -1,0 +1,49 @@
+\section{A Huffman Coding Module}
+\epigraphwidth=0.66\textwidth
+\epigraph{\emph{Fiction does not spring into the world fully grown, like Athena. It is the process of writing and rewriting that makes a fiction original, if not profound.}}
+{---John Gardner, \emph{The Art of Fiction: Notes on Craft for Young Writers}}
+
+An interface for a Huffman coding module that you will need to implement
+will be given in \texttt{huffman.h}. Do not worry if you do not
+initially understand the exact purpose of each function, as they will be
+clarified in \S 10 and \S 11. The interface is just given now as a
+reference for which functions are used in the aforementioned sections.
+
+\begin{funcdoc}{\texttt{Node *build\_tree(uint64\_t hist[static ALPHABET])}}
+  Constructs a Huffman tree given a computed histogram. The histogram
+  will have \texttt{ALPHABET} indices, one index for each possible
+  symbol. Returns the root node of the constructed tree. The use of
+  \texttt{static} array indices in parameter declarations is a C99
+  addition. In this case, it informs the compiler that the histogram
+  \texttt{hist} should have \emph{at least} \texttt{ALPHABET} number of
+  indices.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void build\_codes(Node *root, Code table[static ALPHABET])}}
+  Populates a code table, building the code for each symbols in the
+  Huffman tree. The constructed codes are copied to the code table,
+  \texttt{table}, which has \texttt{ALPHABET} indices, one index for
+  each possible symbol.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void dump\_tree(int outfile, Node *root)}}
+  Conducts a \emph{post-order traversal} of the Huffman tree rooted at
+  \texttt{root}, writing it to \texttt{outfile}. This should write an
+  \texttt{`L'} followed by the byte of the symbol for each leaf, and an
+  \texttt{`I'} for interior nodes. You \emph{should not} write a symbol
+  for an interior node.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{Node *rebuild\_tree(uint16\_t nbytes, uint8\_t tree\_dump[static nbytes])}}
+  Reconstructs a Huffman tree given its post-order tree dump stored in
+  the array \texttt{tree\_dump}. The length in bytes of
+  \texttt{tree\_dump} is given by \texttt{nbytes}. Returns the root node
+  of the reconstructed tree.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void delete\_tree(Node **root)}}
+  The destructor for a Huffman tree. This will require a post-order
+  traversal of the tree to free all the nodes. Remember to set the
+  pointer to \texttt{NULL} after you are finished freeing all the
+  allocated memory.
+\end{funcdoc}

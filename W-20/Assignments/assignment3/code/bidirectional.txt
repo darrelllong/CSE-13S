@@ -1,0 +1,11 @@
+AB
+BA
+AC
+CD
+DC
+CH
+HI
+IJ
+JZ
+IZ
+CZ

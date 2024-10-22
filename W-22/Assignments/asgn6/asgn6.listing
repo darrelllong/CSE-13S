@@ -1,0 +1,12 @@
+def dump(outfile, root):
+    if root:
+        dump(outfile, root.left)
+        dump(outfile, root.right)
+
+        if not root.left and not root.right:
+            # Leaf node.
+            write('L')
+            write(node.symbol)
+        else:
+            # Interior node.
+            write('I')

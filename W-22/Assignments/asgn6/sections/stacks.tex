@@ -1,0 +1,55 @@
+\section{Stacks}
+\epigraphwidth=0.25\textwidth
+\epigraph{\emph{The future is unwritten.}}{---Joe Strummer}
+
+You will need to use a \emph{stack} of \emph{nodes }in your decoder to
+reconstruct a Huffman tree. The interface for the stack is defined in
+\texttt{stack.h}.
+
+\begin{clisting}{}
+struct Stack {
+    uint32_t top;
+    uint32_t capacity;
+    Node **items;
+};
+\end{clisting}
+
+\begin{funcdoc}{\texttt{Stack *stack\_create(uint32\_t capacity)}}
+  The constructor for a stack. The maximum number of nodes the stack can
+  hold is specified by \texttt{capacity}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void stack\_delete(Stack **s)}}
+  The destructor for a stack. Remember to set the pointer to \texttt{NULL}
+  after you free the memory allocated by the stack.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool stack\_empty(Stack *s)}}
+  Returns \texttt{true} if the stack is empty and \texttt{false}
+  otherwise.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool stack\_full(Stack *s)}}
+  Returns \texttt{true} if the stack is full and \texttt{false} otherwise.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{uint32\_t stack\_size(Stack *s)}}
+  Returns the number of nodes in the stack.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool stack\_push(Stack *s, Node *n)}}
+  Pushes a node onto the stack. Returns \texttt{false} if the stack is
+  full prior to pushing the node and \texttt{true} otherwise to indicate
+  the successful pushing of a node.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool stack\_pop(Stack *s, Node **n)}}
+  Pops a node off the stack, passing it back through the double pointer
+  \texttt{n}. Returns \texttt{false} if the stack is empty prior to
+  popping a node and \texttt{true} otherwise to indicate the
+  succesuccessful popping of a node.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void stack\_print(Stack *s)}}
+  A debug function to print the contents of a stack.
+\end{funcdoc}

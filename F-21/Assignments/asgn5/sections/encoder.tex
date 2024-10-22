@@ -1,0 +1,58 @@
+\section{The Encoder}
+\epigraphwidth=0.5\textwidth
+\epigraph{\emph{No one with access to a convertible, an empty highway and a good radio station should ever need a psychiatrist.}}{---Terry Allen}
+
+\noindent
+Your first task for this assignment is to implement a Huffman encoder.
+This encoder will read in an input file, find the Huffman encoding of
+its contents, and use the encoding to compress the file. Your encoder
+program, named \texttt{encode}, must support any combination of the
+following command-line options:
+
+\begin{itemize}
+  \item \textbf{\texttt{-h}}\,: Prints out a help message describing the purpose
+    of the program and the command-line options it accepts, exiting the
+    program afterwards. Refer to the reference program in the resources
+    repo for an idea of what to print.
+
+  \item \textbf{\texttt{-i infile}}\,: Specifies the input file to encode using
+    Huffman coding. The default input should be set as \texttt{stdin}.
+
+  \item \textbf{\texttt{-o outfile}}\,: Specifies the output file to
+    write the compressed input to. The default output should be set as
+    \texttt{stdout}.
+
+  \item \textbf{\texttt{-v}}\,: Prints compression statistics to
+    \texttt{stderr}. These statistics include the uncompressed file
+    size, the compressed file size, and \emph{space saving}. The formula
+    for calculating space saving is:
+    \[
+        100 \times (1 - (\text{compressed size} / \text{uncompressed
+        size})).
+    \]
+    Refer to the reference program in the resources repository for the
+    exact output.
+\end{itemize}
+
+\noindent The algorithm to encode a file, or to compress it, is as follows:
+
+\begin{enumerate}
+  \item Compute a histogram of the file. In other words, count the
+    number of occurrences of each unique symbol in the file.
+
+  \item Construct the Huffman tree using the computed histogram. This
+    will require a \emph{priority queue}.
+
+  \item Construct a code table. Each index of the table represents a
+    symbol and the value at that index the symbol's code. You will need
+    to use a \emph{stack of bits} and perform a traversal of the Huffman
+    tree.
+
+  \item Emit an encoding of the Huffman tree to a file. This will be
+    done through a \emph{post-order traversal} of the Huffman tree. The
+    encoding of the Huffman tree will be referred to as a \emph{tree
+    dump}.
+
+  \item Step through each symbol of the input file again. For each
+    symbol, emit its code to the output file.
+\end{enumerate}

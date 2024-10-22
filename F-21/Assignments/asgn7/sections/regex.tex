@@ -1,0 +1,65 @@
+\section{Lexical Analysis with Regular Expressions}
+
+\epigraphwidth=0.5\textwidth
+\epigraph{\emph{Ideas are more powerful than guns. We would not let our
+enemies have guns, why should we let them have ideas.}}{---Joseph
+Stalin}
+
+\noindent
+Back to regulating your citizens of the GPRSC. You will need a function
+to parse out the words that they speak, which will be passed to you in
+the form of an input stream. The words that they will use are valid
+words, which can include \emph{contractions} and \emph{hyphenations}.
+A valid word is any sequence of one or more characters that are part of
+your regular expression word character set. Your word character set
+should contain characters from a--z, A--Z, 0--9, and the underscore
+character. Since you also accept contractions like ``don't'' and
+``y'all've'' and hyphenations like ``pseudo-code'' and
+``move-to-front'', your word character set should include apostrophes
+and hyphens as well.
+
+You will need to write your own \emph{regular expression} for a word,
+utilizing the \texttt{regex.h} library to lexically analyze the input
+stream for words. You will be given a parsing module that lexically
+analyzes the input stream using your regular expression. You are not
+required to use the module itself, but it is \emph{mandatory} that you
+parse through an input stream for words using at least one regular
+expression. The interface for the parsing module will be in
+\texttt{parser.h} and its implementation will be in \texttt{parser.c}.
+
+The function \texttt{next\_word()} requires two inputs, the input stream
+\texttt{infile}, and a pointer to a compiled regular expression,
+\texttt{word\_regex}. Notice the word \emph{compiled}: you must first compile
+your regular expression using \texttt{regcomp()} before passing it to the
+function. Make sure you remember to call the function \texttt{clear\_words()} to
+free any memory used by the module when you're done reading in words.
+Here is a small program that prints out words input to \texttt{stdin}
+using the parsing module. In the program, the regular expression for a
+word matches one or more lowercase and uppercase letters. The regular
+expression you will have to write for your assignment will be more
+complex than the one displayed here, as it is just an example.
+
+\begin{clisting}{Example program using the parsing module.}
+#include "parser.h"
+#include <regex.h>
+#include <stdio.h>
+
+#define WORD "[a-zA-Z]+"
+
+int main(void) {
+    regex_t re;
+    if (regcomp(&re, WORD, REG_EXTENDED)) {
+        fprintf(stderr, "Failed to compile regex.\n");
+        return 1;
+    }
+
+    char *word = NULL;
+    while ((word = next_word(stdin, &re)) != NULL) {
+        printf("Word: %s\n", word);
+    }
+
+    clear_words();
+    regfree(&re);
+    return 0;
+}
+\end{clisting}

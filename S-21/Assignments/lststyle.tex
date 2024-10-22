@@ -1,0 +1,127 @@
+\definecolor{codegreen}{rgb}{0,0.5,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+
+\lstloadlanguages{C,make,python,fortran,bash}
+
+\lstdefinestyle{bashstyle}{
+  language=bash,
+  basicstyle=\small\ttfamily,
+  numbers=none,
+  frame=tb,
+  columns=fullflexible,
+  backgroundcolor=\color{yellow!10},
+  linewidth=0.9\linewidth,
+  xleftmargin=0.1\linewidth,
+  aboveskip=1.25em,
+  belowskip=1.25em,
+  breakatwhitespace=false,
+  breaklines=true,
+  showstringspaces=false,
+  keepspaces=true,
+  showspaces=false,
+  showtabs=false,
+  tabsize=4
+}
+
+\lstdefinestyle{plainstyle}{
+  keywords={},
+  stringstyle=\color{black},
+  basicstyle=\small\ttfamily,
+  numbers=none,
+  frame=tb,
+  columns=fullflexible,
+  backgroundcolor=\color{yellow!10},
+  linewidth=0.9\linewidth,
+  xleftmargin=0.1\linewidth,
+  aboveskip=1.25em,
+  belowskip=1.25em,
+  breakatwhitespace=false,
+  breaklines=true,
+  showstringspaces=false,
+  keepspaces=true,
+  showspaces=false,
+  showtabs=false,
+  tabsize=4
+}
+
+\lstdefinestyle{c99}{
+    language=C,
+    morekeywords={
+      bool, uint8_t, uint16_t, uint32_t, uint64_t,
+      int8_t, int16_t, int32_t, int64_t
+    },
+    upquote=true,
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    identifierstyle=\color{black},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    numbers=left,
+    numbersep=7pt,
+    numberstyle=\ttfamily\color{black!25},
+    xleftmargin=12pt,
+    tabsize=4
+}
+
+\lstdefinestyle{python}{
+    language=python,
+    upquote=true,
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    identifierstyle=\color{black},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    numbers=left,
+    numbersep=7pt,
+    numberstyle=\ttfamily\color{black!25},
+    xleftmargin=12pt,
+    tabsize=4
+}
+
+\usepackage[most]{tcolorbox}
+
+\newtcolorbox{prelab}[1]{
+  colback=red!5!white, colframe=red!75!black, title=#1
+}
+
+\newtcblisting{codelisting}[2][]{
+  title=#2, #1,
+  fonttitle=\bfseries,
+  colframe=black!80,
+  listing only,
+  listing options={basicstyle=\ttfamily,style=c99},
+  top=-5pt,
+  bottom=-5pt,
+  enlarge top by=10pt
+}
+
+\newtcblisting{pythonlisting}[2][]{
+  title=#2, #1,
+  fonttitle=\bfseries,
+  colframe=black!80,
+  listing only,
+  listing options={basicstyle=\ttfamily,style=python},
+  top=-5pt,
+  bottom=-5pt,
+  enlarge top by=5pt
+}
+
+\newcommand\Warning{%
+ \makebox[1.4em][c]{%
+ \makebox[0pt][c]{\raisebox{.1em}{\small!}}%
+ \makebox[0pt][c]{\color{red}\Large$\bigtriangleup$}}}%

@@ -1,0 +1,166 @@
+\section{Hello World!}
+
+You will be creating a simple \textbf{C} program which will simply print
+``\texttt{Hello World!}'' You can find also find a tutorial of this
+program in Chapter 1 \S 1.1 in your textbook, \textit{The C Programming
+Language} by Kernighan \& Ritchie.
+
+\begin{enumerate}
+  \item Make sure you are in the correct directory: \texttt{asgn0}. You can
+    check your \emph{current working directory} using this command:
+
+\begin{shlisting}{}
+$ pwd
+\end{shlisting}
+
+  \item Create the program source \texttt{hello.c} with your text editor of
+    choice. This means text editors such as \texttt{vi} and \texttt{emacs}.
+    Notepad and Word are \emph{not} text editors. To open up \texttt{hello.c}
+    for editing with \texttt{vi}:
+
+\begin{shlisting}{}
+$ vi hello.c
+\end{shlisting}
+
+    It should be noted that the \texttt{vim} text editor has largely
+    succeeded \texttt{vi}. In fact, many systems simply have
+    \texttt{vi} aliased to \texttt{vim}. You can check if your version
+    of \texttt{vi} is an alias by running:
+
+\begin{shlisting}{}
+$ vi --version
+\end{shlisting}
+
+    Using either \texttt{vi} or \texttt{vim} is perfectly acceptable for
+    your assignments, but you may find \texttt{vim} easier to get
+    accustomed to with all the quality-of-life improvements that has
+    been over the years.
+
+  \item Include the header for the \texttt{<stdio.h>} library. This is needed by
+    the \texttt{printf()} function that prints formatted strings to
+    \texttt{stdout}, what you think of as the console.
+
+\begin{clisting}{\texttt{hello.c}}
+#include <stdio.h>
+\end{clisting}
+
+  \item Type your \texttt{main()} function. Every \textbf{C} program \emph{must}
+    have a \texttt{main()} function which returns an \texttt{int}. A
+    return value of 0 indicates program success, and a non-zero return
+    indicates the occurrence of some error.
+
+\begin{clisting}{\texttt{hello.c}}
+#include <stdio.h>
+
+int main(void) {
+    return 0;
+}
+\end{clisting}
+
+  \item In \texttt{main()} (between the curly braces) is where you will type the
+    print statement. It is \emph{crucial} that your print statement matches the
+    one given here. \textcolor{red}{You will be docked points otherwise.}
+
+\begin{clisting}{\texttt{hello.c}}
+#include <stdio.h>
+
+int main(void) {
+    printf("Hello World!\n");
+    return 0;
+}
+\end{clisting}
+
+  \item Save your work and exit your text editor to return to the command line.
+    With \texttt{vi} this means entering normal mode by hitting
+    \texttt{esc} and entering the command (indicated with a prefixed
+    colon) ``\texttt{:wq}'' to save and quit. \texttt{ZZ} works as well.
+    You are allowed to use \texttt{vi}, \texttt{vim}, \texttt{nvim},
+    \texttt{emacs}, \texttt{atom}, \texttt{Sublime} --- but \emph{not} a
+    Windows editor.
+
+  \item You should now be back on the command line. You should now compile and
+    run your code to verify its correctness. To compile your code, run:
+
+\begin{shlisting}{}
+$ clang -Wall -Wextra -Werror -Wpedantic -o hello hello.c
+\end{shlisting}
+
+    This will compile your code with the compiler flags required by the class.
+    \texttt{clang} is the \textbf{C} compiler that we will be using --- not
+    \texttt{gcc}, not \texttt{cc}. You \emph{must} use \texttt{clang}. The
+    \texttt{-Wall -Wextra -Werror -Wpedantic} arguments are the set of compiler
+    flags you must use when compiling your code. This specific set of compiler
+    flags is commonly referred to as the ``take no prisoners'' compiler flags.
+    Simply put, together they catch pretty much everything that a compiler can
+    catch (there are a few more esoteric warnings that can be enabled). Here are
+    some links for you to investigate what each flag does:
+
+    \centerline{\url{https://releases.llvm.org/10.0.0/tools/clang/docs/UsersManual.html}}
+    \centerline{\url{https://releases.llvm.org/10.0.0/tools/clang/docs/DiagnosticsReference.html}}
+
+  \item If you've done everything correctly up to this point, the compilation
+    process should run silently and return no errors. However, if you do run
+    into any errors, lab sections, and Piazza will be your best friends. Resist
+    the urge to immediately use Google.
+
+  \item After successfully compiling your program, there should now be an
+    executable file named \texttt{hello} in the current working directory. To
+    list out all the files in the current working directory use \texttt{ls}:
+
+\begin{shlisting}{}
+$ ls
+\end{shlisting}
+
+    To run the \texttt{hello} program, enter:
+
+\begin{shlisting}{}
+$ ./hello
+\end{shlisting}
+
+  \item The \texttt{.} (usually called ``dot'') refers to the
+    \emph{current working directory.} Your shell has a \texttt{PATH}
+    environment variable, a colon-delimited list of directories that it
+    looks through when you enter a command. Since your current working
+    directory should never be in your \texttt{PATH}, you must specify
+    the directory that your program can be found in order to run it. If
+    the output of running your program is correct, you should then
+    submit your working \emph{source code} to \texttt{git}. You should
+    submit source code \emph{only}: no executables. What is a
+    \texttt{PATH}? It is an environment variable whose value is a
+    colon-delimited list of directory names. Each directory in this list
+    indicates a location where executable programs can be found.
+    Directories that are usually included in the \texttt{PATH} include
+    \texttt{/usr} and \texttt{/usr/bin}. The current working directory
+    should \emph{never} be added to the \texttt{PATH} since doing so
+    would be a serious vulnerability. Imagine some adversary managed to
+    sneak in a compromised \texttt{ls} binary into your current working
+    directory. If your current working directory was first in the
+    \texttt{PATH}, then the compromised \texttt{ls} would be found and
+    run first, most likely leaving your machine in an undesirable state.
+
+\begin{shlisting}{}
+$ git add hello.c
+$ git commit -m "Adding finished hello.c"
+$ git push
+\end{shlisting}
+
+    The above three commands will add, commit, and push \texttt{hello.c} to
+    \texttt{git}. In-depth description of each of these commands will be
+    provided in the following section. To verify that \texttt{hello.c} was
+    added, check your repository:
+
+    \centerline{\url{https://git.ucsc.edu/gitlab/cse13s/spring2021/<CruzID>/asgn0}}
+
+    Only in this case do you perform one commit at the end. In general, you
+    should commit after every significant change.
+    \textcolor{red}{Warning: you should \emph{never} push binary files.
+    This includes executable programs and object files, as well as any
+    files generated during the compilation process of a program.}
+
+  \item The only other file to be submitted for assignment 0 is your signed
+    \texttt{CHEATING.pdf}. This file can be found on Canvas and/or under Piazza
+    resources. \textcolor{red}{Note: You do not create a
+    PDF file by simply appending \texttt{.pdf} to its name.} You will submit
+    \texttt{CHEATING.pdf} the same way you did \texttt{hello.c}: adding,
+    committing, then pushing.
+\end{enumerate}

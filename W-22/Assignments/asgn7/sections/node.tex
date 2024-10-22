@@ -1,0 +1,32 @@
+\section{Nodes}\label{sec:node}
+
+\noindent As mentioned in \S\ref{sec:hashtable}, each array slot will contain a
+node. Each node should contain a word and its count. The node \texttt{struct} is
+defined for you in \texttt{node.h} as follows:
+
+\begin{clisting}{}
+struct Node {
+    char *word;
+    uint32_t count;
+};
+\end{clisting}
+
+The rest of the interface for the node ADT is provided in \texttt{node.h}. The
+node ADT is made transparent in order to simplify the program implementation.
+
+\begin{funcdoc}{\texttt{Node *node\_create(char *word)}}
+  The constructor for a node. You will want to make a \emph{copy} of the
+  \texttt{word} that is passed in. This will require \emph{allocating memory}
+  and copying over the characters for the \texttt{word}. You may find
+  \texttt{strdup()} useful.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void node\_delete(Node **n)}}
+  The destructor for a node. Since you have allocated memory for \texttt{word},
+  remember to free the memory allocated to that as well. The pointer to the node
+  should be set to \texttt{NULL}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void node\_print(Node *n)}}
+  A debug function to print out the contents of a node.
+\end{funcdoc}

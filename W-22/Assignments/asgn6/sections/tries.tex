@@ -1,0 +1,137 @@
+\section{Tries}\label{sec:tries}
+
+The most costly part of compression is checking for existing prefixes, or words.
+You could utilize a hash table, or just an array to store words, but that
+wouldn't be optimal, as many of the words you need to store are prefixes of
+other words. Instead you choose to utilize a \emph{trie}.
+
+A trie\footnote{Edward Fredkin, ``{T}rie memory.'' \emph{Communications of the
+ACM} 3, no. 9 (1960): 490--499.} is an efficient information re-\emph{trie}-val
+data structure, commonly known as a prefix tree. Each node in a trie represents
+a symbol, or a character, and contains $n$ child nodes, where $n$ is the size of
+the alphabet you are using. In most cases, the alphabet used is the set of ASCII
+characters, so $n = 256$. You will use a trie during compression to store words.
+
+\begin{center}
+    \tikzset{
+        sibling distance=1.2cm, level distance=0.8cm,
+        split/.style={
+            draw, rectangle split, rectangle split parts=2,draw,inner
+            sep=0pt,rectangle split horizontal,minimum size=0ex,text
+            width=1ex,align=center,rectangle split part align=base
+        },
+        boxed/.style={draw,minimum size=3ex,inner sep=0pt,align=center},
+        edge from parent/.style={draw, edge from parent path={[->,thick]
+        (\tikzparentnode)  -- ($(\tikzchildnode.north) + 2*(0pt,1pt)$) }}
+    }
+
+    \begin{tikzpicture}
+        \Tree
+        [.\node[boxed] (S1) {\nodepart{one}\texttt{ ROOT }};
+            [.\node[boxed] (L1) {\nodepart{one}b};
+                [.\node[boxed] (L2) {y}; ]
+            ]
+            [.\node[boxed] (M1) {\nodepart{one}s};
+                [.\node[boxed] (L3) {e};
+                    [.\node[boxed] (L4) {a};]
+                    [.\node[boxed] (R4) {l};
+                        [.\node[boxed] (M2) {l};
+                            [.\node[boxed] (M3) {s}; ]
+                        ]
+                    ]
+                ]
+                [.\node[boxed] (R3) {h};
+                    [.\node[boxed] (L5) {e};
+                        [.\node[boxed] (M4) {l};
+                            [.\node[boxed] (M5) {l};
+                                [.\node[boxed] (M6) {s}; ]
+                            ]
+                        ]
+                    ]
+                    [.\node[boxed] (R5) {o};
+                        [.\node[boxed] (M7) {r};
+                            [.\node[boxed] (M8) {e};]
+                        ]
+                    ]
+                ]
+            ]
+            [.\node[boxed] (R1) {\nodepart{one}t};
+                [.\node[boxed] (R2) {h};
+                    [.\node[boxed] (M9) {e}; ]
+                ]
+            ]
+        ]
+    \end{tikzpicture}
+\end{center}
+
+Above is an example of a trie containing the following words: ``$She$'',
+``$sells$'', ``$sea$'', ``$shells$'', ``$by$'', ``$the$'', ``$sea$'',
+``$shore$''. Searching for a word in the trie means stepping down for each
+symbol in the word, starting from the root. Stepping down the trie is simply
+checking if the current node we have traversed to has a child node representing
+the symbol we are looking for, and setting the current node to be the child node
+if it does exist. Thus, to find ``$sea$'', we would start from the trie's root
+and step down to `$s$', then `$e$', then `$a$'.  If any symbol is missing, or
+the end of the trie is reached without fully matching a word, while stepping
+through the trie, then the word is not in the trie.  You \emph{must} follow the
+specification shown below when implementing your trie ADT.
+
+\begin{clisting}{}
+struct TrieNode {
+    TrieNode *children[ALPHABET];
+    Code code;
+};
+\end{clisting}
+
+The \texttt{TrieNode struct} will have the two fields shown above. Each trie
+node has an array of 256 pointers to trie nodes as children, one for each ASCII
+character. It should be easy to see how this simplifies searching for the next
+character in a word in the trie. The \texttt{code} field stores the 16-bit code
+for the word that ends with the trie node containing the code. This means that
+the code for some word ``$abc$'' would be contained in the trie node for `$c$'.
+Note that there isn't a field that indicates what character a trie node
+represents. This is because the trie node's index in its parent's array of child
+nodes indicates what character it represents. The \texttt{trie\_step()} function
+will be repeatedly called to check if a word exists in the trie. A word only
+exists if the trie node returned by the last step corresponding to the last
+character in the word isn't \texttt{NULL}.
+
+\begin{funcdoc}{TrieNode *trie\_node\_create(Code c)}
+  Constructor for a \texttt{TrieNode}. The node's code is set to \texttt{c}.
+  Make sure each of the children node pointers are \texttt{NULL}.
+\end{funcdoc}
+
+\begin{funcdoc}{void trie\_node\_delete(TrieNode **n)}
+  Destructor for a \texttt{TrieNode}. Note that a \emph{double} pointer is
+  passed here. Unlike the destructors you may have written in the past, a double
+  pointer is used here to set the passed pointer to \texttt{NULL}. Making sure
+  to \texttt{NULL} out the pointer in the destructor reduces the chance of
+  accidentally using a pointer that points to deallocated memory
+  (use-after-free).
+\end{funcdoc}
+
+\begin{funcdoc}{TrieNode *trie\_create(void)}
+  Initializes a trie: a root \texttt{TrieNode} with the code
+  \texttt{EMPTY\_CODE}. Returns the root, a \texttt{TrieNode *}, if
+  successful, \texttt{NULL} otherwise.
+\end{funcdoc}
+
+\begin{funcdoc}{void trie\_reset(TrieNode *root)}
+  Resets a trie to just the root \texttt{TrieNode}. Since we are working with a
+  finite number of codes, we eventually will use all of them. At that point, we
+  must reset the trie by deleting its children so that we can continue
+  compressing/decompressing the file. Make sure that each of the root's children
+  nodes are \texttt{NULL}.
+\end{funcdoc}
+
+\begin{funcdoc}{void trie\_delete(TrieNode **n)}
+  Deletes a sub-trie starting from the trie rooted at node \texttt{n}. This will
+  require recursive calls on each of \texttt{n}'s children. Make sure each
+  the pointer to each deleted node is set to \texttt{NULL}. This should already
+  happen if the trie node destructor is written properly.
+\end{funcdoc}
+
+\begin{funcdoc}{TrieNode *trie\_step(TrieNode *n, Symbol s)}
+  Returns a pointer to the child node reprsenting the symbol \texttt{s}. If the
+  symbol doesn't exist, \texttt{NULL} is returned.
+\end{funcdoc}

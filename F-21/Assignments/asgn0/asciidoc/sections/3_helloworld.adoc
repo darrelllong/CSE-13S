@@ -1,0 +1,185 @@
+== Hello World!
+
+You will be creating a simple *C* program which will simply print
+`"Hello World!"` You can find also find a tutorial of this
+program in Chapter 1 §1.1 in your textbook, _The C Programming
+Language_ by Kernighan & Ritchie.
+
+. Make sure you are in the correct directory: `asgn0`. You can check your
+  _current working directory_ using this command:
+
++
+[source,bash]
+----
+$ pwd
+----
+
+. Create the program source `hello.c` with your text editor of choice. This
+  means text editors such as `vi` and `emacs`. Notepad and Word are _not_ text
+  editors. To open up `hello.c` for editing with `vi`:
+
++
+[source,bash]
+----
+$ vi hello.c
+----
+
++
+It should be noted that the `vim` text editor has largely succeeded `vi`. In
+fact, many systems simply have `vi` aliased to `vim`. You can check if your
+version of `vi` is an alias by running:
+
++
+[source,bash]
+----
+$ vi --version
+----
+
++
+Using either `vi` or `vim` is perfectly acceptable for
+your assignments, but you may find `vim` easier to get
+accustomed to with all the quality-of-life improvements that has
+been over the years.
+
+. Include the header for the `<stdio.h>` library. This is needed by the
+  `printf()` function that prints formatted strings to `stdout`, what you think
+  of as the console.
+
++
+[source,c]
+----
+#include <stdio.h>
+----
+
+. Type your `main()` function. Every *C* program _must_ have a `main()`
+  function which returns an `int`. A return value of 0 indicates program
+  success, and a non-zero return indicates the occurrence of some error.
+
++
+[source,c]
+----
+#include <stdio.h>
+
+int main(void) {
+    return 0;
+}
+----
+
+. In `main()` (between the curly braces) is where you will type the
+  print statement. It is _crucial_ that your print statement matches the
+  one given here. [red]#You will be docked points otherwise.#
+
++
+[source,c]
+----
+#include <stdio.h>
+
+int main(void) {
+    printf("Hello World!\n");
+    return 0;
+}
+----
+
+. Save your work and exit your text editor to return to the command line. With
+  `vi` this means entering normal mode by hitting `esc` and entering the
+  command (indicated with a prefixed colon) `:wq` to save and quit. `ZZ` works
+  as well.
+
+. You should now be back on the command line. You should now compile and run
+  your code to verify its correctness. To compile your code, run:
+
++
+[source,bash]
+----
+$ clang -Wall -Wextra -Werror -Wpedantic -o hello hello.c
+----
+
++
+This will compile your code with the compiler flags required by the class.
+`clang` is the *C* compiler that we will be using -- not
+`gcc`, not `cc`. You _must_ use `clang`. The
+`-Wall -Wextra -Werror -Wpedantic` arguments are the set of compiler
+flags you must use when compiling your code. This specific set of compiler
+flags is commonly referred to as the "take no prisoners" compiler flags.
+Simply put, together they catch pretty much everything that a compiler can
+catch (there are a few more esoteric warnings that can be enabled). Here are
+some links for you to investigate what each flag does:
+
+* https://releases.llvm.org/10.0.0/tools/clang/docs/UsersManual.html[`clang`
+  User Manual]
+* https://releases.llvm.org/10.0.0/tools/clang/docs/DiagnosticsReference.html[`clang`
+  Diagnostics Reference]
+
++
+If you've done everything correctly up to this point, the compilation
+process should run silently and return no errors. However, if you do run
+into any errors, lab sections, and Piazza will be your best friends. Resist
+the urge to immediately use Google.
+
+. After successfully compiling your program, there should now be an
+  executable file named `hello` in the current working directory. To
+  list out all the files in the current working directory use `ls`:
+
++
+[source,bash]
+----
+$ ls
+----
+
++
+To run the `hello` program, enter:
+
++
+[source,bash]
+----
+$ ./hello
+----
+
+. The `.` (usually called "dot") refers to the _current working directory._
+  Your shell has a `PATH` environment variable, a colon-delimited list of
+  directories that it looks through when you enter a command. Since your
+  current working directory should never be in your `PATH`, you must specify
+  the directory that your program can be found in order to run it. If the
+  output of running your program is correct, you should then submit your
+  working _source code_ to `git`. You should submit source code _only_: no
+  executables. What is a `PATH`? It is an environment variable whose value is
+  a colon-delimited list of directory names. Each directory in this list
+  indicates a location where executable programs can be found. Directories
+  that are usually included in the `PATH` include `/usr` and `/usr/bin`. The
+  current working directory should _never_ be added to the `PATH` since doing
+  so would be a serious vulnerability. Imagine some adversary managed to sneak
+  in a compromised `ls` binary into your current working directory. If your
+  current working directory was first in the `PATH`, then the compromised `ls`
+  would be found and run first, most likely leaving your machine in an
+  undesirable state.
+
++
+[source,bash]
+----
+$ git add hello.c
+$ git commit -m "Adding finished hello.c"
+$ git push
+----
+
++
+The above three commands will add, commit, and push `hello.c` to
+`git`. In-depth description of each of these commands will be
+provided in the following section. To verify that `hello.c` was
+added, check your repository:
+
++
+[.text-center]
+https://git.ucsc.edu/gitlab/cse13s/spring2021/<CruzID>/asgn0
+
++
+Only in this case do you perform one commit at the end. In general, you
+should commit after every significant change. [red]#Warning: you should
+_never_ push binary files. This includes executable programs and object
+files, as well as any files generated during the compilation process of a
+program.#
+
+. The only other file to be submitted for assignment 0 is your signed
+  `CHEATING.pdf`. This file can be found on Canvas and/or under Piazza
+  resources. [red]#Note: You do not create a PDF file by simply appending
+  `.pdf` to its name.# You will submit `CHEATING.pdf` the same way you did
+  `hello.c`: adding, committing, then pushing.

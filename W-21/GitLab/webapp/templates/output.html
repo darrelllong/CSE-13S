@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <title>UCSC GitLab Course Setup Webform</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
+    <script
+      src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js">
+    </script>
+  </head>
+  <body>
+    <div>
+      <h2>UCSC GitLab Course Setup</h2>
+      <h5>Console Output</h5>
+      <div class="terminal">
+        <ul>
+        {% for msg in log %}
+          <li>{{ msg }}</li>
+        {% endfor %}
+        </ul>
+      </div>
+      <h5>Overall Statistics</h5>
+      <div class="stats">
+        <ul>
+        {% for stat in stats %}
+          <li>{{ stat }}</li>
+        {% endfor %}
+        </ul>
+      </div>
+      <form action="/">
+        <input type="submit" value="Setup another course"/>
+      </form>
+    </div>
+  </body>
+</html>

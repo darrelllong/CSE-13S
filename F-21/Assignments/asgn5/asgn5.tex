@@ -1,0 +1,62 @@
+\documentclass[11pt]{article}
+\usepackage{fullpage,fourier,amsmath,amssymb}
+\usepackage{listings,color,url}
+\usepackage{graphicx}
+\usepackage{mdframed}
+\usepackage{wrapfig}
+\usepackage{epigraph}
+\usepackage[x11names]{xcolor}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{forest}
+\usepackage{tikz}
+\usepackage[colorlinks=true,urlcolor=blue]{hyperref}
+\usetikzlibrary{positioning,matrix}
+
+\title{Assignment 5 \\ Huffman Coding}
+\author{Prof. Darrell Long \\ CSE 13S -- Fall 2021}
+\date{
+  First \texttt{DESIGN.pdf} draft due: October 28$^\text{th}$ at 11:59\,pm PST \\
+  Assignment due: November 7$^\text{th}$ at 11:59\,pm PST
+}
+
+\input{../footer.tex}
+\input{../functions.tex}
+\input{../lststyle.tex}
+\input{../monkey.tex}
+
+\begin{document}\maketitle
+
+\input{sections/introduction.tex}
+\input{sections/encoder.tex}
+\input{sections/decoder.tex}
+\input{sections/nodes.tex}
+\input{sections/priority.tex}
+\input{sections/codes.tex}
+\input{sections/io.tex}
+\input{sections/stacks.tex}
+\input{sections/huffman.tex}
+\input{sections/specifics.tex}
+\input{sections/example.tex}
+\input{sections/deliverables.tex}
+\input{sections/submission.tex}
+\input{sections/readings.tex}
+\input{sections/strategy.tex}
+
+\newpage % Just to look nice.
+\monkey{Long, long, time ago, I can still remember \\
+How \textsc{Unix} used to make me smile\ldots \\
+And I knew that with a login name  \\
+That I could play those \textsc{Unix} games  \\
+And maybe hack some programs for a while.  \\
+But February made me shiver  \\
+With every program I'd deliver  \\
+Bad news on the doorstep,  \\
+I couldn't take one more spec\ldots \\
+I can't remember getting smashed  \\
+When I heard about the system crash  \\
+And all the passwords got rehashed  \\
+The Day That \textsc{Unix} Died\ldots \\
+And I was singing\ldots}
+
+\end{document}

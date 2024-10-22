@@ -1,0 +1,65 @@
+\section{LZ78 Algorithm Pseudocode}\label{sec:algorithm}
+
+\begin{codebox}
+    \Procname{\proc{Compress}(\id{infile}, \id{outfile})}
+    \li \id{root} $\gets$ \proc{trie\_create}()
+    \li \id{curr\_node} $\gets$ \id{root}
+    \li \id{prev\_node} $\gets$ \const{null}
+    \li \id{curr\_sym} $\gets$ 0
+    \li \id{prev\_sym} $\gets$ 0
+    \li \id{next\_code} $\gets$ \const{start\_code}
+    \li \While \proc{read\_sym}(\id{infile}, \id{\&curr\_sym}) \kw{is} \const{true}
+    \li \Then \id{next\_node} $\gets$ \proc{trie\_step}(\id{curr\_node},
+              \id{curr\_sym})
+              \li     \If \id{next\_node} \kw{is not} \const{null}
+    \li     \Then \id{prev\_node} $\gets$ \id{curr\_node}
+    \li           \id{curr\_node} $\gets$ \id{next\_node}
+    \li     \Else
+    \li           \proc{write\_pair}(\id{outfile},
+                  \attrib{\id{curr\_node}}{code}, \id{curr\_sym},
+                  \proc{bit-length}(\id{next\_code}))
+    \li           \attrib{\id{curr\_node}}{children[curr\_sym]} $\gets$
+                    \proc{trie\_node\_create}(\id{next\_code})
+    \li           \id{curr\_node} $\gets$ \id{root}
+    \li \id{next\_code} $\gets$ \id{next\_code} + 1
+            \End
+            \li     \If \id{next\_code} \kw{is} \const{max\_code}
+    \li     \Then \proc{trie\_reset}(\id{root})
+    \li           \id{curr\_node} $\gets$ \id{root}
+    \li           \id{next\_code} $\gets$ \const{start\_code}
+            \End
+    \li     \id{prev\_sym} $\gets$ \id{curr\_sym}
+        \End
+        \li \If \id{curr\_node} \kw{is not} \id{root}
+    \li \Then \proc{write\_pair}(\id{outfile},
+    \attrib{\id{prev\_node}}{code}, \id{prev\_sym},
+    \proc{bit-length}(\id{next\_code}))
+    \li $\id{next\_code} \gets (\id{next\_code} + 1) \;\%\;\const{max\_code}$
+        \End
+        \li \proc{write\_pair}(\id{outfile}, \const{stop\_code}, 0,
+        \proc{bit-length}(\id{next\_code}))
+        \li \proc{flush\_pairs}(\id{outfile})
+\end{codebox}
+
+\begin{codebox}
+    \Procname{\proc{Decompress}(\id{infile}, \id{outfile})}
+    \li \id{table} $\gets$ \proc{wt\_create}()
+    \li \id{curr\_sym} $\gets$ 0
+    \li \id{curr\_code} $\gets$ 0
+    \li \id{next\_code} $\gets$ \const{start\_code}
+    \li \While \proc{read\_pair}(\id{infile}, \id{\&curr\_code},
+    \id{\&curr\_sym}, \proc{bit-length}(\id{next\_code})) \kw{is} \const{true}
+    \li \Then
+              \attrib{\id{table}}{words[\id{next\_code}]} $\gets$
+              \proc{word\_append\_sym}(\attrib{\id{table}}{words[\id{curr\_code}]},
+              \id{curr\_sym})
+              \li \proc{write\_word}(\id{outfile},
+              \id{table}[\id{next\_code}])
+              \li \id{next\_code} $\gets$ \id{next\_code} + 1
+        \li     \If \id{next\_code} \kw{is} \const{max\_code}
+    \li     \Then \proc{wt\_reset}(\id{table})
+    \li           \id{next\_code} $\gets$ \const{start\_code}
+                \End
+        \End
+    \li \proc{flush\_words}(\id{outfile})
+\end{codebox}

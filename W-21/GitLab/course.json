@@ -1,0 +1,11 @@
+{
+  "server": "https://git.ucsc.edu",
+  "domain": "ucsc.edu",
+  "token": "ZUw7JCgH-1KYtcp2CZtW",
+  "role": "developer",
+  "repo": "https://git.ucsc.edu/gaatorre/test_student.git",
+  "studentlist": "students.txt",
+  "course": "cse13s",
+  "quarter": "winter",
+  "year": "2021"
+}

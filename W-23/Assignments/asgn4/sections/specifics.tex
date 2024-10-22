@@ -1,0 +1,39 @@
+\section{Specifics}
+
+\epigraphwidth=0.4\textwidth
+\epigraph{\emph{Jehosaphat the mongrel cat \\ Jumped off the roof today \\ Some
+would say he fell but I could tell \\ He did himself away}}{---John Prine,
+\emph{Living in the Future}}
+
+Here are the specifics for your assignment implementation.
+
+\begin{enumerate}
+  \item Parse the command-line options by looping calls to \texttt{getopt()}.
+    This should be similar to what you did in previous assignments.
+  \item Use an initial call to \texttt{fscanf()} to read the number of rows and columns of
+    the universe you will be populating from the specified input.
+  \item Create \emph{two} universes using the dimensions that were obtained using \texttt{fscanf()}. Mark
+    the universes toroidal if the \texttt{-t} option was specified. We will
+    refer to these universes as universe $A$ and universe $B$.
+  \item Populate universe $A$ using \texttt{uv\_populate()} with the remainder of the
+    input.
+  \item Setup the \texttt{ncurses} screen, as show by the example in \S 4.
+  \item For each generation up to the set number of generations:
+    \begin{enumerate}
+      \item If \texttt{ncurses} isn't silenced by the \texttt{-s} option, clear
+        the screen, display universe $A$, refresh the screen, then sleep for 50000
+        microseconds.
+      \item Perform one generation. This means taking a census of each cell in
+        universe $A$ and either setting or clearing the corresponding cell in
+        universe $B$, based off the 3 rules discussed in \S 2.
+      \item Swap the universes. Think of universe $A$ as the current state of the
+        universe and universe $B$ as the next state of the universe. To update the
+        universe then, we simply have to swap $A$ and $B$. \textcolor{red}{Hint:
+        swapping \emph{pointers} is much like swapping integers.}
+    \end{enumerate}
+  \item Close the screen with \texttt{endwin()}.
+  \item Output universe $A$ to the specified file using \texttt{uv\_print()}.
+    This is what you will be graded on. We will know if you properly
+    evolved your universe for the set number of generations by comparing your output
+    to that of the supplied program.
+\end{enumerate}

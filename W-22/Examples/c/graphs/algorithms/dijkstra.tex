@@ -1,0 +1,33 @@
+\section{Dijkstra's Algorithm}
+
+\noindent
+\textbf{Input:} A directed graph $G = <V, E>$ and source vertex $s \in V$.
+
+\noindent
+\textbf{Output:}
+\begin{enumerate}
+  \item Distances from $s$ for each vertex $v \in V$.
+  \item Predecessors for each $v \in V$ in shortest paths from $s$.
+\end{enumerate}
+
+\begin{codebox}
+  \Procname{\proc{Dijkstra}$(G,\,s)$}
+  \li $S \gets \{s\}$
+  \li \For $v \in G$
+  \li \Then $D[v] \gets \infty$ \>\>\>\Comment Distance from source is infinite.
+  \li       $P[v] \gets -1$ \>\>\>\Comment Predecessor of vertex is unknown.
+      \End
+  \li $D[s] \gets 0$  \>\>\>\>\Comment Distance from $s$ to $s$.
+  \li \While $S \ne V$
+  \li \Then $w \gets \text{vertex in } V - S \text{ such that } D[w] \text{ is minimum}$
+  \li       $S \gets S \cup \{w\}$
+  \li       \For each $v \in \proc{adjacent}(G, w)$
+  \li       \Then $t \gets D[w] + \proc{Weight}(G,w,v)$
+  \li             \If $t < D[v]$ \>\>\>\>\Comment If new distance from $s$ to $v$ is shorter.
+  \li             \Then $D[v] \gets t$ \>\>\>\Comment Update distance.
+  \li                    $P[v] \gets w$ \>\>\>\Comment Update predecessor.
+                  \End
+            \End
+      \End
+  \li \Return $D,P$
+\end{codebox}

@@ -1,0 +1,110 @@
+\section{Bloom Filters}\label{sec:bloom}
+
+\noindent With open addressing, it's possible that you need to iterate over the
+entire hash table (if it's full), before you can come to the conclusion that
+some key isn't present. This is very unsatisfactory with very large and full
+hash tables. Is there a faster way to check if a key has never been seen? That
+is where the \emph{Bloom filter} comes into play.
+
+A Bloom filter is a space-efficient probabilistic data structure, conceived by
+Burton H. Bloom in 1970, and is used to test whether an element is a member of a
+set. False-positive matches are possible, but false negatives are not---in other
+words, a query for set membership returns either ``possibly in the set'' or
+``definitely not in the set.'' Elements can be added to the set but not removed
+from it; the more elements added, the higher the probability of false positives.
+
+A Bloom filter can be represented as an array of $m$ bits, or a \textbf{bit
+vector}. A Bloom filter should utilize $k$ different hash functions. Using these
+hash functions, a set element added to the Bloom filter is mapped to at most $k$
+of the $m$ bit indices, generating a uniform pseudo-random distribution.
+Typically, $k$ is a small constant which depends on the desired false error rate
+$\epsilon$, while $m$ is proportional to $k$ and the number of elements to be
+added.
+
+Assume you are adding a word $w$ to your Bloom filter and are using $k=3$ hash
+functions, $f(x)$, $g(x)$, and $h(x)$. To add $w$ to the Bloom filter, you
+simply set the bits at indices $f(w)$, $g(w)$, and $h(w)$. To check if some word
+$w'$ has been added to the same Bloom filter, you check if the bits at indices
+$f(w')$, $g(w')$, and $h(w')$ are set. If they are all set, then $w'$ has
+\emph{most likely} been added to the Bloom filter. If \emph{any one} of those
+bits was cleared, then $w'$ has definitely \emph{not} been added to the Bloom
+filter. The fact that the Bloom filter can only tell if some word has \emph{most
+likely} been added to the Bloom filter means that \emph{false positives} can
+occur. The larger the Bloom filter, the lower the chances of getting false
+positives.
+
+So what do Bloom filters mean for you? It means you can add each word of some
+sample of text into your Bloom filter. When comparing the words of this sample
+with the words of another sample, it is much more efficient to simply query the
+Bloom filter of the other sample of text for whether not a word has been seen,
+rather than look it up in the hash table. You decide to implement a Bloom filter
+with \emph{three} salts for \emph{three} different hash functions. Why? To
+reduce the chance of a \emph{false positive}.
+
+You can think of a ``salt'' as an initialization vector or a key. Using
+different salts with the same hash function results in a different, unique hash.
+Since you are equipping your Bloom filter with three different salts, you are
+effectively getting three different hash functions: $f(x)$, $g(x)$, and $h(x)$.
+Hashing a word $w$, with extremely high probability, should result in $f(w) \ne
+g(w) \ne h(w)$. These salts are to be used for the SPECK cipher, which requires
+a 128-bit key, so we have used MD5 \footnote{Rivest, R.. “The MD5 Message-Digest
+Algorithm.” RFC 1321 (1992): 1-21.} ``message-digest'' to reduce three books
+down to 128 bits each. These salts are provided for you in \texttt{salts.h}.
+\textcolor{red}{Do not change them.} You will use the SPECK cipher as a hash
+function, as discussed in \S\ref{sec:speck}.
+
+The following \texttt{struct} defines the \texttt{BloomFilter} ADT. The three
+salts will be stored in the \texttt{primary}, \texttt{secondary}, and
+\texttt{tertiary} fields. Each salt is 128 bits in size. To hold these 128 bits,
+we use an array of two \texttt{uint64\_t}s.
+
+\begin{clisting}{}
+struct BloomFilter {
+  uint64_t primary[2];   // Primary hash function salt.
+  uint64_t secondary[2]; // Secondary hash function salt.
+  uint64_t tertiary[2];  // Tertiary hash function salt.
+  BitVector *filter;
+};
+\end{clisting}
+
+This \texttt{struct} definition \emph{must} go in \texttt{bf.c}.
+
+\begin{funcdoc}{\texttt{BloomFilter *bf\_create(uint32\_t size)}}
+  The constructor for a Bloom filter. The primary, secondary, and
+  tertiary salts that should be used are provided in \texttt{salts.h}.
+  Note that you will also have to implement the bit vector ADT for your
+  Bloom filter, as it will serve as the array of bits necessary for a
+  proper Bloom filter. Bit vectors will be discussed in
+  \S\ref{bitvector}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void bf\_delete(BloomFilter **bf)}}
+  The destructor for a Bloom filter. As with all other destructors, it
+  should free any memory allocated by the constructor and null out the
+  pointer that was passed in.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{uint32\_t bf\_size(BloomFilter *bf)}}
+  Returns the size of the Bloom filter. In other words, the number of
+  bits that the Bloom filter can access. Hint: this is the length of the
+  underlying bit vector.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void bf\_insert(BloomFilter *bf, char *word)}}
+  Takes \texttt{word} and inserts it into the Bloom filter. This entails hashing
+  \texttt{word} with each of the three salts for three indices, and setting the
+  bits at those indices in the underlying bit vector.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool bf\_probe(BloomFilter *bf, char *word)}}
+  Probes the Bloom filter for \texttt{word}. Like with \texttt{bf\_insert()},
+  \texttt{word} is hashed with each of the three salts for three indices. If all
+  the bits at those indices are set, return \texttt{true} to signify that
+  \texttt{word} was most likely added to the Bloom filter. Else, return
+  \texttt{false}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void bf\_print(BloomFilter *bf)}}
+  A debug function to print out the bits of a Bloom filter. This will ideally
+  utilize the debug print function you implement for your bit vector.
+\end{funcdoc}

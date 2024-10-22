@@ -1,0 +1,47 @@
+\subsection{Computing $a^d \pmod{n}$ Fast}
+For SS, we must
+compute $a^n$ where both $a, n \in \mathbb{N}$.
+We could simply multiply:
+$$
+a^n = \overbrace{a \times a \times \cdots \times a \times a}^n .
+$$
+The number of multiplications is $n-1$, which is ${O}(n)$.
+While correct, this approach is na{\"{i}}ve and \emph{extremely inefficient}.
+We can do better, much better, in fact we can compute $a^n$ in ${O} (\log_2 n)$ steps.
+
+Recall that we can write any integer as a polynomial
+$$
+n
+= c_m 2^m + c_{m-1} 2^{m-1} + \cdots + c_1 2^1 + c_0 2^0
+= \sum_{0\le i \le m} c_i 2^i ,
+$$
+where $n \ge 2^m$ and $c_i \in \{0, 1\}$. This is exactly writing $n$ in
+binary. And so,
+$$
+a^n = a^{c_m 2^m + c_{m-1} 2^{m-1} + \cdots + c_1 2^1 + c_0 2^0} .
+$$
+Since $a^{b+c} = a^b \times a^c$, then we can rewrite the formula as
+$$
+a^n =
+a^{c_m 2^m} \times a^{c_{m-1} 2^{m-1}} \times \cdots \times a^{c_1 2^1} \times a^{c_0 2^0} =
+\prod_{0\le i \le m} a^{c_i 2^i} .
+$$
+As an example, consider
+$a^{13} = a^{2^3 + 2^2 + 2^0} = a^{8 + 4 + 1} = a^8 \times a^4 \times a^1$.
+You will want to try a few more to get a feeling for it before you attempt to write code.
+
+This leaves us with the problem of computing the $a^{2^i}$ terms.
+We start with $a = a^1$ and if we square it then $(a^1)^2 = a^2$. Each time we square,
+$(a^2)^2 = a^4, (a^4)^2 = a^8, \ldots$ the exponents are a power of $2$. We only have to square our previous result $\log_2 n$ times at most.
+
+You will notice that the numbers get \emph{very large, very fast}.
+Although we want enormous numbers for cryptography, we do not want
+numbers that would be impossible to even write down if we used every
+atom in the universe. Recall that $10^k$ is $k$ digits long. That
+means that if $k=10^{1000}$ then there are that many digits
+(there are approximately $10^{82}$ atoms in the observable universe).
+Consequently,
+we will usually do such computations
+(mod ${n}$) for some $n$, meaning that all numbers are in $\{0, \ldots, n-1\}$.
+
+When implementing the SS algorithm, you should reduce your results (mod ${n}$) after each operation that it likely to make them large (you do not need to do it, if for example, you just add a small constant).

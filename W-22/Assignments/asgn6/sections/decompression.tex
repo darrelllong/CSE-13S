@@ -1,0 +1,58 @@
+\section{Decompression}\label{sec:decompression}
+
+The following steps for decompression will refer to the input file to decompress
+as \texttt{infile} and the uncompressed output file as \texttt{outfile}.
+
+\begin{enumerate}
+    \item Open \texttt{infile} with \texttt{open()}. If an error occurs, print a
+      helpful message and exit with a status code indicating that an error
+      occurred. \texttt{infile} should be \texttt{stdin} if an input file wasn't
+      specified.
+    \item Read in the file header with \texttt{read\_header()}, then verify the
+      magic number. If it's verified, then decompression is good to go and you
+      now have a header which contains the original protection bit mask.
+      Otherwise, print an error message reporting the invalid magic number and
+      stop the decoder program.
+    \item Open \texttt{outfile} using \texttt{open()}. The permissions for
+      \texttt{outfile} should match the protection bits as set in your file
+      header that you just read. Any errors with opening \texttt{outfile} should
+      be handled like with \texttt{infile}. \texttt{outfile} should be
+      \texttt{stdout} if an output file wasn't specified.
+    \item Create a new word table with \texttt{wt\_create()} and make sure each
+      of its entries are set to \texttt{NULL}. Initialize the table to have just
+      the empty word, a word of length 0, at the index \texttt{EMPTY\_CODE}. We
+      will refer to this table as \texttt{table}.
+    \item You will need two \texttt{Code}s to keep track of the current code and
+      next code. These will be referred to as \texttt{curr\_code} and
+      \texttt{next\_code}, respectively. \texttt{next\_code} should be
+      initialized as \texttt{START\_CODE} and functions exactly the same as the
+      monotonic counter used during compression, which was also called
+      \texttt{next\_code}.
+    \item Use \texttt{read\_pair()} in a loop to read all the pairs from
+      \texttt{infile}. We will refer to the code and symbol from each read pair
+      as \texttt{curr\_code} and \texttt{curr\_sym}, respectively. The
+      bit-length of the code to read is the bit-length of \texttt{next\_code}.
+      The loop breaks when the code read is \texttt{STOP\_CODE}. For each read
+      pair, perform the following:
+        \begin{enumerate}
+            \item As seen in the decompression example, we will need to append
+                the read symbol with the word denoted by the read code and add
+                the result to \texttt{table} at the index \texttt{next\_code}.
+                The word denoted by the read code is stored in
+                \texttt{table->words[curr\_code]}. We will append
+                \texttt{table->words[curr\_code]} and \texttt{curr\_sym} using
+                \texttt{word\_append\_sym()}.
+            \item Write the word that we just constructed and added to the
+                table with \texttt{write\_word()}. This word should have been
+            \item Increment \texttt{next\_code} and check if it equals
+                \texttt{MAX\_CODE}. If it has, reset the table using
+                \texttt{wt\_reset()} and set \texttt{next\_code} to be
+                \texttt{START\_CODE}. This mimics the resetting of the trie
+                during compression.
+        \end{enumerate}
+    \item Flush any buffered words using \texttt{flush\_words()}. Like
+      with \texttt{write\_pair()}, \texttt{write\_word()} buffers words
+      under the hood, so we have to remember to flush the contents of
+      our buffer.
+    \item Close \texttt{infile} and \texttt{outfile} with \texttt{close()}.
+\end{enumerate}

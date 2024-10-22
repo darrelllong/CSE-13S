@@ -1,0 +1,49 @@
+\section{\LaTeX{} (\texttt{pdflatex})}
+
+What is \LaTeX? It is a tool used by scientists, mathematicians and
+engineers to produce high quality documents. It is especially
+useful when your documents have mathematics in them.
+
+Here is an example minimal \LaTeX document. There is a much more
+complete example in the course resources repository. If your GitLab repository
+has been created, then you should have access to this repository. It contains
+the materials for each assignment: header files, source examples, and example
+programs. You can access the repository here:
+
+\vspace\baselineskip
+\centerline{\url{https://git.ucsc.edu/cse13s/winter2023-section02/resources.git}}
+\vspace\baselineskip
+
+\begin{verbatim}
+\documentclass[11pt]{article} % Document type
+\title{Example Document}
+\author{Conrad Veidt}
+\date{\today} % Sets the date to \today, or any date you specify
+\begin{document}\maketitle % Start the document
+For the left Riemann sum, approximating the function by its value at the
+left-end point gives multiple rectangles with base $\Delta x$ and height
+$f(a + i\Delta x)$. Doing this for $i = 0, 1, \ldots , n-1$, and adding
+up the resulting areas gives
+$$
+A_\text{left} =
+\Delta x \left[f(a) + f(a + \Delta x)
++ f(a+ 2 \, \Delta x)+ \cdots+f(b - \Delta x)\right].
+$$
+\end{document}
+\end{verbatim}
+
+You will need to install \LaTeX{} before you can start using it. You will most
+likely want the full installation:
+
+\begin{shlisting}{}
+$ sudo apt install texlive-full
+\end{shlisting}
+
+There is a complete example in the resources repository that you can modify.
+\LaTeX{} is a compiled language, just like \C{}. That means if you make a syntax
+error it will complain!
+
+Do you have to use \LaTeX? Yes, and it works well with \texttt{gnuplot}.
+Life will be much easier if you take a few minutes to learn and use
+\LaTeX{}. All you need to do is to mimic what you find in the example
+documents.

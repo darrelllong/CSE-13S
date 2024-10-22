@@ -1,0 +1,39 @@
+\section{Introduction}
+
+% \epigraphwidth=0.6\textwidth \epigraph{\emph{Programming is one of the most difficult branches of applied mathematics; the poorer mathematicians had better remain pure mathematicians.}}{---Edsger Dijkstra}
+
+\epigraphwidth=0.5\textwidth \epigraph{\emph{Mathematics knows no races or geographic
+boundaries; for mathematics, the cultural world is one country.}}{---David Hilbert}
+
+\noindent When you took Calculus\footnote{If you have forgotten (or never taken) calculus, do not despair. Go to a
+laboratory section for review: the concepts required for this assignment are
+just derivatives and the concept of integrals. You do not need to solve the integrals analytically.}
+you were presented with some simple
+and some complicated integrals, but regardless of their complexity, all
+of them had a \emph{closed form}. What that means is that you can find
+an exact solution \emph{analytically}. For example,
+$$
+\int 3 x^3-2 x^2+x-1 \, dx =\frac{3 x^4}{4}-\frac{2 x^3}{3}+\frac{x^2}{2}-x + c
+$$
+where $c$ is the constant of integration that arises when we calculate
+the \emph{antiderivative}. Unfortunately, there are integrals, many of
+them which appear simple, that have no closed form.
+
+For example, we might think $\int\sin(x^2)\,dx$ and $\int\cos(x^2)\,dx$ might be
+simple like $\int\sin(x)\,dx=-\cos(x)$ and $\int\cos(x)\,dx=\sin(x)$,
+but we would be mistaken. In fact, they are related to the
+\emph{Fresnel integrals}
+$$
+S(x) = \int_0^u \sin(\frac{1}{2} \pi x^2) dx
+\quad\text{and}\quad
+C(x) = \int_0^u \cos(\frac{1}{2} \pi x^2) dx.
+$$
+The Fresnel integrals do not have closed forms, and so we are left with
+$$
+\int \sin(x^2) dx = \sqrt{\frac{\pi }{2}} S\left(\sqrt{\frac{2}{\pi }} x\right)
+\quad\text{and}\quad
+\int \cos(x^2) dx = \sqrt{\frac{\pi }{2}} C\left(\sqrt{\frac{2}{\pi }} x\right) .
+$$
+
+In view of these examples, and many others, what are we to do? The
+answer is to use \emph{numerical integration}.

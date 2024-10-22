@@ -1,0 +1,86 @@
+\section{I/O}
+\epigraphwidth=0.5\textwidth
+\epigraph{\emph{
+When I was a child I truly loved:
+unthinking love as calm and deep
+as the North Sea. But I have lived,
+and now I do not sleep.}}{---John Gardner, \emph{Grendel}}
+
+\noindent Now that we have covered all the essential ADTs necessary for
+the encoder, we will discuss I/O. Instead of the buffered I/O functions
+from \texttt{<stdio.h>} that you have become acquainted with in previous
+assignments, we will use low-level system calls (\emph{syscalls}) such
+as \texttt{read()}, \texttt{write()}, \texttt{open()} and
+\texttt{close()}. The former two functions can be included with
+\texttt{<unistd.h>} and the latter two can be included with
+\texttt{<fcntl.h>}. Functions defined by the following I/O module will
+be used by both the encoder and decoder. The interface for the I/O
+module will be supplied in \texttt{io.h}. You will notice two
+\texttt{extern} variables defined in \texttt{io.h}: \texttt{bytes\_read}
+and \texttt{bytes\_written}. These are here for the purposes of
+collecting statistics. \textcolor{red}{These two variables \emph{must}
+be defined in \texttt{io.c}.}
+
+\begin{funcdoc}{\texttt{int read\_bytes(int infile, uint8\_t *buf, int
+nbytes)}}
+  This will be a useful wrapper function to perform reads. As you may
+  know, the \texttt{read()} syscall \emph{does not} always guarantee
+  that it will read all the bytes specified (as is the case with
+  \emph{pipes}). For example, a call could be issued to read a a block
+  of bytes, but it might only read part of a block. So, we write a
+  wrapper function to \emph{loop calls} to \texttt{read()} until we have
+  either read all the bytes that were specified (\texttt{nbytes}) into
+  the byte buffer \texttt{buf}, or there are no more bytes to read. The
+  number of bytes that were read from the input file descriptor,
+  \texttt{infile}, is returned. \textcolor{red}{You should use this
+  function whenever you need to perform a read.}
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{int write\_bytes(int outfile, uint8\_t *buf, int
+nbytes)}}
+  This functions is very much the same as \texttt{read\_bytes()}, except
+  that it is for looping calls to \texttt{write()}. As you may imagine,
+  \texttt{write()} is not guaranteed to write out all the specified
+  bytes (\texttt{nbytes}), and so we must loop until we have either
+  written out all the bytes specified from the byte buffer \texttt{buf},
+  or no bytes were written. The number of bytes written out to the
+  output file descriptor, \texttt{outfile}, is returned.
+  \textcolor{red}{You should use this function whenever you need to
+  perform a write.}
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool read\_bit(int infile, uint8\_t *bit)}}
+  You should all know by now that it is \emph{not} possible to read a
+  single bit from a file. What you \emph{can} do, however, is read in a
+  block of bytes into a buffer and dole out bits one at a time. Whenever
+  all the bits in the buffer have been doled out, you can simply fill
+  the buffer back up again with bytes from \texttt{infile}. This is
+  exactly what you will do in this function. You will maintain a
+  \texttt{static} buffer of bytes and an index into the buffer that
+  tracks which bit to return through the pointer \texttt{bit}. The
+  buffer will store \texttt{BLOCK} number of bytes, where \texttt{BLOCK}
+  is yet another macro defined in \texttt{defines.h}. This function
+  returns \texttt{false} if there are no more bits that can be read and
+  \texttt{true} if there are still bits to read. It may help to treat
+  the buffer as a \emph{bit vector}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void write\_code(int outfile, Code *c)}}
+  The same bit-buffering logic used in \texttt{read\_bit()} will be used
+  in here as well. This function will also make use of a \texttt{static}
+  buffer (we recommend this buffer to be static to the file, not just
+  this function) and an index. Each bit in the code \texttt{c} will be
+  buffered into the buffer. The bits will be buffered starting from the
+  $0^\text{th}$ bit in \texttt{c}. When the buffer of \texttt{BLOCK}
+  bytes is filled with bits, write the contents of the buffer to
+  \texttt{outfile}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void flush\_codes(int outfile)}}
+  It is not always guaranteed that the buffered codes will align nicely
+  with a block, which means that it is possible to have bits leftover in
+  the buffer used by \texttt{write\_code()} after the input file has
+  been completely encoded. The sole purpose of this function is to write
+  out any leftover, buffered bits. Make sure that any extra bits in the
+  last byte are zeroed before flushing the codes.
+\end{funcdoc}

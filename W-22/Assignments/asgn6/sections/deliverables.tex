@@ -1,0 +1,110 @@
+\section{Deliverables}
+\epigraphwidth=0.6\textwidth
+\epigraph{\emph{Self pity is easily the most destructive of the non-pharmaceutical narcotics; it is addictive, gives momentary pleasure and separates the victim from reality.}}{---John Gardner}
+
+\noindent You will need to turn in the following source code and header files:
+
+\begin{enumerate}
+  \item \texttt{encode.c}: This file will contain your implementation of the
+    Huffman encoder.
+
+  \item \texttt{decode.c}: This file will contain your implementation of the
+    Huffman decoder.
+
+  \item \texttt{defines.h}: This file will contain the macro definitions
+    used throughout the assignment. \textcolor{red}{You \emph{may not}
+    modify this file.}
+
+  \item \texttt{header.h}: This will will contain the \texttt{struct}
+    definition for a file header. \textcolor{red}{You \emph{may not}
+    modify this file.}
+
+  \item \texttt{node.h}: This file will contain the node ADT interface.
+    This file will be provided. \textcolor{red}{You \emph{may not}
+    modify this file.}
+
+  \item \texttt{node.c}: This file will contain your implementation of
+    the node ADT.
+
+  \item \texttt{pq.h}: This file will contain the priority queue ADT
+    interface. This file will be provided. \textcolor{red}{You \emph{may
+    not} modify this file.}
+
+  \item \texttt{pq.c}: This file will contain your implementation of the
+    priority queue ADT. You \emph{must} define your priority queue
+    \texttt{struct} in this file.
+
+  \item \texttt{code.h}: This file will contain the code ADT interface.
+    This file will be provided. \textcolor{red}{You \emph{may not}
+    modify this file.}
+
+  \item \texttt{code.c}: This file will contain your implementation of
+    the code ADT.
+
+  \item \texttt{io.h}: This file will contain the I/O module interface.
+    This file will be provided. \textcolor{red}{You \emph{may not}
+    modify this file.}
+
+  \item \texttt{io.c}: This file will contain your implementation of the
+    I/O module.
+
+  \item \texttt{stack.h}: This file will contain the stack ADT
+    interface. This file will be provided. \textcolor{red}{You \emph{may
+    not} modify this file.}
+
+  \item \texttt{stack.c}: This file will contain your implementation of
+    the stack ADT. You \emph{must} define your stack \texttt{struct} in
+    this file.
+
+  \item \texttt{huffman.h}: This file will contain the Huffman coding
+    module interface. This file will be provided. \textcolor{red}{You
+    \emph{may not} modify this file.}
+
+  \item \texttt{huffman.c}: This file will contain your implementation
+    of the Huffman coding module interface.
+\end{enumerate}
+
+
+You can have other source and header files, but \emph{do not try to be
+overly clever}. You will also need to turn in the following:
+
+\begin{enumerate}
+
+  \item \texttt{Makefile}: This is a file that will allow the grader to
+    type \texttt{make} to compile your programs.
+
+    \begin{itemize}
+      \item \texttt{CC = clang} must be specified.
+
+      \item \texttt{CFLAGS = -Wall -Wextra -Werror -Wpedantic}
+        must be included.
+
+      \item \texttt{make} should build the encoder and the decoder, as
+        should \texttt{make all}.
+
+      \item \texttt{make encode} should build \emph{just} the encoder.
+
+      \item \texttt{make decode} should build \emph{just} the decoder.
+
+      \item \texttt{make clean} must remove all files that are compiler
+        generated.
+
+      \item \texttt{make format} should format all your source code,
+        including the header files.
+    \end{itemize}
+
+  \item Your code must pass \texttt{scan-build} \emph{cleanly}. If there
+    are any bugs or errors that are false positives, document them and
+    explain why they are false positives in your \texttt{README.md}.
+
+  \item \texttt{README.md}: This must be in \emph{Markdown}. This must describe
+    how to build and run your program.
+
+  \item \texttt{DESIGN.pdf}: This \emph{must} be a PDF\@. The design document
+    should answer the pre-lab questions, describe the purpose of your program,
+    and communicate its overall design with enough detail such that a sufficiently
+    knowledgeable programmer would be able to replicate your implementation.
+    \textcolor{red}{This does not mean copying your entire program in verbatim.}
+    You should instead describe how your program works with supporting pseudocode.
+    \textcolor{red}{\textbf{C} code is \textbf{not} considered pseudocode.}
+\end{enumerate}

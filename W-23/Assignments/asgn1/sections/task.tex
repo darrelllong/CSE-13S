@@ -1,0 +1,70 @@
+\section{Your Task}
+
+As stated previously, your task for this assignment is to write a shell script,
+or more specifically, a \Bash{} script. You will use this script to
+produce plots of a provided \C{} program. The provided program can be
+found in the resources repository.
+
+\begin{figure}[bth]
+  \centering
+  \input{figures/monte_carlo_grid.tex}
+  \caption{\label{figure:monte_carlo_grid}
+    Blue points have distance less than or equal to 1, and hence belong both in the square and the circle, red points are a part of the square but not the circle.
+  }
+\end{figure}
+
+
+All the program does is print the Monte Carlo estimation for $\pi$ after each random point it tests. For those unacquainted with Monte Carlo estimation of $\pi$, we use a large number of points
+in a square with an inscribed quadrant. The ratio of the number of points in the quadrant to the number of points in the square is the ratio of the to areas:
+\begin{itemize}
+  \item Area of Square with side $l$ is $l^2$
+  \item Area of a quadrant of a circle with radius $l$ is $\frac{\pi l^2}{4}$
+  \item The ratio of these areas is $\frac{\pi}{4}$
+\end{itemize}
+The process is as follows: We will uniformly scatter a number of points in a square, and measure the number of points that fall within the quadrant (distance from origin less than or equal to 1) and the other points. The C program will output the estimated value of $\pi$ after every point for $n$ number of points. We have provided an example of this scatter in Figure~\ref*{figure:monte_carlo_grid}.
+
+Using the provided Monte Carlo program, you are expected to:
+\begin{enumerate}
+  \item Familiarize yourself with the syntax of \C{}.
+  \item Understand what the provided program is doing. You will want to attend
+    section for any parts you are unsure about.
+  \item Produce interesting plots using the Monte Carlo estimations produced by the
+    provided program. You should use \texttt{gnuplot} to produce these plots,
+    and everything should be automated by means of a \Bash{} script.
+\end{enumerate}
+
+
+\begin{shlisting}{Output for the monte\_carlo program}
+$ ./monte_carlo -n 10
+ Iteration       Pi                x                y circle
+         0        4         0.445822          0.55245      1
+         1        4         0.772659         0.506885      1
+         2  2.66667         0.999439        0.0812311      0
+         3        3         0.727855         0.515805      1
+         4      3.2         0.199699         0.390919      1
+         5  3.33333         0.579692         0.536917      1
+         6  3.42857         0.358613         0.367796      1
+         7      3.5         0.241639         0.905172      1
+         8  3.55556         0.974999        0.0754683      1
+         9      3.2         0.862372         0.706275      0
+\end{shlisting}
+
+Here is an example output for the provided program up to 10 points.
+The output provides you with the point number, the estimated value
+of $\pi$ at the current point, its $x$ and $y$ coordinates, as well
+as a 1 or 0 value indicating if it is in the circle, where 1 means
+it is inside the circle.
+
+Refer to Figures  \ref{figure:monte_carlo_grid}, \ref{figure:monte_carlo}
+for the example plot that were created using the provided program.
+Now that you know your task, we will now give a brief overview on
+\Bash{} scripting.
+
+\begin{figure}[htb]
+  \centering
+  \input{figures/monte_carlo.tex}
+  \caption{\label{figure:monte_carlo}
+    The value of the difference between the estimated $\pi$ and
+    $pi$ gets closer to zero as we increase iterations. The different
+    colors represent different seeds for the random number generator.}
+\end{figure}

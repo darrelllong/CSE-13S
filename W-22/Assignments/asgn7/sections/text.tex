@@ -1,0 +1,68 @@
+\section{Texts}\label{sec:text}
+
+We will need a new ADT to encapsulate the parsing of a text and serve as the
+in-memory representation of the distribution of words in the file. This is the
+\texttt{Text} ADT. It will contain a hash table, Bloom filter, and the count of
+how many words are in the text. This is \emph{not} the number of unique words in
+the text, but the \emph{total} number of words in the text. The following
+\texttt{struct} definition \emph{must} go in \texttt{text.c}.
+
+\begin{clisting}{}
+struct Text {
+  HashTable *ht;
+  BloomFilter *bf;
+  uint32_t word_count;
+};
+\end{clisting}
+
+\begin{funcdoc}{Text *text\_create(FILE *infile, Text *noise)}
+  The constructor for a text. Using the regex-parsing module, get each word of
+  \texttt{infile} and convert it to \emph{lowercase}. The \texttt{noise}
+  parameter is a \texttt{Text} that contains noise words to filter out. That is,
+  each parsed, lowercase word is only added to the created \texttt{Text} if and
+  only if the word doesn't appear in the noise \texttt{Text}.
+
+  Why are we ignoring certain words? As you can imagine, certain
+  words of the English language occur quite frequently in writing, words like
+  ``a'', ``the'', and ``of''. These words aren't great indicators of an author's
+  unique diction and thus add additional noise to the computed distance. Hence,
+  they should be ignored. If \texttt{noise} is \texttt{NULL}, then the
+  \texttt{Text} that is being created is the noise text itself.
+
+  If sufficient memory cannot be allocated, the function must return
+  \texttt{NULL}. Else, it must return a \texttt{Text *}, or a pointer to an
+  allocated \texttt{Text}. The hash table should be created with a size of
+  $2^{19}$ and the Bloom filter should be created with a size of $2^{21}$.
+\end{funcdoc}
+
+\begin{funcdoc}{void text\_delete(Text **text)}
+  Deletes a text. Remember to free both the hash table and the Bloom filter in
+  the text before freeing the text itself. Remember to set the pointer to
+  \texttt{NULL} after the memory associated with the text is freed.
+\end{funcdoc}
+
+\begin{funcdoc}{double text\_dist(Text *text1, Text *text2, Metric metric)}
+  This function returns the distance between the two texts depending on the
+  metric being used. This can be either the Euclidean distance, the Manhattan
+  distance, or the cosine distance. The \texttt{Metric} enumeration is provided
+  to you in \texttt{metric.h} and will be mentioned as well in \S\ref{sec:task}.
+
+  Remember that the nodes contain the counts for their respective words and
+  still need to be normalized with the total word count from the text.
+\end{funcdoc}
+
+\begin{funcdoc}{double text\_frequency(Text *text, char* word)}
+  Returns the frequency of the word in the text. If the word is not in the text,
+  then this must return 0. Otherwise, this must return the normalized frequency
+  of the word.
+\end{funcdoc}
+
+\begin{funcdoc}{bool text\_contains(Text *text, char* word)}
+  Returns whether or not a word is in the text. This should return \texttt{true}
+  if \texttt{word} is in the text and \texttt{false} otherwise.
+\end{funcdoc}
+
+\begin{funcdoc}{void text\_print(Text *text)}
+  A debug function to print the contents of a text. You may want to just call
+  the respective functions of the component parts of the text.
+\end{funcdoc}

@@ -1,0 +1,11 @@
+*.aux
+*.d
+*.fdb_latexmk
+*.fls
+*.listing
+*.log
+*.out
+*.swp
+*.o
+*.DS_Store
+Assignments/**/*.pdf

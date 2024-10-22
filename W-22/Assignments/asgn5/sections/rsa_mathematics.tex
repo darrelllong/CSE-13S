@@ -1,0 +1,111 @@
+\section{Mathematics of RSA}\label{proof}
+
+\epigraphwidth=0.7\textwidth
+\epigraph{\emph{If $\,{\cal P} = \NNP$, then all of modern cryptography collapses. On this happy thought\ldots}}{Michael O.\xspace Rabin, November 1998}
+
+\noindent
+The mathematics of RSA are based on arithmetic in a group of integers
+modulo $n$, denoted $\mathbb{Z}/n$. This is the set $\{ 0, \ldots, n - 1
+\}$ and all sets that are isomorphic to it. For example, $\{ n, \ldots,
+2n -1 \} \pmod{n} = \{ 0, \ldots, n - 1 \} \pmod{n}$, and there are an
+infinite number of such sets. Since they are \emph{all the same} we will
+only concern ourselves with the one with the smallest numbers.  What do
+we mean when we say that are the same? We mean that if $x \equiv k
+\pmod{n}$ then $a n + x \equiv k \pmod{n}, \forall a \ge 0, a \in
+\mathbb{Z}$. In other words, additional integer products of $n$ do not
+matter.
+
+The Euler-Fermat theorem says that if $a\in\mathbb{N}$ and
+$n\in\mathbb{N}$ are \emph{coprime}, that is $\gcd(a, n) = 1$, then
+$$a^{\varphi(n)} \equiv 1 \pmod{n}.$$ This will allow us, for example,
+to take a message $M$ and have $M^{\varphi(n)} \equiv 1 \pmod{n}$.
+
+What is $\varphi(n)$? It is the Euler totient function, and gives the
+number of positive integers than that or equal to $n$ that are
+relatively prime to $n$. For any prime number $p$,
+$$
+\varphi(p) = p - 1.
+$$
+
+For the RSA algorithm, we choose two large primes $p$ and $q$, and we
+make $n = p q$. What does this mean for us with respect to $\varphi(n)$?
+\begin{align*}
+        \varphi(n) & = \varphi(p) \times \varphi(q) \\
+        & = (p - 1) (q - 1) \\
+        & = n - (p + q) + 1 .
+\end{align*}
+
+We choose an encryption key $e$ such that is it relatively prime to
+$\varphi(n)$, that is, $\gcd(e, \varphi(n)) = 1$. We can then deduce our
+decryption key $d$ such that $e \times d \equiv 1 \pmod{\varphi(n)}$.
+Our encryption algorithm is simply $E(M) = M^e \pmod{n} = C$, and our
+decryption algorithm is $D(C) = c^d \pmod{n} = M$.
+
+We have the additional property of being mutual inverses:
+$E(D(x)) = D(E(x)) = x$,
+and that will give us the ability to provide \emph{digital signatures}.
+Observe that,
+\begin{align*}
+        D(E(M)) &\equiv E(M)^d \equiv M^{e d} \pmod{n} \\
+        E(D(M)) &\equiv D(M)^e \equiv M^{d e} \pmod{n}.
+\end{align*}
+Continuing in this manner, observe that,
+\[
+  M^{e d} \equiv M^{k \varphi(n) + 1} \pmod{n}
+\]
+for some multiplier $k \ge 1$. This is true because, prior to the
+modular reduction, $ed$ must be one greater than some multiple of
+$\varphi(n)$; applying the modulus is what makes
+$e d \equiv 1 \pmod{\varphi(n)}$. We can rewrite this as
+\[
+  M^{e d} \equiv (M^{\varphi(n)})^k \times M \pmod{n}.
+\]
+Here we apply Euler's theorem, which states that if $a$ and $n$ are
+coprime integers, then $a^{\varphi(n)} \equiv 1 \pmod{n}$. So, assuming
+that $M$ is coprime with $n$, we can simplify the above equation to
+\begin{align*}
+  M^{e d} &\equiv (1)^k \times M  &&\pmod{n} \\
+          &\equiv (1) \times M  &&\pmod{n} \\
+          &\equiv M  &&\pmod{n}
+\end{align*}
+which shows that the encryption and decryption functions are
+mutual inverses.
+
+In practice, Carmichael's function can be used in place of Euler's totient in
+the computation of the RSA key pair. Carmichael's function is denoted with
+$\lambda(n)$, where $\lambda(n) = \operatorname{lcm}(\lambda(p), \lambda(q))$.
+We indicate the least common multiple of some $a$ and $b$ with
+$\operatorname{lcm}(a, b)$. From the definition of the least common multiple, we
+see that
+\begin{align*}
+  \lambda(n) &= \lambda(pq) \\
+             &= \operatorname{lcm}(\lambda(p), \lambda(q)) \\
+             &= \frac{|\lambda(p) \times \lambda(q)|}{\operatorname{gcd}(\lambda(p), \lambda(q))}.
+\end{align*}
+If $p$ and $q$ are prime, then we know
+$\lambda(p) = \varphi(p) = p - 1$, and $\lambda(q) = \varphi(q) = q - 1$. Thus,
+\begin{align*}
+  \lambda(n) &= \frac{|\lambda(p) \times \lambda(q)|}{\operatorname{gcd}(\lambda(p), \lambda(q))} \\
+             &= \frac{|\varphi(p) \times \varphi(q)|}{\operatorname{gcd}(p - 1, q - 1)} \\
+             &= \frac{|\varphi(n)|}{\operatorname{gcd}(p - 1, q - 1)}.
+\end{align*}
+It should be clear from this that $\varphi(n)$ is a multiple of $\lambda(n)$.
+Therefore,
+\begin{align*}
+  M^{e d} &\equiv (M^{\varphi(n)})^k \times M &&\pmod{n} \\
+          &\equiv (M^{j \times \lambda(n)})^k \times M &&\pmod{n} \\
+          &\equiv (M^{\lambda(n)})^{jk} \times M &&\pmod{n}
+\end{align*}
+for some multiplier $j \ge 1$.
+
+From Carmichael's generalization of Euler's theorem, we know that
+$a^{\lambda(n)} \equiv 1 \pmod{n}$. Thus,
+\begin{align*}
+  M^{e d} &\equiv (M^{\lambda(n)})^{jk} \times M &&\pmod{n} \\
+          &\equiv (1)^{jk} \times M  &&\pmod{n} \\
+          &\equiv (1) \times M  &&\pmod{n} \\
+          &\equiv M  &&\pmod{n},
+\end{align*}
+which demonstrates how $\lambda(n)$ can be used in place of $\varphi(n)$ for the
+computation of the RSA key pair. For your assignment, you will be using
+Carmichael's function when computing your RSA key pair.

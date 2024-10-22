@@ -1,0 +1,20 @@
+\section{Introduction}
+
+Stylometry is the application of the study of linguistic style. That is, by
+analyzing the linguistic styles, or \emph{diction}, of certain authors, it
+becomes possible to identify the author of some anonymous sample of text by
+comparing its linguistic style to the styles of the analyzed authors. In
+practice, stylometry has been used for more than just author identification, but
+also composer identification, artist identification, and even programmer
+identification. With regard to the latter, stylometry has even been used to
+detect code plagiarism, flagging cases where the code style is too similar.
+
+For your assignment, you will be creating a program that attempts to identify
+the most likely authors for an anonymous sample of text given a large database
+of texts with known authors. Modern-day stylometry usually is performed using
+machine learning, achieving high identification accuracies by learning over
+time, but implementing this from scratch would take an extraordinary effort. We
+instead will settle and be content with using an algorithm that's commonly used
+in machine learning to identify authors of anonymous samples of text, albeit
+less accurately. What is this algorithm? It is the $k$-nearest neighbors
+algorithm.

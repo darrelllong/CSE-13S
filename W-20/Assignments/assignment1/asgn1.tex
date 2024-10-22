@@ -1,0 +1,372 @@
+\documentclass{article}
+\usepackage{fullpage,fourier,amsmath,amssymb}
+\usepackage{listings,color,url,hyperref}
+\usepackage{epigraph, graphicx}
+\usepackage[x11names]{xcolor}
+
+\title{Assignment 1 \\ Left, Right and Center}
+\author{Prof. Darrell Long \\
+CSE 13S -- Winter 2020}
+\date{Due: January 19$^\text{th}$ at 11:59\,pm}
+
+\input{../footer}
+\input{../lststyle}
+\lstset{language=C, style=c99}
+
+\newcommand\asgn[1]{asgn#1}
+
+\begin{document}\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+\epigraphwidth=0.5\textwidth
+\epigraph{\emph{The gambling known as business looks with austere disfavor
+upon the business known as gambling.}}{---Ambrose Bierce}
+
+\noindent We are going to implement a simple game called \emph{Left, Right, and Center}.
+It requires no skill, no real decision-making, and a player that is out of the
+game can suddenly come back in and often win.
+
+Some of you may have religious or moral prohibitions against gambling. This
+program is not gambling, since (i) you neither win nor lose, and (ii) only
+fictitious people lose or win any money. But, if you do have any qualms, let
+us know and we will give you an alternative assignment.
+
+\section{Playing the Game}
+\epigraphwidth=0.75\textwidth
+\epigraph{\emph{No sympathy for the devil; keep that in mind. Buy
+the ticket, take the ride\ldots and if it occasionally gets a little
+heavier than what you had in mind, well\ldots maybe chalk it off
+to forced conscious expansion: Tune in, freak out, get beaten.}}{---Hunter
+S. Thompson, \emph{Fear \& Loathing in Las Vegas}}
+
+Some number of $k$ players, $1 < k \le 10$, sit around a table.
+Each player has in her hand \$3. There are three dice, and each die
+has $6$ faces and is labeled: $3 \times \textbf{\textbullet}$, $1
+\times \textbf{L}$, $1 \times \textbf{R}$ or $1 \times \textbf{C}$.
+As a result, we know that there is a $50$\% chance of rolling
+\textbf{\textbullet}, and $16.6\overline{6}$\% chance of rolling
+each of \textbf{L}, \textbf{R}, or \textbf{C}.
+
+\begin{enumerate}
+\item
+Beginning with player $1$, roll the dice:
+\begin{enumerate}
+\item
+If the player has \$3 or more then she rolls three dice;
+if she has \$2 then she rolls two dice;
+if she has only \$1 then she rolls one die;
+if she has no money then she must pass.
+
+\item For each die:
+\begin{enumerate}
+\item If the player rolls \textbf{L} then she gives \$1 to the player on her \emph{left}.
+
+\item If the player rolls \textbf{R} then she gives \$1 to the player on her \emph{right}.
+
+\item If the player rolls \textbf{C} then she puts \$1 in the pot in the
+    \emph{center}.
+
+\item If the player rolls \textbf{\textbullet} then she ignores it.
+\end{enumerate}
+
+\end{enumerate}
+\item Move to the next player in sequence: to the
+right. The players are numbered. There is \texttt{you}. Then there
+is the left player which is (\texttt{you} $-$ 1) \texttt{mod} the number
+of players and there is the right player which is (\texttt{you} $+$
+1) \texttt{mod} the number of players.
+Be careful: What does \texttt{-2 \% 10} mean? Consequently, you may find this code useful:
+\begin{lstlisting}
+//
+// Returns the position of the player to the left.
+//
+// pos:     The position of the current player.
+// players: The number of players in the game.
+//
+uint32_t left(uint32_t pos, uint32_t players) {
+  return ((pos + players - 1) % players);
+}
+
+//
+// Returns the position of the player to the right.
+//
+// pos:     The position of the current player.
+// players: The number of players in the game.
+//
+uint32_t right(uint32_t pos, uint32_t players) {
+  return ((pos + 1) % players);
+}
+\end{lstlisting}
+
+\item Repeat until only one player has any money remaining (who then wins the pot).
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Your Task}
+\epigraphwidth=0.6\textwidth
+\epigraph{
+\emph{Any one who considers arithmetical methods of producing random digits
+is, of course, in a state of sin.}}{---John von Neumann, 1951}
+
+\begin{itemize}
+
+\item You must have one source file: \texttt{lrc.c}. Do not name
+your source file anything else. \textcolor{red}{You will lose points}.
+
+
+\item For grading purposes the numbering of the faces matters, and
+so they must be defined as follows (do not change it):
+
+\begin{lstlisting}
+typedef enum faciem {LEFT, RIGHT, CENTER, PASS} faces;
+faces die[] = {LEFT, RIGHT, CENTER, PASS, PASS, PASS};
+\end{lstlisting}
+
+\textcolor{red}{This means you may not use \texttt{int} as a substitute.}
+
+\item You must give your players names, and for grading purposes the names
+must correspond to these (do not change them):
+
+{\small
+\begin{lstlisting}
+const char *names[] = {"Dude",   "Walter", "Maude", "Big Lebowski", 
+                       "Brandt", "Bunny",  "Karl",  "Kieffer", 
+                       "Franz",  "Smokey"};
+\end{lstlisting}
+}
+
+\item Typing \texttt{make} must build your program and
+\texttt{./lrc} must run your program. Since you have not learned
+about \texttt{Makefiles} yet, here is one that you can use for now.
+
+\begin{lstlisting}[title=\texttt{Makefile}]
+CFLAGS=-Wall -Wextra -Werror -pedantic
+CC=clang $(CFLAGS)
+
+lrc     :       lrc.o
+        $(CC) -o lrc lrc.o
+lrc.o   :       lrc.c
+        $(CC) -c lrc.c
+clean   :
+        rm -f lrc lrc.o
+infer   :
+        make clean; infer-capture -- make; infer-analyze -- make
+\end{lstlisting}
+
+\item You will need to use a random number generator to simulate
+rolling a dice. You can do this by calling the function \texttt{rand()}
+(read the \emph{man page}) to get a random value. You can then use \texttt{mod}
+to limit this value to the range of 0--5 inclusive (in Computer Science, we start from 0).
+This value is used to determine what was rolled.
+
+\item In order that your program be \emph{reproducible}, you must start from a
+known place. This is accomplished by \emph{setting the random seed}
+using the function \texttt{srand()} (again read the \emph{man page}).
+Your program will ask for two numbers: the random seed and the
+number of players. You should assign these inputs to variables to use
+in your program. The random seed completely determines the outcome of your program. If you give it
+the same random seed and the number of players you \emph{must} get
+the same answer. Here is an example of using \texttt{srand()} and
+\texttt{rand()}:
+\begin{lstlisting}
+srand(1); // This sets your random seed to 1.
+int a = rand(); // Declares & initializes variable to random number.
+\end{lstlisting}
+
+\item \emph{Comment your code.} Include block comments to tell the grader what a certain block of code does. Use a line comment to explain something that is not as obvious. 
+\textcolor{red}{Refer to the coding standards}.
+
+\item Your program must use \texttt{clang-format}.
+
+\item Your program \emph{must} run on the time share. If it does not, your program will receive a 0. To avoid this, test your program on the time share.
+
+\item Your program must pass \texttt{infer} with no errors. If there are any, fix them; for those
+that you cannot fix, make sure to document them in your \texttt{README}.
+
+\end{itemize}
+
+In lecture we talked briefly about \emph{random} and \emph{pseudo-random}
+numbers. As we know, computers produce pseudo-random numbers,
+and in this case it is to your benefit since \emph{reproducibility}
+is essential. That means that in reality you program though it
+appears to be random is actually \emph{deterministic}. This is why
+starting with the same seed produces the same sequence.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Hints}
+\epigraph{\emph{It is no use trying to sum people up. One must follow hints,
+not exactly what is said, nor yet entirely what is done.}}{---Virginia Woolf}
+
+\begin{enumerate}
+
+\item \emph{\textcolor{red}{Start Now!}} You can always finish early.
+
+\item You may find it helpful to draw out and run through a game to get a feel
+    for the rules. Doing so may make it easier to visualize the game and design
+    your program.
+\item The game itself should be an infinite loop, where the condition to break
+    out of this loop is when there is one active player remaining.
+\item You should think carefully about what quantities that you
+must track in order for your program to function. At a \emph{minimum}
+you must keep track of the bank balance of each player, the amount
+of money in the pot, and the number of players that are \emph{in}.
+Be careful: players that were \emph{out} may be brought back in if
+money is passed to the \emph{left} or \emph{right}.
+
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Deliverables}
+\epigraph{\emph{The design process is about designing and prototyping and
+making. When you separate those, I think the final result
+suffers.}}{---Jonathan Ive}
+
+You will need to turn in:
+
+\begin{enumerate}
+\item \texttt{lrc.c}: The source file which is your program.
+
+\item \texttt{Makefile}: This is a file that will allow the grader to type
+    \texttt{make} to compile your program. Typing \texttt{make} with no
+    arguments must build your program.
+\begin{itemize}
+\item \texttt{CFLAGS=-Wall -Wextra -Werror -Wpedantic} must be included.
+\item \texttt{CC=clang} must be specified.
+\item \texttt{make clean} must remove all files that are compiler generated.
+\item \texttt{make} should build your program, as should \texttt{make all}.
+\item Your program executable must be named \texttt{lrc}.
+\end{itemize}
+
+\item \texttt{README.md}: This must be in markdown.
+This must describe how to use your program and \texttt{Makefile}.
+
+\item \texttt{DESIGN.md}: This must be in markdown. The design document
+should describe your design for your program with enough detail
+that a sufficiently knowledgeable programmer would be able to
+replicate your implementation. This does not mean copying your
+entire program in verbatim. You should instead describe how your
+program works with supporting pseudo-code. For this program, pay
+extra attention to how you describe your logic flow/algorithm in
+\textbf{C}.
+
+\end{enumerate}
+
+All of these files must be in the directory \texttt{\asgn{1}}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Submission}
+\epigraphwidth=0.5\textwidth
+\epigraph{\emph{Better three hours too soon than a minute too
+late.}}{---William Shakespeare}
+
+To submit your assignment, refer back to \texttt{\asgn{0}} for the steps on how to submit your assignment through \texttt{git}. Remember: \emph{add, commit,} and \emph{push}!
+
+\textcolor{red}{Your assignment is turned in \emph{only} after you have pushed.
+If you forget to push, you have not turned in your assignment and you will get
+a \emph{zero}. ``I forgot to push'' is not a valid excuse. It is \emph{highly} recommended to commit and push your changes \emph{often}.}
+%\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Supplemental Readings}
+\epigraph{\emph{The more that you read, the more things you will know. The
+more that you learn, the more places you'll go.}}{---Dr.\ Seuss}\noindent
+
+ \begin{itemize}
+
+ 	\item \textit{The C Programming Language} by Kernighan \& Ritchie
+	\begin{itemize}
+		\item Chapter 1 \S 1.6, 1.7
+		\item Chapter 2 \S 2.3
+		\item Chapter 3 \S 3.1-3.7
+	\end{itemize}
+ \end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\section*{Example}
+\begin{verbatim}
+darrell@hilbert code % ./lrc
+Random seed: 2020
+How many players? 7
+Dude rolls... gets a pass gets a pass gives $1 to Karl 
+Walter rolls... gives $1 to Dude puts $1 in the pot gets a pass 
+Maude rolls... gives $1 to Big Lebowski gets a pass gets a pass 
+Big Lebowski rolls... gives $1 to Maude gives $1 to Maude gets a pass 
+Brandt rolls... puts $1 in the pot gets a pass gives $1 to Bunny 
+Bunny rolls... gives $1 to Karl gets a pass gives $1 to Karl 
+Karl rolls... gets a pass gives $1 to Dude gets a pass 
+Dude rolls... gets a pass gets a pass gives $1 to Walter 
+Walter rolls... gets a pass gets a pass 
+Maude rolls... gives $1 to Big Lebowski gives $1 to Walter puts $1 in the pot 
+Big Lebowski rolls... gets a pass puts $1 in the pot gets a pass 
+Brandt rolls... gives $1 to Big Lebowski 
+Bunny rolls... gets a pass gets a pass 
+Karl rolls... gets a pass gets a pass gives $1 to Dude 
+Dude rolls... gets a pass gives $1 to Walter gets a pass 
+Walter rolls... gets a pass gets a pass gets a pass 
+Maude rolls... gives $1 to Walter 
+Big Lebowski rolls... gives $1 to Maude gets a pass gets a pass 
+Bunny rolls... puts $1 in the pot gets a pass 
+Karl rolls... puts $1 in the pot gets a pass gets a pass 
+Dude rolls... gives $1 to Walter gets a pass puts $1 in the pot 
+Walter rolls... puts $1 in the pot gives $1 to Maude gives $1 to Dude 
+Maude rolls... puts $1 in the pot gives $1 to Big Lebowski 
+Big Lebowski rolls... gets a pass puts $1 in the pot gives $1 to Maude 
+Bunny rolls... gives $1 to Karl 
+Karl rolls... gets a pass gets a pass gets a pass 
+Dude rolls... gives $1 to Karl gives $1 to Karl 
+Walter rolls... gives $1 to Maude gets a pass gets a pass 
+Maude rolls... gives $1 to Big Lebowski gets a pass 
+Big Lebowski rolls... puts $1 in the pot gets a pass 
+Karl rolls... gives $1 to Dude gives $1 to Bunny gives $1 to Dude 
+Dude rolls... puts $1 in the pot gets a pass 
+Walter rolls... gets a pass gives $1 to Dude 
+Maude rolls... gives $1 to Big Lebowski 
+Big Lebowski rolls... gets a pass gives $1 to Brandt 
+Brandt rolls... gives $1 to Bunny 
+Bunny rolls... gets a pass gives $1 to Brandt 
+Karl rolls... gets a pass puts $1 in the pot gives $1 to Dude 
+Dude rolls... gives $1 to Karl gives $1 to Karl gets a pass 
+Walter rolls... gives $1 to Dude 
+Big Lebowski rolls... gets a pass 
+Brandt rolls... gets a pass 
+Bunny rolls... gives $1 to Karl 
+Karl rolls... gives $1 to Dude gets a pass gets a pass 
+Dude rolls... puts $1 in the pot gets a pass gives $1 to Karl 
+Big Lebowski rolls... gets a pass 
+Brandt rolls... gives $1 to Big Lebowski 
+Karl rolls... gives $1 to Dude puts $1 in the pot gets a pass 
+Dude rolls... gets a pass gets a pass 
+Big Lebowski rolls... gives $1 to Brandt gets a pass 
+Brandt rolls... gives $1 to Big Lebowski 
+Karl rolls... gives $1 to Bunny gives $1 to Dude 
+Dude rolls... gets a pass gets a pass gets a pass 
+Big Lebowski rolls... puts $1 in the pot gives $1 to Maude 
+Bunny rolls... puts $1 in the pot 
+Dude rolls... gets a pass gives $1 to Walter gets a pass 
+Walter rolls... gives $1 to Dude 
+Maude rolls... gets a pass 
+Dude rolls... gives $1 to Walter gives $1 to Walter gives $1 to Walter 
+Walter rolls... gives $1 to Maude puts $1 in the pot gets a pass 
+Maude rolls... gets a pass gets a pass 
+Walter rolls... gives $1 to Dude 
+Maude rolls... puts $1 in the pot gets a pass 
+Dude rolls... gets a pass 
+Maude rolls... gets a pass 
+Dude rolls... gives $1 to Walter 
+Walter rolls... gives $1 to Maude 
+Maude wins the $19 pot with $2 left in the bank!
+\end{verbatim}
+
+\begin{figure}[ht]
+  \centering
+    \includegraphics[width=0.5\textwidth]{obey.jpg}
+\end{figure}
+
+\end{document}

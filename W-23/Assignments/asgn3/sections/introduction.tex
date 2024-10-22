@@ -1,0 +1,35 @@
+\section{Introduction}
+
+\epigraphwidth=0.65\textwidth
+\epigraph{\emph{Any inaccuracies in this index may be explained by the
+fact that it has been sorted with the help of a computer.}}{---Donald
+Knuth, Vol.  III, \emph{Sorting and Searching}}
+
+\noindent Putting items into a sorted order is one of the most common
+tasks in Computer Science. As a result, there are a myriad of library
+routines that will do this task for you, but that does not absolve you
+of the obligation of understanding how it is done. In fact, it behooves
+you to understand the various algorithms in order to make wise choices.
+
+The best execution time that can be accomplished, also referred to as
+the \emph{lower bound}, for sorting using \emph{comparisons} is
+$\Omega(n \log n)$, where $n$ is the number is elements to be sorted. If
+the universe of elements to be sorted is small, then we can do better
+using a \emph{Count Sort} or a \emph{Radix Sort} both of which have a
+time complexity of $\operatorname{O}(n)$. The idea of \emph{Count Sort}
+is to count the number of occurrences of each element in an array. For
+\emph{Radix Sort}, a digit by digit sort is done by starting from the
+least significant digit to the most significant digit.
+
+What is this $\operatorname{O}$ and $\Omega$ stuff? It's how we talk
+about the execution time (or space used) by a program. We will discuss
+it in lecture and in section, and you will see it again in your Data
+Structures and Algorithms class, now named CSE 101.
+
+The sorting algorithms that you are expected to implement are Shell Sort,
+Batcher Sort, Heap Sort, and recursive Quicksort. The purpose of this assignment
+is to get you fully familiarized with each sorting algorithm and for you to get
+a \emph{feel} for computational complexity. \textcolor{red}{They are well-known
+sorts. You can use the Python pseudocode provided to you as guides. Do not get
+the code for the sorts from the Internet or you will be referred to for
+cheating. We will be running plagiarism checkers.}

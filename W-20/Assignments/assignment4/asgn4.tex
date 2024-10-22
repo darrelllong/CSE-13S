@@ -1,0 +1,677 @@
+\documentclass[11pt,twocolumn]{article}
+\usepackage{fullpage,fourier,amsmath,amssymb}
+\usepackage{listings,color,url,hyperref}
+\usepackage{mdframed}
+\usepackage{epigraph}
+\usepackage[x11names]{xcolor}
+\usepackage{tcolorbox}
+\usepackage{gensymb}
+
+\title{Assignment 4 \\ Optimus Prime (fun with bit vectors)}
+\author{Prof. Darrell Long \\
+CSE 13S -- Winter 2020}
+\date{Due: February 9$^\text{th}$ at 11:59\,pm}
+
+\input{../footer}
+\input{../lststyle}
+
+\newtcolorbox{prelab}[1]{colback=red!5!white, colframe=red!75!black, title=#1}
+\lstset{language=C, style=c99}
+\lstdefinestyle{stylePython}{
+language = Python,
+}
+
+\onecolumn
+\begin{document}\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+
+We are going to answer some simple but fundamental questions about
+the sequence of natural numbers ${\mathbb N} = 1, 2, 3, \ldots$ We
+are going to look at primality and some other curious types of primes.
+Primes numbers are fundamental in mathematics and Computer Science. You should also be concerned with the execution time of your programs.
+
+\subsection{Prime Numbers}
+\epigraphwidth=0.65\textwidth
+\epigraph{\emph{God may not play dice with the universe, but something strange is going on with the prime numbers.}}{---Paul Erd\"os}
+
+\noindent Prime numbers are among the most interesting of the natural numbers.
+A number $p \in \mathbb{N}$ is \emph{prime} if it is evenly divisible
+by only $1$ and $p$.  That means that $(\forall m \in \mathbb{N},
+1 < m < p) m \nmid p$ or alternatively, $(\forall m \in \mathbb{N},
+1 < m < p)p \bmod m \ne 0$.  The first prime number is $2$, all
+primes except $2$ must be odd, since all even numbers are divisible
+by $2$.  There are an infinite number of primes, which was proved by Euclid
+about 300 B.C.  There is no formula for finding the primes, but the
+\emph{prime number theorem} tells us that the probability of a given
+$m\in \mathbb{N}, 1<m\le N$ being prime is very close to $\tfrac{1}{\ln N}$, since
+the number of primes less than $N$, denoted $\pi(N)$, is
+$$
+\frac{N}{\ln N - (1 - \epsilon)} < \pi(N) < \frac{N}{\ln N - (1 +
+\epsilon)}.
+$$
+
+Determining whether a number $n$ is prime and if it evenly divides by $n$ is conceptually simple, all that must be done is to try every $k \in \{ 2, \ldots, n - 1\}$.
+The execution time for this method is $O(n)$, which for large $n$ is prohibitive. You are invited to try this for a relatively small number $2^{64} - 1$.
+A little thought shows that we do not need to check so many, and that evaluating
+$k \mid n$ for $k\in \{2, \ldots, \lceil \sqrt{n} \,\rceil \}$ is sufficient.
+The resulting execution time of $O(\sqrt{n})$ is a great improvement.
+Is that the best that we can hope for? No, but a lower bound is \emph{unknown}.
+
+All natural numbers that are not prime are called \emph{composite}.
+The \emph{fundamental theorem of arithmetic,}
+also called the \emph{unique factorization theorem},
+states that every integer $m>1$ is either prime or a unique
+product of primes ($p_0, \ldots, p_k$).
+That is,
+$$
+m = p_0^{\alpha_0} \times p_1^{\alpha_1} \times \ldots \times p_k^{\alpha_k}
+= \prod_{i=0}^{k} p_i^{\alpha_k}.
+$$
+For example, $8\,3736=2^3\times 3^2\times 1163$.
+In 1801, the fundamental theorem of arithmetic was proved by Carl Friedrich Gauss in his book
+\emph{Disquisitiones Arithmetic\ae{}}.
+
+\subsection{Positional Number Systems}
+
+A positional number system is one that has its roots in the Babylonian
+numeral system (base 60) dating back to around 2000 B.C. --  which is
+why we have 60 seconds in a minute, 60 minutes in
+an hour, 360 degrees in a circle ($1\degree = 60'$).
+The modern number system which is most familiar to us is
+decimal (base 10), also known as the Hindu-Arabic system. This is
+the most commonly used base for counting, and stems from the fact
+that most humans have ten fingers. In the positional number
+system, a number is represented asc an ordered set of digits, where
+the contribution of each digit depends on its position. Each digit
+is multiplied by a value which determines its contribution to the
+number. A any natural number
+$$
+N = a_{k} b^{k}+a_{k-1} b^{k-1}+\ldots+a_{1} b^{1}+a_{0} b^{0}
+$$
+has $b$ as its base for each digit (such as 2 (\emph{binary}) or
+16 (\emph{hexadecimal})), and values on the range of $a_{i}\in
+\{0,1,\ldots,b-1\}$. $k$ represents the highest-ordered digit
+position in the number $N$. For example, the number 2020 can be
+expressed in base 10 as,
+$$
+2020 = 2 \times 10^{3} + 0 \times 10^{2} + 10 \times 10^{1} + 0 \times 10^{0}
+$$
+or alternatively, in base 2 and base 16,
+$$2020 = 11111100100_{2} = 7E4_{16}.$$
+
+\subsubsection{Base Change}
+
+A single number found in a positional number system can be represented
+in any number of different bases. A \emph{base change} occurs when
+a number is converted from one numeral base to another, such as
+going from base 10 to base 16. For example, the decimal number
+$7562_{10}$ can be converted to hexadecimal, noting that each decimal
+remainder is converted to its hexadecimal value.
+
+\begin{center}
+\begin{tabular}{rcccl}
+\multicolumn{1}{l}{\textbf{base 16}} & \multicolumn{1}{l}{\textbf{quotient}} & \multicolumn{1}{l}{\textbf{remainder (decimal)}} & \multicolumn{1}{l}{\textbf{remainder (hexadecimal)}} &  \\ \hline
+7562/16                              & 472                                   & 10                                               & A                                            &  \\
+472/16                               & 29                                    & 8                                                & 8                                            &  \\
+29/16                                & 1                                     & 13                                               & D                                            &  \\
+1/16                                 & 0                                     & 1                                                & 1                                            &
+\end{tabular}
+\end{center}
+
+The result which is written as 1D8A$_{16}$. Additionally, the decimal
+number $100_{10}$ can be converted to base 3.
+
+\begin{center}
+\begin{tabular}{rcc}
+\multicolumn{1}{l}{\textbf{base 3}} & \multicolumn{1}{l}{\textbf{quotient}} & \multicolumn{1}{l}{\textbf{remainder (decimal)}} \\ \hline
+100/3                               & 33                                    & 1                                                \\
+33/3                                & 11                                    & 0                                                \\
+11/3                                & 3                                     & 2                                                \\
+3/3                                 & 1                                     & 0                                                \\
+1/3                                 & 0                                     & 1
+\end{tabular}
+\end{center}
+
+The result which is written as 10201$_{3}$.
+
+
+\subsection{Interesting Primes}
+\epigraphwidth=0.75\textwidth \epigraph{\emph{The problem of distinguishing
+prime numbers from composite numbers and of resolving the latter into their
+prime factors is known to be one of the most important and useful in
+arithmetic.}}{---Carl Friedrich Gauss}
+
+\noindent A Fibonacci number is defined by a linear recurrence equation:
+$$F_n = F_{n-1} + F_{n-2}$$
+It is conventional to define $F_0 = 0$. The above equation defines
+the next Fibonacci number as the sum of the two numbers at the
+$(n-1)^{\text{st}}$ and the $(n-2)^{\text{nd}}$ position. The first
+$10$ Fibonacci numbers are $0$, $1$, $1$, $2$, $3$, $5$, $8$, $13$,
+$21$ and $34$.
+
+A \textit{\textbf{Fibonacci prime}} is a Fibonacci number that is
+prime. For example out of the above list of Fibonacci numbers, the
+numbers $2$, $3$, $5$ and $13$ are Fibonacci prime numbers. One of
+your tasks for this assignment will be to find out if a given prime
+number is a Fibonacci prime.
+
+Francois Edouard Anatole Lucas was a French mathematician who devised
+methods like the Lucas Lehmer primality test for testing primality
+of numbers. He is also the person who gave the Fibonacci numbers their name, after Leonardo Pisano
+detto il Fibonacci.
+A Lucas number, named after the same mathematician, is
+defined by a linear recurrence equation: $$L_n = L_{n-1} + L_{n-2}$$
+It is conventional to define $L_0 = 2$. Similar to Fibonacci numbers,
+the above equation defines the next Lucas number as the sum
+of the previous two numbers at the $(n-1)^{\text{st}}$ and the
+$(n-2)^{\text{nd}}$ position. The first $10$ Lucas numbers are $2$,
+$1$, $3$, $4$, $7$, $11$, $18$, $29$, $47$ and $76$.
+
+A \textit{\textbf{Lucas prime}} is a Lucas number that is prime.
+For example out of the above list of Lucas numbers, the numbers
+$2$, $3$, $7$, $11$, $29$ and $47$ are Lucas prime numbers. One of
+your tasks for this assignment will be to find out if a given prime
+number is a Lucas prime.
+
+A \textit{\textbf{Mersenne Prime}}, named after Marin Mersenne, a
+$17^\text{th}$ century French polymath.
+He also developed Mersenne's laws, which describe the harmonics of a vibrating string (such as may
+be found on guitars and pianos), and his seminal work on music theory, \emph{Harmonie
+universelle}.
+He may be best known for a list of primes with
+exponents up to $257$, is a prime number that can be represented
+as one less than an $n^{\text{th}}$ power of two. For an integer
+$n$, a Mersenne prime is represented in the form: $$M_{n} = 2^{n}
+- 1.$$
+
+The first four Mersenne primes are $M_{2} = 3$, $M_{3} = 7$, $M_{5}
+= 31$ and $M_{7} = 127$, and can be represented in the above format
+as:
+
+\begin{align*}
+M_{2} & = 2^{2} - 1= 3 \\
+M_{3} & = 2^{3} - 1= 7 \\
+M_{5} & = 2^{5} - 1= 31 \\
+M_{7} & = 2^{7} - 1= 127.
+\end{align*}
+
+\subsection{Palindromic Primes}
+A palindrome is a word, verse, or sentence or a number that reads
+the same backward or forward. Examples of palindromes are: ``Able
+was I ere I saw Elba'' and the year 1881. The pseudocode to check if a
+string is Palindrome is as follows:
+
+\begin{lstlisting}[style = stylePython]
+def isPalindrome(s):
+   f = True
+   for i in range(len(s) / 2):
+       if s[i] != s[-(i + 1)]:
+           f = False
+   return f
+
+w = raw_input("word = ")
+if isPalindrome(w):
+    print w, "is a palindrome"
+else:
+    print w, "is not a palindrome"
+\end{lstlisting}
+
+Whether a number is a palindrome or not depends on the \emph{radix}
+or \emph{base} of the number system being used. Let us look at the
+two examples.
+
+\textbf{Example 1}: For the decimal number $3855$, the binary number is $111100001111$, and the hexadecimal number is $\text{F0F}$.
+
+\textbf{Example 2}: For the decimal number $195$, the binary number is $11000011$, and the hexadecimal number is $\text{C}3$.
+
+In Example 1, the decimal number $3855$ is not a palindrome but the hexadecimal and binary counterparts of the number are palindromes, while in example 2, only the binary number is a palindrome.
+
+A \textbf{\textit{palindromic prime}} is a prime number, whose
+corresponding string at a certain base is a palindrome. Few examples
+of palindromic primes are $(373)_{10}$, the binary version of the
+number $7$ which is $111$, the binary version of the number $5$
+which is $101$.
+
+\section{Your Task}
+\epigraph{\emph{Mathematics reveals its secrets only to those who approach it
+with pure love, for its own beauty.}}{---Archimedes}
+
+\noindent For this assignment you have two tasks:
+
+\begin{itemize}
+
+\item \textbf{Task 1:} Use a sieve to generate a list of prime numbers up to a
+    value $n$, inclusive. Go through each prime number and determine whether it
+    is a \emph{Fibonacci Prime} (\texttt{F}), \emph{Lucas Prime} (\texttt{L}) or
+    a \emph{Mersenne Prime} (\texttt{M}).
+\item \textbf{Task 2:} For each prime number check if its a palindromic prime
+    for the following bases:
+	\begin{itemize}
+		\item Base 2
+		\item Base 10
+		\item Base 14
+        \item Base of the first letter of your last name + 10. For example,
+            Professor Long would compute his base as $12 + 10 = 22$, since the
+            letter L is the $12^{\text{th}}$ letter of the alphabet.
+	\end{itemize}
+    For each base only print the primes that are palindromic primes.
+
+\end{itemize}
+
+We will test your program by comparing its output with the output of a known
+correct program. Refer to the example output given at the end of the assignment.
+Your program should produce an output in the exact same format as shown in the
+example output. The values in the output will change based on your $n$ value and
+the bases for palindromic prime.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\medskip
+\begin{prelab}{Pre-lab Part 1}
+	\begin{enumerate}
+    \item Assuming you have a list of primes to consult, write pseudo-code to
+        determine if a number is a Fibonacci prime, a Lucas prime, and/or a
+        Mersenne prime.
+	\item Assuming you have a list of primes to consult, write pseudo-code to determine if a
+	       number in base 10 is a Fibonacci prime, Lucas prime, or Mersenne prime.
+	\end{enumerate}
+\end{prelab}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Specifics}
+\epigraph{\emph{Don't try to cover your mistakes with false words. Rather,
+correct your mistakes with examination.}}{---Pythagoras}
+
+Writing the program using the na\"ive approach of finding primes
+up to the value of a given number into order to find its prime
+factorization is, frankly, silly. You can and will do much better,
+and you will do so by using a \emph{sieve}. Your sieve will take as its sole
+argument a \emph{BitVector}.
+
+\begin{lstlisting}[title=sieve.h]
+#ifndef __SIEVE_H__
+#define __SIEVE_H__
+
+#include "bv.h"
+
+//
+// The Sieve of Eratosthenes.
+// Set bits in a BitVector represent prime numbers.
+// Composite numbers are sieved out by clearing bits.
+//
+// v:  The BitVector to sieve.
+//
+void sieve(BitVector *v);
+
+#endif
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Bit Vectors}
+\epigraph{\emph{Symmetrical equations are good in their place, but `vector'
+is a useless survival, or offshoot from quaternions, and has never been of the
+slightest use to any creature.}}{---Lord Kelvin}
+
+\textit{\textbf{Bit Vectors}} are a rarely taught but essential tool in the kit
+of all computer scientists and engineers. A Bit Vector is an ADT that represents
+an array of bits, the bits in which are used to denote if something is true or
+false (1 or 0). This is an efficient ADT since, in order to represent the truth
+or falsity of an array of $n$ items, we can use $n / 8 + 1$ \texttt{uint8\_t}'s
+instead of $n$, and being able to access $8$ indices with a single integer
+access is extremely cost efficient. You are expected to implement the following
+ADT interface for Bit Vectors.
+
+\begin{lstlisting}[title=bv.h]
+// bv.h - Contains the function declarations for the BitVector ADT.
+
+#ifndef __BV_H__
+#define __BV_H__
+
+#include <inttypes.h>
+#include <stdbool.h>
+
+//
+// Struct definition for a BitVector.
+//
+// vector:     The vector of bytes to hold bits.
+// length:     The length in bits of the BitVector.
+//
+typedef struct BitVector {
+  uint8_t *vector;
+  uint32_t length;
+} BitVector;
+
+//
+// Creates a new BitVector of specified length.
+//
+// bit_len:    The length in bits of the BitVector.
+//
+BitVector *bv_create(uint32_t bit_len);
+
+//
+// Frees memory allocated for a BitVector.
+//
+// v:  The BitVector.
+//
+void bv_delete(BitVector *v);
+
+//
+// Returns the length in bits of the BitVector.
+//
+// v:  The BitVector.
+//
+uint32_t bv_get_len(BitVector *v);
+
+//
+// Sets the bit at index in the BitVector.
+//
+// v:  The BitVector.
+// i:  Index of the bit to set.
+//
+void bv_set_bit(BitVector *v, uint32_t i);
+
+//
+// Clears the bit at index in the BitVector.
+//
+// v:  The BitVector.
+// i:  Index of the bit to clear.
+//
+void bv_clr_bit(BitVector *v, uint32_t i);
+
+//
+// Gets a bit from a BitVector.
+//
+// v:  The BitVector.
+// i:  Index of the bit to get.
+//
+uint8_t bv_get_bit(BitVector *v, uint32_t i);
+
+//
+// Sets all bits in a BitVector.
+//
+// v:  The BitVector.
+//
+void bv_set_all_bits(BitVector *v);
+
+#endif
+\end{lstlisting}
+
+The header file \texttt{bv.h} defines the BitVector ADT and its associated
+operations. Even though \textbf{C} will not prevent you from directly accessing
+\texttt{struct} fields, you must avoid that temptation and only use the
+functions defined in \texttt{bv.h} --- no exceptions!
+
+You must implement each of the functions specified in the header file. Most of
+them are just a line of two of \textbf{C} code, but their implementation can be
+subtle. You are warned \emph{again} against using code that you may find on the
+Internet.
+
+
+\begin{lstlisting}
+//
+// The Sieve of Eratosthenes.
+// Set bits in a BitVector represent prime numbers.
+// Composite numbers are sieved out by clearing bits.
+//
+// v:  The BitVector to sieve.
+//
+void sieve(BitVector *v) {
+  bv_set_all_bits(v);   // Assume all are prime.
+  bv_clr_bit(v, 0);     // 0 is, well, zero.
+  bv_clr_bit(v, 1);     // 1 is unity.
+  bv_set_bit(v, 2);     // 2 is prime.
+  for (uint32_t i = 2; i <= sqrtl(bv_get_len(v)); i += 1) {
+    // Prime means bit is set.
+    if (bv_get_bit(v, i)) {
+      for (uint32_t k = 0; (k + i) * i <= bv_get_len(v); k += 1) {
+        bv_clr_bit(v, (k + i) * i); // Its multiples are composite.
+      }
+    }
+  }
+  return;
+}
+\end{lstlisting}
+
+Since you have been given the code for the Sieve of Eratosthenes,
+you \emph{must} cite it and give proper credit if you use it. If,
+for example, you were to implement the Sieve of Sundaram, or the
+more modern Sieve of Atkin, you would not need to cite beyond the
+source of the algorithm and any pseudocode that you followed.
+
+\textcolor{red}{Hint: You are not penalized for using this code. Choose another
+\emph{only} if you are highly motivated.}
+
+\medskip
+\begin{prelab}{Pre-lab Part 2}
+    \begin{enumerate}
+        \item Implement each BitVector ADT function.
+        \item  Explain how you avoid memory leaks when you free allocated memory
+            for your BitVector ADT.
+        \item While the algorithm in sieve() is correct, it has room for
+            improvement. What change would you make to the code in sieve() to
+            improve the runtime?
+    \end{enumerate}
+\end{prelab}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Deliverables}
+
+You will need to turn the following files into the \texttt{assignment4}
+directory:
+
+\begin{enumerate}
+    \item Your program \emph{must} have the source and header files:
+    \begin{itemize}
+        \item \texttt{bv.h} to specify the bit vector operations and abstract
+            data type \texttt{bitV}.
+        \item \texttt{bv.c} to implement the functionality.
+        \item \texttt{sieve.h} specifies the interface to the sieve.
+        \item \texttt{sieve.c} to implement the sieve algorithm of your choice.
+        \item \texttt{sequence.c} contains \texttt{main()} and \emph{may}
+            contain the other functions necessary to complete the assignment.
+    \end{itemize}
+
+    You may have other source and header files, but \emph{do not try to be
+    overly clever}.
+
+    \item \texttt{Makefile}: This is a file that will allow the grader to type
+        \texttt{make} to compile your program. At this point you will have
+        learned about \texttt{make} and can create your own \texttt{Makefile}.
+    \begin{itemize}
+        \item \texttt{CFLAGS=-Wall -Wextra -Werror -Wpedantic} must be included.
+        \item \texttt{CC=clang} must be specified.
+        \item \texttt{make clean} must remove all files that are compiler
+            generated.
+        \item \texttt{make} should build your program, as should \texttt{make
+            all}.
+        \item Your program executable must be named \texttt{sequence}.
+    \end{itemize}
+
+    \item \texttt{README.md}: This \emph{must} be in \emph{markdown}. This must
+        describe how to use your program and Makefile.
+
+    \item \texttt{DESIGN.pdf}: This \emph{must} be a PDF. The design document
+        should contain answers to the pre-lab questions at the beginning and
+        describe your design for your program with enough detail that a
+        sufficiently knowledgeable programmer would be able to replicate your
+        implementation. This does not mean copying your entire program in
+        verbatim. You should instead describe how your program works with
+        supporting pseudocode.
+
+ You \emph{must} push the \texttt{DESIGN.pdf} before you
+          push \textcolor{red}{\emph{any}} code.
+\end{enumerate}
+
+\noindent Your program must also:
+\begin{itemize}
+    \item Support the following \texttt{getopt()} flags:
+        \begin{enumerate}
+            \item \texttt{-s} : Print out all primes and identify whether or not
+                they are interesting (Lucas, Mersenne, Fibonacci).
+            \item \texttt{-p} : Print out palindromic primes in bases 2, 10,
+                14, and first letter of your last name + 10.
+            \item \texttt{-n <value>} : Specifies the largest value to consider,
+                inclusively, for your prime sieve. By default your program runs
+                up through $1000$.
+        \end{enumerate}
+
+
+    \item Dynamically allocate memory.
+    \item Not have \emph{any} memory leaks.
+    \item Cleanly pass infer --- fix any errors or explain any complaints that
+        infer has in your \texttt{README}.
+    \item \emph{Not} have any compiler warnings.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Submission}
+
+To submit your assignment, refer back to \texttt{assignment0} for the steps on
+how to submit your assignment through \texttt{git}. Remember: \emph{add,
+commit,} and \emph{push}!
+
+\textcolor{red}{Your assignment is turned in \emph{only} after you have pushed
+\emph{and} submitted the commit ID on Canvas.  If you forget to push, you have
+not turned in your assignment and you will get a \emph{zero}. ``I forgot to
+push'' is not a valid excuse. It is \emph{highly} recommended to commit and push
+your changes \emph{often}.}
+
+\section{Supplemental Readings}
+\epigraph{\emph{The more you read, the more things you will know. The
+more that you learn, the more places you'll go.}}{---Dr.\ Seuss}\noindent
+
+\begin{itemize}
+    \item \textit{The C Programming Language} by Kernighan \& Ritchie
+    \begin{itemize}
+	\item Chapter 2 \S 2.9
+        \item Chapter 4 \S 4.5--4.11
+	\item Chapter 5 \S 5.1--5.5
+	\item Chapter 6 \S 6.1--6.2, 6.7
+    \end{itemize}
+\end{itemize}
+
+\section{Examples}
+Consider the two examples shown below. This shows the \emph{required} format of
+the output when running the two commands \texttt{./sequence -s -n 100} and
+\texttt{./sequence -p -n 50}, respectively. You will notice that the output for
+the second command does not match what is specified for your program; it is only
+used to showcase program output format using other bases.
+
+\begin{lstlisting}[title=./sequence -s -n 100]
+2: prime, fibonacci
+3: prime, mersenne, lucas, fibonacci
+5: prime, fibonacci
+7: prime, mersenne, lucas
+11: prime, lucas
+13: prime, fibonacci
+17: prime
+19: prime
+23: prime
+29: prime, lucas
+31: prime, mersenne
+37: prime
+41: prime
+43: prime
+47: prime, lucas
+53: prime
+59: prime
+61: prime
+67: prime
+71: prime
+73: prime
+79: prime
+83: prime
+89: prime, fibonacci
+97: prime
+\end{lstlisting}
+
+\begin{lstlisting}[title=./sequence -p -n 50]
+Base  3
+---- --
+2 = 2
+13 = 111
+23 = 212
+
+Base  4
+---- --
+2 = 2
+3 = 3
+5 = 11
+17 = 101
+29 = 131
+
+Base  5
+---- --
+2 = 2
+3 = 3
+31 = 111
+41 = 131
+
+Base  6
+---- --
+2 = 2
+3 = 3
+5 = 5
+7 = 11
+37 = 101
+43 = 111
+
+Base  7
+---- --
+2 = 2
+3 = 3
+5 = 5
+
+Base  8
+---- --
+2 = 2
+3 = 3
+5 = 5
+7 = 7
+
+Base  9
+---- --
+2 = 2
+3 = 3
+5 = 5
+7 = 7
+
+Base 11
+---- --
+2 = 2
+3 = 3
+5 = 5
+7 = 7
+
+Base 12
+---- --
+2 = 2
+3 = 3
+5 = 5
+7 = 7
+11 = b
+13 = 11
+
+Base 13
+---- --
+2 = 2
+3 = 3
+5 = 5
+7 = 7
+11 = b
+
+Base 15
+---- --
+2 = 2
+3 = 3
+5 = 5
+7 = 7
+11 = b
+13 = d
+\end{lstlisting}
+
+\end{document}

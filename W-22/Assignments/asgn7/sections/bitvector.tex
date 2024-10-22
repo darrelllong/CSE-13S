@@ -1,0 +1,67 @@
+\section{Bit Vectors}\label{bitvector}
+
+\noindent A bit vector is an ADT that represents a one dimensional array
+of bits, the bits in which are used to denote if something is true or
+false (1 or 0). This is an efficient ADT since, in order to represent
+the truth or falsity of a bit vector of n items, we can use $\lceil
+\frac{n}{8} \rceil$ \texttt{uint8\_t}s instead of $n$, and being able to
+access 8 indices with a single integer access is extremely cost
+efficient. Since we cannot directly access a bit, we must use bitwise
+operations to get, set, and clear a bit within a byte. Much of the bit
+vector implementation can be derived from your implementation of the
+\texttt{Code} ADT used in assignment 6. If there were any issues with
+getting, setting, or clearing bits in that assignment, make sure you
+address them here.
+
+\begin{clisting}{}
+struct BitVector {
+  uint32_t length;
+  uint8_t *vector;
+};
+\end{clisting}
+
+This \texttt{struct} definition \emph{must} go in \texttt{bv.c}.
+
+\begin{funcdoc}{\texttt{BitVector *bv\_create(uint32\_t length)}}
+  The constructor for a bit vector that holds \texttt{length} bits. In
+  the even that sufficient memory cannot be allocated, the function must
+  return \texttt{NULL}. Else, it must return a \texttt{BitVector *)}, or
+  a pointer to an allocated \texttt{BitVector}. Each bit of the bit
+  vector should be initialized to 0.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void bv\_delete(BitVector **bv)}}
+  The destructor for a bit vector. Remember to set the pointer to
+  \texttt{NULL} after the memory associated with the bit vector is
+  freed.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{uint32\_t bv\_length(BitVector *bv)}}
+  Returns the length of a bit vector.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool bv\_set\_bit(BitVector *bv, uint32\_t i)}}
+  Sets the $i^\text{th}$ bit in a bit vector. If \texttt{i} is out of
+  range, return \texttt{false}. Otherwise, return \texttt{true} to
+  indicate success.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool bv\_clr\_bit(BitVector *bv, uint32\_t i)}}
+  Clears the $i^\text{th}$ bit in the bit vector. If \texttt{i} is out
+  of range, return \texttt{false}. Otherwise, return \texttt{true} to
+  indicate success.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool bv\_get\_bit(BitVector *bv, uint32\_t i)}}
+  Returns the $i^\text{th}$ bit in the bit vector. If \texttt{i} is out
+  of range, return \texttt{false}. Otherwise, return \texttt{false} if
+  the value of bit \texttt{i} is \texttt{0} and return \texttt{true} if
+  the value of bit \texttt{i} is \texttt{1}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void bv\_print(BitVector *bv)}}
+  A debug function to print the bits of a bit vector. That is, iterate
+  over each of the bits of the bit vector. Print out either 0 or 1
+  depending on whether each bit is set. \textcolor{red}{You should write
+  this immediately after the constructor}.
+\end{funcdoc}

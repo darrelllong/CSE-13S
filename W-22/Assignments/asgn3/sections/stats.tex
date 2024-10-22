@@ -1,0 +1,46 @@
+\section{Statistics}
+\epigraph{\emph{There are three types of lies---lies, damn lies, and statistics.}}{%
+---Benjamin Disraeli}
+
+\noindent
+To facilitate the gathering of statistics, you will be given,
+\textcolor{red}{\emph{and must use}}, a small statistics module. The
+module itself revolves around the following struct:
+
+\begin{clisting}{}
+typedef struct {
+  uint64_t moves;
+  uint64_t comparisons;
+} Stats;
+\end{clisting}
+
+The module also includes functions to \emph{compare}, \emph{swap}, and
+\emph{move} elements.
+
+\begin{funcdoc}{int cmp(Stats *stats, uint32\_t x, uint32\_t y)}
+  Compares \texttt{x} and \texttt{y} and increments the
+  \texttt{comparisons} field in \texttt{stats}. Returns \texttt{-1} if
+  \texttt{x} is less than \texttt{y}, \texttt{0} if \texttt{x} is equal
+  to \texttt{y}, and \texttt{1} if \texttt{x} is greater than
+  \texttt{y}.
+\end{funcdoc}
+
+\begin{funcdoc}{uint32\_t move(Stats *stats, uint32\_t x)}
+  ``Moves'' \texttt{x} by incrementing the \texttt{moves} field in
+  \texttt{stats} and returning \texttt{x}. This is intended for use in
+  Insertion Sort and Shell Sort, where array elements aren't swapped,
+  but instead moved and stored in a temporary variable.
+\end{funcdoc}
+
+\begin{funcdoc}{void swap(Stats *stats, uint32\_t *x, uint32\_t *y)}
+  Swaps the elements pointed to by pointers \texttt{x} and \texttt{y},
+  incrementing the \texttt{moves} field in \texttt{stats} by 3 to
+  reflect a swap using a temporary variable.
+\end{funcdoc}
+
+\begin{funcdoc}{void reset(Stats *stats)}
+  Resets \texttt{stats}, setting the \texttt{moves} field and
+  \texttt{comparisons} field to 0. It is possible that you don't end up
+  using this specific function, depending on your usage of the
+  \texttt{Stats} \texttt{struct}.
+\end{funcdoc}

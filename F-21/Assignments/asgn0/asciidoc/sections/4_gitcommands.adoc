@@ -1,0 +1,227 @@
+== Useful Git Commands
+
+The following commands are used through `git` for version control. For
+this assignment, you will have used the `clone`, `add`, and
+`push` commands. This section will serve as a brief description and use
+of frequently used `git` commands that you will most likely use
+throughout the quarter, if not your entire career as a computing professional.
+
+=== git config
+
+This command lets you set configuration variables that tune `git`
+to operate the way you want it to. The main things you will likely want
+to do when you get started with `git` are establishing your
+identity, as well as the default text editor when typing up longer
+commits.
+
+Perform the following command to set your name and email address. Notice the
+`--global` in the command. That is a _command-line option_ and indicates that
+the following configuration should be used globally in every `git` repository
+you have. Unless otherwise specified, configurations by default are applied only
+to the local repository.
+
+[source,bash]
+----
+$ git config --global user.name "<your name>"
+$ git config --global user.email "<your email>"
+----
+
+To set your default editor as `vim`:
+
+[source,bash]
+----
+$ git config --global core.editor vim
+----
+
+To check all the configurations simply run:
+
+[source,bash]
+----
+$ git config --list
+----
+
+To check the value of a specific key, or setting, just supply it as the
+sole argument after \texttt{git config}. For instance, to check the
+configured email:
+
+[source,bash]
+----
+$ git config user.email
+----
+
+=== git help
+
+When starting out with `git`, you may find yourself frequently
+needing to refresh your memory on certain commands. The command
+`git help` will prove invaluable in this regard. There are three
+ways to display the `man` page for any `git` command:
+
+[source,bash]
+----
+$ git help <command>
+$ git <command> --help
+$ man git-<command>
+----
+
+For example, to view the `man` page for `git clone`, the
+subject of the next section, any of the following can be run:
+
+[source,bash]
+----
+$ git help clone
+$ git clone --help
+$ man git-clone
+----
+
+A `man` page (short for manual page) is software documentation
+for tools and programs found on \textsc{Unix} systems. To view a
+`man` page:
+
+[source,bash]
+----
+$ man <function, program, tool>
+----
+
+These manual pages are typically divided into sections, depending on
+their respective purposes. General commands are found in section 1,
+system calls in section 2, and library functions, such as the
+`printf()` function used in this assignment, are found in section
+3. So, to view the `man` page for `printf()`:
+
+[source,bash]
+----
+$ man 3 printf
+----
+
+=== git clone
+
+This command clones a repository from a server onto your local machine. This
+downloads a copy of the repository which is stored on a server for local
+editing. Meaning, any changes that need to be sent back to the server will need
+to be _added_, _committed_ and _pushed_. Here is an example of
+cloning over `ssh`:
+
+[source,bash]
+----
+$ git clone user@somemachine:path/to/repo
+----
+
+=== git add
+
+This command allows you to add files into your repository and stages them to
+the `git` source tree. Any file that has been changed since the time it was last
+added needs to be added again.
+
+[source,bash]
+----
+$ git add file1 file2
+----
+
+Keep in mind, adding files with this command does _not_ commit them. You
+still need to commit the changes with the `git commit` command.
+
+=== git commit
+
+This command creates a checkpoint for each file which was added using the
+previous command, `git add`. You can think of it like capturing a
+snapshot of the current staged changes. These snapshots are then safely
+committed. Each commit has an unique commit ID along with a message about the
+commit.
+
+[source,bash]
+----
+$ git commit -m "A short informative message about any changes"
+----
+
+To commit all the changed files, you can use the command `git commit -a`
+which can also be combined with the `-m` option. This will only commit
+files that have been added and committed at least once before. Without the
+`-m` flag, you will be taken into the default `git` editor to enter your commit
+message. A forewarning: don't commit rude comments -- the TAs and
+graders will see them.
+
+You should commit working versions of your code frequently so in the case you
+mess something up, like accidentally deleting your code, you can use `git
+checkout HEAD` to revert to the most recent commit.
+
+=== git checkout
+
+This command allows you to set the state of your repository to the state
+of your repository at the time of a different commit. The reverting of
+state can be performed per file, meaning that you can use \texttt{git
+checkout} to restore a specific file to its state in a different commit.
+To checkout a commit:
+
+[source,bash]
+----
+$ git checkout <commit>
+----
+
+To checkout restore a file to its state at a different commit:
+
+[source,bash]
+----
+$ git checkout <commit> -- <file>
+----
+
+This last command also works to retrieve files that you may have
+accidentally deleted locally. This alone should provide good incentive
+to add, commit, and push changes to your files often.
+
+=== git log
+
+This command provides a list of the commits that have been made on the
+repository. It provides access to look up commit times, messages, and IDs.
+
+[source,bash]
+----
+$ git log
+----
+
+=== git push
+
+This command pushes all of your local commits to the upstream repository. It
+pushes all of your changes to the directory which is stored on-line. You
+_must_ do this to turn in your work for this class. If you do not run this
+command after committing, _none_ of your work will be turned in.
+
+[source,bash]
+----
+$ git push
+----
+
+=== git pull
+
+This command fetches and downloads content from a remote repository. Your local
+repository is immediately updated to match the fetched content. `git
+pull` is actually a combination of `git fetch` followed by `git
+merge`. The first half of `git pull` will execute `git fetch` on
+the local branch that HEAD is pointed at. After the contents are fetched, the
+second half of `git pull` will merge the work-flow creating a new merge
+commit ID and HEAD is updated to point to the new commit.
+
+[source,bash]
+----
+$ git pull
+----
+
+=== git ls-files
+
+This command lists all files in the current directory that have been checked
+into the repository. This will be useful for making sure you have submitted all
+required deliverables for each assignment.
+
+[source,bash]
+----
+$ git ls-files
+----
+
+=== git status
+
+This command provides a status of which files have been added and staged for the
+next commit, as well as unpushed changes.
+
+[source,bash]
+----
+$ git status
+----

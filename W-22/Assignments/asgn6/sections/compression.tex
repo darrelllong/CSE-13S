@@ -1,0 +1,84 @@
+\section{Compression}\label{sec:compression}
+
+The following steps for compression will refer to the input file descriptor to
+compress as \texttt{infile} and the compressed output file descriptor as
+\texttt{outfile}.
+
+\begin{enumerate}
+    \item Open \texttt{infile} with \texttt{open()}. If an error occurs,
+      print a helpful message and exit with a status code indicating
+      that an error occurred. \texttt{infile} should be \texttt{stdin}
+      if an input file wasn't specified.
+    \item The first thing in \texttt{outfile} must be the file header,
+      as defined in the file \texttt{io.h}. The magic number in the
+      header must be \texttt{0x8badbeef}. The file size and the
+      protection bit mask you will obtain using \texttt{fstat()}. See
+      the \texttt{man} page on it for details.
+    \item Open \texttt{outfile} using \texttt{open()}. The permissions
+      for \texttt{outfile} should match the protection bits as set in
+      your file header. Any errors with opening \texttt{outfile} should
+      be handled like with \texttt{infile}. \texttt{outfile} should be
+      \texttt{stdout} if an output file wasn't specified.
+    \item Write the filled out file header to \texttt{outfile} using
+        \texttt{write\_header()}. This means writing out the \texttt{struct}
+        itself to the file, as described in the function specification.
+    \item Create a trie. The trie initially has no children and consists
+      solely of the root. The code stored by this root trie node should
+      be \texttt{EMPTY\_CODE} to denote the empty word. You will need to
+      make a copy of the root node and use the copy to step through the
+      trie to check for existing prefixes. This root node copy will be
+      referred to as \texttt{curr\_node}. The reason a copy is needed is
+      that you will eventually need to reset whatever trie node you've
+      stepped to back to the top of the trie, so using a copy lets you
+      use the root node as a base to return to.
+    \item You will need a monotonic counter to keep track of the next
+      available code. This counter should start at \texttt{START\_CODE},
+      as defined in the supplied \texttt{code.h} file. The counter
+      should be a \texttt{Code} and will be referred as \texttt{next\_code}.
+    \item You will also need two variables to keep track of the previous
+      trie node and previously read symbol. We will refer to these as
+      \texttt{prev\_node} and \texttt{prev\_sym}, respectively.
+    \item Use \texttt{read\_sym()} in a loop to read in all the symbols
+      from \texttt{infile}. Your loop should break when
+      \texttt{read\_sym()} returns false. For each symbol read in, call
+      it \texttt{curr\_sym}, perform the following:
+      \begin{enumerate}
+          \item Set \texttt{next\_node} to be \texttt{trie\_step(curr\_node,
+              curr\_sym)}, stepping down from the current node to the
+              currently read symbol.
+          \item If \texttt{next\_node} is not \texttt{NULL}, that means we
+              have seen the current prefix. Set \texttt{prev\_node} to be
+              \texttt{curr\_node} and then \texttt{curr\_node} to be
+              \texttt{next\_node}.
+          \item Else, since \texttt{next\_node} is \texttt{NULL}, we know we
+              have not encountered the current prefix. We write the pair
+              (\texttt{curr\_node->code}, \texttt{curr\_sym}), where the
+              bit-length of the written code is the bit-length of
+              \texttt{next\_code}. The current prefix is then added to the trie.
+              Let \texttt{curr\_node->children[curr\_sym]} be a new trie node
+              whose code is \texttt{next\_code}. Reset \texttt{curr\_node} to
+              point at the root of the trie and increment the value of
+              \texttt{next\_code}.
+          \item Check if \texttt{next\_code} is equal to \texttt{MAX\_CODE}.
+              If it is, use \texttt{trie\_reset()} to reset the trie to just
+              having the root node. This reset is necessary since we have a
+              finite number of codes.
+          \item Update \texttt{prev\_sym} to be \texttt{curr\_sym}.
+      \end{enumerate}
+    \item After processing all the characters in \texttt{infile}, check
+      if \texttt{curr\_node} points to the root trie node. If it does
+      not, it means we were still matching a prefix. Write the pair
+      (\texttt{prev\_node->code}, \texttt{prev\_sym}). The bit-length of
+      the code written should be the bit-length of \texttt{next\_code}.
+      Make sure to increment \texttt{next\_code} and that it stays
+      within the limit of \texttt{MAX\_CODE}. Hint: use the modulo
+      operator.
+    \item Write the pair (\texttt{STOP\_CODE}, 0) to signal the end of
+      compressed output. Again, the bit-length of code written should be
+      the bit-length of \texttt{next\_code}.
+    \item Make sure to use \texttt{flush\_pairs()} to flush any unwritten,
+      buffered pairs. Remember, calls to \texttt{write\_pair()} end up
+      buffering them under the hood. So, we have to remember to flush
+      the contents of our buffer.
+    \item Use \texttt{close()} to close \texttt{infile} and \texttt{outfile}.
+\end{enumerate}

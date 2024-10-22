@@ -1,0 +1,22 @@
+\section{The Rules}
+
+\epigraphwidth=0.5\textwidth
+\epigraph{\emph{Our noblest hopes grow teeth and pursue us like tigers.}}
+{---John Gardner, \emph{In the Suicide Mountains}}
+
+The Game of Life should be played on a potentially \emph{infinite},
+two-dimensional (2-D) grid of cells that represents a \emph{universe}. Each cell
+has two possible states: it is either \emph{dead} or \emph{alive}. The game
+progresses through \emph{generations}, what some might call ``steps in time.''
+There are only three rules that determine the state of the universe after each
+generation:
+
+\begin{enumerate}
+  \item Any \emph{live} cell with two or three live neighbors \emph{survives}.
+  \item Any \emph{dead} cell with exactly three live neighbors \emph{becomes a live cell}.
+  \item All other cells die, either due to loneliness or overcrowding.
+\end{enumerate}
+
+Your task for this assignment is to implement the Game of Life in \textbf{C}.
+The first hurdle is creating an abstraction for the universe in which the game
+is played.

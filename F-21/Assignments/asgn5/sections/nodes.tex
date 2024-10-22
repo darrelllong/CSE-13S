@@ -1,0 +1,48 @@
+\section{Nodes}
+
+The first ADT that we will cover is a \emph{node}. Huffman trees
+are composed of nodes, with each node containing a pointer to its left
+child, a pointer to its right child, a symbol, and the frequency of that
+symbol. The node's frequency is only needed for the encoder.
+
+\begin{clisting}{}
+typedef struct Node Node;
+
+struct Node {
+    Node *left;         // Pointer to left child.
+    Node *right;        // Pointer to right child.
+    uint8_t symbol;     // Node's symbol.
+    uint64_t frequency; // Frequency of symbol.
+};
+\end{clisting}
+
+Immediately, we notice that a symbol is a \texttt{uint8\_t}, and not a
+\texttt{char}. This is because we want to interpret the input file as
+\emph{raw bytes}, not as a string. The following subsections define the
+interface for a \texttt{Node} and will be supplied in \texttt{node.h}.
+The definition of a \texttt{Node} will be made transparent in order to
+simplify things.
+
+\begin{funcdoc}{Node *node\_create(uint8\_t symbol, uint64\_t frequency)}
+  The constructor for a node. Sets the node's symbol as \texttt{symbol}
+  and its frequency as \texttt{frequency}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void node\_delete(Node **n)}}
+  The destructor for a node. Make sure to set the pointer to
+  \texttt{NULL} after freeing the memory for a node.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{Node *node\_join(Node *left, Node *right)}}
+  Joins a left child node and right child node, returning a pointer to a
+  created parent node. The parent node's left child will be
+  \texttt{left} and its right child will be \texttt{right}. The parent
+  node's symbol will be \texttt{`\$'} and its frequency the \emph{sum}
+  of its \emph{left} child's frequency and its \emph{right} child's
+  frequency.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void node\_print(Node *n)}}
+A debug function to verify that your nodes are created and joined
+correctly.
+\end{funcdoc}

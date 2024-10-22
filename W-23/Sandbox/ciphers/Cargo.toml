@@ -1,0 +1,27 @@
+[package]
+name = "ciphers"
+version = "0.1.0"
+edition = "2021"
+
+[profile.dev]
+overflow-checks = false
+
+[[bin]]
+name = "carryover"
+path = "src/bin/carryover.rs"
+
+[[bin]]
+name = "feed"
+path = "src/bin/feed.rs"
+
+[[bin]]
+name = "rabbitize"
+path = "src/bin/rabbitize.rs"
+
+[[bin]]
+name = "triviate"
+path = "src/bin/triviate.rs"
+
+[dependencies]
+anyhow = "1.0.57"
+byteorder = "1.4.3"

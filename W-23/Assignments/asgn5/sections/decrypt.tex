@@ -1,0 +1,37 @@
+\section{Decryptor}
+\epigraphwidth=0.33\textwidth
+\epigraph{\emph{So much technology, so little talent.}}{---Vernor Vinge, \emph{Rainbow's End}}
+
+\noindent
+Your decryptor program should accept the following command-line options:
+\begin{itemize}
+  \item \texttt{-i}\,: specifies the input file to decrypt (default:
+    \texttt{stdin}).
+  \item \texttt{-o}\,: specifies the output file to decrypt (default:
+    \texttt{stdout}).
+  \item \texttt{-n}\,: specifies the file containing the private key
+    (default: \texttt{ss.priv}).
+  \item \texttt{-v}\,: enables verbose output.
+  \item \texttt{-h}\,: displays program synopsis and usage.
+\end{itemize}
+The program should follow these steps:
+\begin{enumerate}
+  \item Parse command-line options using \texttt{getopt()} and handle
+    them accordingly.
+  \item Open the private key file using \texttt{fopen()}. Print a helpful
+    error and exit the program in the event of failure.
+  \item Read the private key from the opened private key file.
+  \item If verbose output is enabled print the following, each with a
+    trailing newline, in order:
+    \begin{enumerate}
+      \item the private modulus \texttt{pq}
+      \item the private key \texttt{d}
+    \end{enumerate}
+    Both these values should be printed with information about the
+    number of bits that constitute them, along with their respective
+    values in \emph{decimal}. See the reference decryptor program for an
+    example.
+  \item Decrypt the file using \texttt{ss\_decrypt\_file()}.
+  \item Close the private key file and clear any \texttt{mpz\_t}
+    variables you have used.
+\end{enumerate}

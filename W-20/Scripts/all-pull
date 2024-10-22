@@ -1,0 +1,17 @@
+#!/bin/bash
+TMPDIR=~/cse13s
+pushd $TMPDIR
+for i in *
+do
+(
+  pushd $i
+  git pull
+  if [ -e Makefile ]
+  then
+    make clean
+    make
+  fi
+  popd
+)
+echo $i
+done

@@ -1,0 +1,7 @@
+{
+  "server": "https://git.ucsc.edu",
+  "domain": "ucsc.edu",
+  "base_url": "git@git.ucsc.edu:cse13s/spring2021",
+  "studentlist": "../students.txt",
+  "files": [".gitignore"]
+}

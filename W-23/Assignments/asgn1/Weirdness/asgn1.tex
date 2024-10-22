@@ -1,0 +1,49 @@
+\documentclass[12pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[colorlinks=true,urlcolor=blue]{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage{Zallman,lettrine}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{color}
+\usepackage{ebgaramond}
+\usepackage{epigraph}
+\usepackage{float}
+\usepackage{fourier}
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{subcaption}
+\usepackage{url}
+\usepackage{wrapfig}
+\usepackage{xspace}
+
+\newcommand{\Bash}{\texttt{bash}\xspace}
+\newcommand{\Zsh}{\texttt{zsh}\xspace}
+\newcommand{\C}{\textbf{C}\xspace}
+\newcommand{\Unix}{\textsc{Unix}\xspace}
+
+\input{../../footer.tex}
+\input{../../lststyle.tex}
+\input{../../functions.tex}
+\input{../../monkey.tex}
+
+\renewcommand\LettrineFontHook{\Zallmanfamily}
+\title{Perfection, Deficiency and Abundance}
+\author{Prof.\xspace Darrell Long}
+\date{Winter 2023}
+
+\begin{document}\maketitle
+
+\input{sections/introduction}
+
+\input{sections/specifics}
+
+\input{sections/task}
+
+\input{sections/submission}
+
+\monkey{{Die ganzen Zahlen hat der liebe Gott gemacht, alles andere ist Menschenwerk.}
+\\\hfill\emph{---Leopold Kronecker}}
+\end{document}

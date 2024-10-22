@@ -1,0 +1,48 @@
+\section{Controlling the Cursor}
+
+\epigraphwidth=0.6\textwidth
+\epigraph{\emph{An orphan's curse would drag to hell \\ A spirit from on high;
+\\ But oh! more horrible than that \\ Is the curse in a dead man's eye! \\ Seven
+days, seven nights, I saw that curse, \\ And yet I could not die.}}{---Samuel
+Taylor Coleridge, \emph{The Rime of the Ancient Mariner}}
+
+\texttt{ncurses} is a programming library used to develop text-based user
+interfaces. It is used in vi (vim, neovim), emacs and many other programs. You
+will use this library to display the state of the universe after each evolution.
+Here is some code that showcases moving an `\texttt{o}' horizontally across the
+screen:
+
+\begin{clisting}{Short \texttt{ncurses} example.}
+#include <ncurses.h>
+#include <unistd.h> // For usleep().
+
+#define ROW 0
+#define DELAY 50000
+
+int main(void) {
+    initscr();                    // Initialize the screen.
+    curs_set(FALSE);              // Hide the cursor.
+    for (int col = 0; col < 40; col += 1) {
+        clear();                  // Clear the window.
+        mvprintw(ROW, col, "o");  // Displays "o".
+        refresh();                // Refresh the window.
+        usleep(DELAY);            // Sleep for 50000 microseconds.
+    }
+    endwin();                     // Close the screen.
+    return 0;
+}
+\end{clisting}
+
+To test this code snippet out, place it in \texttt{example.c} and compile it
+with the command:
+
+\begin{shlisting}{}
+$ clang -o example example.c -lncurses
+\end{shlisting}
+
+The \texttt{-lncurses} at the end serves to \emph{link} the \texttt{ncurses}
+library. Linked libraries should always be linked at the end. Why? \textsc{Unix}
+links binaries from left to right. When an \emph{undefined} reference is
+encountered, it is expected to be defined \emph{later}. An \emph{unreferenced}
+item is ignored, so if you list the library first, it will be unreferenced and
+is thus ignored.

@@ -1,0 +1,42 @@
+\section{Shell Sort}
+
+\epigraph{\emph{There are two ways of constructing a software design.
+    One way is to make it so simple that there are obviously no
+    deficiencies, and the other way is to make it so complicated that
+    there are no obvious deficiencies. The first method is far more
+difficult.}}{---C.A.R. Hoare}
+
+\noindent
+Donald L. Shell (March 1, 1924--November 2, 2015) was an American
+computer scientist who designed the Shell sort sorting algorithm.
+He earned his Ph.D. in Mathematics from the University of Cincinnati
+in 1959, and published the Shell Sort algorithm in the Communications
+of the ACM in July that same year.
+
+Shell Sort is a variation of insertion sort, which sorts pairs of
+elements which are far apart from each other. The \emph{gap} between the
+compared items being sorted is continuously reduced. Shell Sort starts
+with distant elements and moves out-of-place elements into position
+faster than a simple nearest neighbor exchange. What is the expected
+time complexity of Shell Sort? It depends entirely upon the gap
+sequence.
+
+The following is the pseudocode for Shell Sort. The gap sequence is
+represented by the array \texttt{gaps}. You will be given a gap
+sequence, the Pratt sequence ($2^p 3^q$ also called $3$-smooth), in the
+header file \texttt{gaps.h}.  For each \texttt{gap} in the gap sequence,
+the function compares all the pairs in \texttt{arr} that are
+\texttt{gap} indices away from each other. Pairs are swapped if they are
+in the wrong order.
+
+\begin{pylisting}{Shell Sort in Python}
+def shell_sort(arr):
+    for gap in gaps:
+        for i in range(gap, len(arr)):
+            j = i
+            temp = arr[i]
+            while j >= gap and temp < arr[j - gap]:
+                arr[j] = arr[j - gap]
+                j -= gap
+            arr[j] = temp
+\end{pylisting}

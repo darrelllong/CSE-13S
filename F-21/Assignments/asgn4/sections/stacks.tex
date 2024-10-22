@@ -1,0 +1,154 @@
+\section{Stacks}
+
+You will need to implement the \emph{stack} ADT for tracking the path
+Denver has traveled. This section defines the interface for a stack. A
+stack is an ADT that implements a \emph{last-in, first-out}, or
+\textbf{LIFO}, policy. Consider a stack of pancakes. A pancake can only
+be placed (\emph{pushed}) on top of the stack and can only be removed
+(\emph{popped}) from the top of the stack. We do not eat pancakes from
+the middle or bottom of a stack. The header file containing the
+interface will be given to you as \texttt{stack.h}. \textcolor{red}{You
+may not modify this file.} If you borrow code from any place ---
+including Prof. Long --- you must cite it. It is \emph{far better} if
+you write it yourself.
+
+The stack datatype will be abstracted as a \texttt{struct} called
+\texttt{Stack}. We will use a \texttt{typedef} to construct a new type,
+which you should treat as opaque --- which means that you cannot
+manipulate it directly, like the graph ADT. We will \emph{declare} the
+\texttt{stack} type in \texttt{stack.h} and you will define its concrete
+implementation in \texttt{stack.c}. \textcolor{red}{This means the
+following \texttt{struct} definition \emph{must} be in
+\texttt{stack.c}}.
+
+\begin{clisting}{}
+struct Stack {
+    uint32_t top;       // Index of the next empty slot.
+    uint32_t capacity;  // Number of items that can be pushed.
+    uint32_t *items;    // Array of items, each with type uint32_t.
+};
+\end{clisting}
+
+\begin{funcdoc}{Stack *stack\_create(uint32\_t capacity)}
+  The constructor function for a \texttt{Stack}. The \texttt{top} of a
+  stack should be initialized to 0. The capacity of a stack is set to the
+  specified capacity. The specified capacity also indicates the number of
+  items to allocate memory for, the items in which are held in the
+  dynamically allocated array \texttt{items}. A working constructor for a
+  stack is provided below. Note that it uses \texttt{malloc()}, as well
+  as \texttt{calloc()}, for \emph{dynamic memory allocation}. Both these
+  functions are included from \texttt{<stdlib.h>}.
+
+  \begin{clisting}{}
+Stack *stack_create(uint32_t capacity) {
+    Stack *s = (Stack *) malloc(sizeof(Stack));
+    if (s) {
+        s->top = 0;
+        s->capacity = capacity;
+        s->items = (uint32_t *) calloc(capacity, sizeof(uint32_t));
+        if (!s->items) {
+            free(s);
+            s = NULL;
+        }
+    }
+    return s;
+}
+  \end{clisting}
+\end{funcdoc}
+
+\begin{funcdoc}{void stack\_delete(Stack **s)}
+  The destructor function for a stack. A working destructor is provided
+  below. Pay attention to the things that are freed and what is set to
+  \texttt{NULL}.
+
+  \begin{clisting}{}
+void stack_delete(Stack **s) {
+    if (*s && (*s)->items) {
+        free((*s)->items);
+        free(*s);
+        *s = NULL;
+    }
+    return;
+}
+  \end{clisting}
+\end{funcdoc}
+
+
+\begin{funcdoc}{bool stack\_empty(Stack *s)}
+  Returns \texttt{true} if the stack is empty and \texttt{false}
+  otherwise.
+\end{funcdoc}
+
+\begin{funcdoc}{bool stack\_full(Stack *s)}
+  Returns \texttt{true} if the stack is full and \texttt{false} otherwise.
+\end{funcdoc}
+
+\begin{funcdoc}{uint32\_t stack\_size(Stack *s)}
+  Returns the number of items in the stack.
+\end{funcdoc}
+
+\begin{funcdoc}{bool stack\_push(Stack *s, uint32\_t x)}
+  The need for \emph{manipulator} functions follows the rationale behind
+  the need for accessor functions: there needs to be some way to alter
+  fields of a data type. \texttt{stack\_push()} is a manipulator function
+  that pushes an item \texttt{x} to the top of a stack.
+
+  This function returns a \texttt{bool} in order to signify either
+  success or failure when pushing onto a stack. When can pushing onto a
+  stack result in failure? \emph{When the stack is full.} If the stack
+  is full prior to pushing the item \texttt{x}, return \texttt{false} to
+  indicate failure. Otherwise, push the item and return \texttt{true} to
+  indicate success.
+\end{funcdoc}
+
+\begin{funcdoc}{bool stack\_pop(Stack *s, uint32\_t *x)}
+  This function pops an item off the specified stack, passing the value
+  of the popped item back through the pointer \texttt{x}. Like with
+  \texttt{stack\_push()}, this function returns a \texttt{bool} to
+  indicate either success or failure. When can popping a stack result in
+  failure? \emph{When the stack is empty.} If the stack is empty prior to
+  popping it, return \texttt{false} to indicate failure. Otherwise, pop
+  the item, set the value in the memory \texttt{x} is pointing to as the
+  popped item, and return \texttt{true} to indicate success.
+
+  \begin{clisting}{}
+// Dereferencing x to change the value it points to.
+*x = s->items[s->top];
+  \end{clisting}
+\end{funcdoc}
+
+\begin{funcdoc}{bool stack\_peek(Stack *s, uint32\_t *x)}
+  Peeking into a stack is synonymous with querying a stack about the
+  element at the top of the stack. If the stack is empty prior to
+  peeking into it, return \texttt{false} to indicate failure. This
+  functions like \texttt{stack\_pop()}, but doesn't modify the contents
+  of the stack.
+\end{funcdoc}
+
+\begin{funcdoc}{void stack\_copy(Stack *dst, Stack *src)}
+  Assuming that the destination stack \texttt{dst} is properly
+  initialized, and that \texttt{dst} has the same capacity as
+  \texttt{src}, make \texttt{dst} a copy of the source stack
+  \texttt{src}. This means making the \emph{contents} of
+  \texttt{dst->items} the same as \texttt{src->items}. The top of
+  \texttt{dst} should also match the top of \texttt{src}.
+\end{funcdoc}
+
+\begin{funcdoc}{void stack\_print(Stack *s, FILE *outfile, char *cities[])}
+  Prints out the contents of the stack to \texttt{outfile} using
+  \texttt{fprintf()}. Working through each vertex in the stack starting
+  from the \emph{bottom}, print out the name of the city each vertex
+  corresponds to. This function will be given to aid you.
+
+  \begin{clisting}{}
+void stack_print(Stack *s, FILE *outfile, char *cities[]) {
+    for (uint32_t i = 0; i < s->top; i += 1) {
+        fprintf(outfile, "%s", cities[s->items[i]]);
+        if (i + 1 != s->top) {
+            fprintf(outfile, " -> ");
+        }
+    }
+    fprintf(outfile, "\n");
+}
+  \end{clisting}
+\end{funcdoc}

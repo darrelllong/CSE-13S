@@ -1,0 +1,15 @@
+== Deliverables
+
+"If there was no Black Sabbath, I could still possibly be a morning newspaper
+delivery boy. No fun."
+-- Lars Ulrich
+
+For this class, you will be turning in all of your work through `git`.
+All the files you need to turn in for an assignment will be found and listed in
+the Deliverables section of every assignment PDF. Files will need to be added to
+the corresponding assignment directory, committed, and pushed.
+
+You will need to turn in:
+
+. `CHEATING.pdf`
+. `hello.c`

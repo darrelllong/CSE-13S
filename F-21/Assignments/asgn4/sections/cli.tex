@@ -1,0 +1,28 @@
+\section{Command-line Options}
+
+\epigraphwidth=0.65\textwidth
+\epigraph{\emph{Attitude is a choice. Happiness is a choice. Optimism is
+a choice. Kindness is a choice. Giving is a choice. Respect is a choice.
+Whatever choice you make makes you. Choose wisely.}}{---Roy T.\ Bennett,
+\emph{The Light in the Heart}}
+
+\noindent
+Your program must support any combination of the following command-line
+options.
+
+\begin{itemize}
+  \item \textbf{\texttt{-h}}\,: Prints out a help message describing the purpose
+    of the graph and the command-line options it accepts, exiting the
+    program afterwards. Refer to the reference program in the resources
+    repo for an idea of what to print.
+  \item \textbf{\texttt{-v}}\,: Enables verbose printing. If enabled,
+    the program prints out \emph{all} Hamiltonian paths found as well as
+    the total number of recursive calls to \texttt{dfs()}.
+  \item \textbf{\texttt{-u}}\,: Specifies the graph to be undirected.
+  \item \textbf{\texttt{-i infile}}\,: Specify the input file path
+    containing the cities and edges of a graph. If not specified, the
+    default input should be set as \texttt{stdin}.
+  \item \textbf{\texttt{-o outfile}}\,: Specify the output file path to
+    print to. If not specified, the default output should be set as
+    \texttt{stdout}.
+\end{itemize}

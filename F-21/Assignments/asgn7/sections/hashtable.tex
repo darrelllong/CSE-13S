@@ -1,0 +1,123 @@
+\section{Hash Tables}\label{hashtable}
+
+\epigraph{\emph{He tried his best to educate the children not to be
+traitors.}} {---Mea Son (widow of Pol Pot)}
+
+\noindent Armed with a Bloom filter, you now exercise the power to catch
+and punish those who practice wrongthink and continue to use oldspeak.
+It comes to mind however, that a Bloom filter is probabilistic and that
+it is better to exercise mercy and counsel the oldspeakers so that they
+may atone and use \emph{newspeak}. To remedy this, another solution pops
+into your brilliant and pure mind---a \emph{hash table}.
+
+A hash table is a data structure that maps keys to values and provides
+fast, $\operatorname{O}(1)$, look-up times. It does so typically by
+taking a key $k$, hashing it with some hash function $h(x)$, and placing
+the key's corresponding value in an underlying array at index $h(k)$.
+This is the perfect way not only to store translations from oldspeak to
+newspeak, but also as a way to store all prohibited oldspeak words
+without newspeak translations. We will refer to oldspeak without
+newspeak translations as \emph{badspeak}. So what happens when two
+\emph{oldspeak} words have the same hash value?  This is called a
+\emph{hash collision}, and must be resolved. Rather than doing
+\emph{open addressing} (as will be discussed in lecture), we will be
+using \emph{binary search trees} to resolve \emph{oldspeak} hash
+collisions.
+
+\begin{wrapfigure}{r}{0.16\textwidth}
+\centering
+  \includegraphics[width=0.155\textwidth]{images/facebook-big-brother-is-watching.png}
+\end{wrapfigure}
+
+A hash function maps data of arbitrary size to fixed-size values. Its
+values are called hash values, hash codes, digests, or simply hashes,
+which index a fixed-size table called a hash table.  Hash functions and
+their associated hash tables are used in data storage and retrieval
+applications to access data (on average) at a nearly constant time per
+retrieval. They require a storage space that is only fractionally
+greater than the total space needed for the data. Hashing avoids the
+non-linear access time of ordered and unordered lists and some trees and
+the often exponential storage requirements of direct access of large
+state spaces.
+
+Hash functions rely on statistical properties of key and function
+interaction: worst-case behavior is an exhaustive search but with a
+vanishingly small probability, and average-case behavior can be nearly
+constant (with minimal collisions).
+
+Below is the \texttt{struct} definition for a hash table. Similar to a
+Bloom filter, a hash table contains a salt which is passed to
+\texttt{hash()} whenever a new oldspeak entry is being inserted. As
+mentioned in \S\ref{hashtable}, we will be using binary search trees to
+resolve oldspeak hash collisions, which is why a hash table contains an
+array of trees.
+
+\begin{clisting}{}
+struct HashTable {
+  uint64_t salt[2];
+  uint32_t size;
+  Node **trees;
+};
+\end{clisting}
+
+This \texttt{struct} definition \emph{must} go in \texttt{ht.c}.
+
+\begin{funcdoc}{\texttt{HashTable *ht\_create(uint32\_t size)}}
+  The constructor for a hash table. The \texttt{size} parameter denotes
+  the number of indices, or binary search trees, that the hash table can
+  index up to. The salt for the hash table is provided in
+  \texttt{salts.h}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void ht\_delete(HashTable **ht)}}
+  The destructor for a hash table. Each of the binary search trees
+  \texttt{trees}, the underlying array of binary search tree root nodes,
+  is freed. The pointer that was passed in should be set to
+  \texttt{NULL}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{uint32\_t ht\_size(HashTable *ht)}}
+  Returns the hash table's size.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{Node *ht\_lookup(HashTable *ht, char *oldspeak)}}
+  Searches for an entry, a node, in the hash table that contains
+  \texttt{oldspeak}. A node stores oldspeak and its newspeak
+  translation. The index of the binary search tree to perform a look-up
+  on is calculated by hashing the \texttt{oldspeak}. If the node is
+  found, the pointer to the node is returned. Else, a \texttt{NULL}
+  pointer is returned.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void ht\_insert(HashTable *ht, char *oldspeak, char *newspeak)}}
+  Inserts the specified \texttt{oldspeak} and its corresponding
+  \texttt{newspeak} translation into the hash table. The index of the
+  binary search tree to insert into is calculated by hashing the
+  \texttt{oldspeak}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{uint32\_t ht\_count(HashTable *ht)}}
+Returns the number of non-\texttt{NULL} binary search trees in the hash
+table.
+\end{funcdoc}
+
+\begin{funcdoc}{double ht\_avg\_bst\_size(HashTable *ht)}
+  Returns the average binary search tree size. This is computed as the
+  sum of the sizes over all the binary search trees divided by the
+  number of non-\texttt{NULL} binary search trees in the hash table. You
+  will need to use \texttt{bst\_size()}, presented in \S\ref{bstsize},
+  to compute this.
+\end{funcdoc}
+
+\begin{funcdoc}{double ht\_avg\_bst\_height(HashTable *ht)}
+  Returns the average binary search tree size. This is computed as the
+  sum of the heights over all the binary search trees divided by the
+  number of non-\texttt{NULL} binary search trees in the hash table. You
+  will need to use \texttt{bst\_height()}, presented in
+  \S\ref{bstheight}, to compute this.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void ht\_print(HashTable *ht)}}
+  A debug function to print out the contents of a hash table.
+  \textcolor{red}{Write this immediately after the constructor}.
+\end{funcdoc}

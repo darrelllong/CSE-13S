@@ -1,0 +1,16 @@
+Simulates the play of "Left, Right, Center".
+
+Build by typing: make
+
+Clean up by typing: make clean
+
+Required inputs:
+
+1. Random seed (so the answers are always the same).
+
+2. The number of players.
+
+Output:
+
+Play by play as we go around the table.
+

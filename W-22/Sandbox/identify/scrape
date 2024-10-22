@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+
+from gutenberg.acquire import load_etext
+from gutenberg.cleanup import strip_headers
+import re, os, sys, logging, argparse
+
+def parse_index(path):
+    emit = False
+    entries = {}
+
+    with open(path) as f:
+        for line in f.readlines():
+            # Continue to next line once we've seen this line.
+            match = re.search(r"^(TITLE and AUTHOR).*", line)
+            if match:
+                emit = True
+                continue
+
+            # Find lines that end with an etext number.
+            match = re.search("^.*[0-9]+$", line)
+            if match and emit:
+                line = line.strip()
+
+                # Parse out the title, author, and etext number. If there isn't
+                # a match, it's because the author field was on the next line.
+                match = re.search("^(?P<title>.*), by (?P<author>.*?)[ \t]+(?P<etext>[0-9]+)$", line)
+                if match:
+                    author = match.group("author").strip()
+                    title = match.group("title").strip()
+                    etext = int(match.group("etext").strip())
+
+                    # Each dictionary key is the author name.
+                    # The value is a list of their works by etext number.
+                    if author in entries:
+                        entries[author].append((title, etext))
+                    else:
+                        entries[author] = [(title, etext)]
+
+    return entries
+
+def shortname(name):
+    name = name.lower()
+    name = name.replace(" ", "-")
+    return name
+
+def download_texts(entries, textdir):
+    # Recreate texts directory.
+    os.system(f"rm -rf {textdir} && mkdir -p {textdir}")
+
+    for (author, works) in entries.items():
+        workspath = f"{textdir}/{shortname(author)}.txt"
+        with open(workspath, "a+") as worksfile:
+            for title, etext in works:
+                try:
+                    text = strip_headers(load_etext(etext)).strip()
+                    print(("=" * 40) + "\n", file=worksfile)
+                    print(text, file=worksfile)
+                    print("\n" + ("=" * 40), file=worksfile)
+                    logging.info(f'got "{title}", by {author} ({etext})')
+                except:
+                    logging.error(f'failed to get "{title}", by {author} ({etext})')
+
+def create_db(path, entries, textdir):
+    # Count number of non-empty files.
+    count = 0
+    for dirent in os.scandir(textdir):
+        if dirent.is_file() and os.path.getsize(dirent.path) > 0:
+            count += 1
+
+    # Clean out the texts directory and format the database.
+    with open(path, "w") as database:
+        print(count, file=database)
+
+        for author in entries.keys():
+            workspath = f"{textdir}/{shortname(author)}.txt"
+            if os.path.exists(workspath) and os.path.getsize(workspath) > 0:
+                print(author, file=database)
+                print(workspath, file=database)
+            else:
+                os.system(f'rm -f "{workspath}"')
+
+def main():
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter,
+        description=(
+            "Scrapes Project Gutenberg using one of their offline catalog indexes.\n"
+        )
+    )
+    parser.add_argument(
+        "-i", "--index", required=True,
+        help="set Project Gutenberg index to scrape texts from"
+    )
+    parser.add_argument(
+        "-d", "--database", default="lib.db",
+        help="set database file to save author/work entries in"
+    )
+    parser.add_argument(
+        "-g", "--get", default=False, action="store_true",
+        help="get/download the Project Gutenberg text files (may take a bit)"
+    )
+    parser.add_argument(
+        "-t", "--textsdir", default="texts",
+        help="set directory to save Project Gutenberg texts in"
+    )
+    parser.add_argument(
+        "-l", "--logging-level", default="INFO",
+        choices=['debug', 'info', 'warning', 'error', 'critical', 'off'],
+        help="set logging level for logs to stderr (default: info)"
+    )
+    args = parser.parse_args()
+
+    # Format the logger.
+    if args.logging_level == "off":
+        logging.disable(logging.CRITICAL)
+    else:
+        logging.basicConfig(
+            stream=sys.stderr, level=args.logging_level.upper(),
+            format='[%(levelname)s] %(message)s'
+        )
+
+    # Scrape the Project Gutenberg index.
+    entries = parse_index(args.index)
+
+    # Get/download the texts, if specified.
+    if args.get:
+        download_texts(entries, args.textsdir)
+
+    # Create the corresponding database file.
+    create_db(args.database, entries, args.textsdir)
+
+if __name__ == "__main__":
+    main()

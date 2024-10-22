@@ -1,0 +1,131 @@
+\section{Your Task}
+
+Your task for this assignment is to implement a small number of
+mathematical functions ($e^x$ and $\sqrt{x}$), mimicking
+\texttt{<math.h>}, and using them to compute the fundamental constants
+$e$ and $\pi$. You will also need to write a dedicated test harness
+comparing your implemented functions with that of the math library's,
+then analyzing and presenting your findings in a writeup. The test
+harness should be a program named \texttt{mathlib-test}. The interface
+for your math library will be given in \texttt{mathlib.h}.
+\textcolor{red}{You may not modify this file.} The following sections
+will describe the functions that you need to write, and the files that
+should contain the functions.
+
+\textcolor{red}{You are \emph{strictly forbidden} to use any functions
+from \texttt{<math.h>} in your own math library. You are also forbidden
+to write a \texttt{factorial()} function.}
+
+Each of the functions you will write must halt computation using an
+$\epsilon = 10^{-14}$, which will be defined in \texttt{mathlib.h}. For
+example, consider approximating the value of $e$. For sufficiently large
+$k$, $|x^k| < k!$. As seen in Figure \ref{growth}, $x^k$ dominates
+briefly, but is quickly overwhelmed by $k!$, making the ratio rapidly
+approach zero.
+
+\subsection{\texttt{e.c}}
+
+This file should contain two functions: \texttt{e()} and
+\texttt{e\_terms()}. The former function will approximate the value of
+$e$ using the Taylor series presented in \S3 and track the number of
+computed terms by means of a \texttt{static} variable local to the file.
+The latter function will simply return the number of computed terms.
+
+\subsection{\texttt{madhava.c}}
+
+This file should contain two functions: \texttt{pi\_madhava()} and
+\texttt{pi\_madhava\_terms()}. The former function will approximate the
+value of $\pi$ using the Madhava series presented in \S4.2 and track the
+number of computed terms with a \texttt{static} variable, exactly like
+in \texttt{e.c}. The latter function will simply return the number of
+computed terms.
+
+\subsection{\texttt{euler.c}}
+
+This file should contain two functions: \texttt{pi\_euler()} and
+\texttt{pi\_euler\_terms()}. The former function will approximate the
+value of $\pi$ using the formula derived from Euler's solution to the
+Basel problem, as described in \S4.4. It should also track the number of
+computed terms. The latter function will simply return the number of
+computed terms.
+
+\subsection{\texttt{bbp.c}}
+
+This file should contain two functions: \texttt{pi\_bbp()} and
+\texttt{pi\_bbp\_terms()}. The former function will approximate the value
+of $\pi$ using the Bailey-Borwein-Plouffe formula presented in \S4.5 and
+track the number of computed terms. The latter function will simply
+return the number of computed terms.
+
+\subsection{\texttt{viete.c}}
+
+This file should contain two functions: \texttt{pi\_viete()} and
+\texttt{pi\_viete\_factors()}. The former function will approximate the
+value of $\pi$ using Vi\`{e}te's formula as presented in \S4.6 and track
+the number of computed factors. The latter function will simply return
+the number of computed factors.
+
+\subsection{\texttt{newton.c}}
+
+This file should contain two functions: \texttt{sqrt\_newton()} and
+\texttt{sqrt\_newton\_iters()}. The former function will approximate the
+the square root of the argument passed to it using the Newton-Raphson
+method presented in \S5. This function should also track the number of
+iterations taken, which the latter function will return.
+
+\subsection{\texttt{mathlib-test.c}}
+
+This file will contain the main test harness for your implemented math
+library. It should support the following
+command-line options:
+
+\begin{itemize}
+  \item \textbf{\texttt{-a}\,:} Runs all tests.
+  \item \textbf{\texttt{-e}\,:} Runs $e$ approximation test.
+  \item \textbf{\texttt{-b}\,:} Runs Bailey-Borwein-Plouffe $\pi$ approximation test.
+  \item \textbf{\texttt{-m}\,:} Runs Madhava $\pi$ approximation test.
+  \item \textbf{\texttt{-r}\,:} Runs Euler sequence $\pi$ approximation test.
+  \item \textbf{\texttt{-v}\,:} Runs Vi\`{e}te $\pi$ approximation test.
+  \item \textbf{\texttt{-n}\,:} Runs Newton-Raphson square root approximation tests.
+  \item \textbf{\texttt{-s}\,:} Enable printing of statistics to see
+    computed terms and factors for each tested function.
+  \item \textbf{\texttt{-h}\,:} Display a help message detailing program
+    usage.
+\end{itemize}
+
+The expected output for each of the $e$ or $\pi$ tests should resemble
+the following:
+
+\begin{shlisting}{}
+$ ./mathlib-test -e -b -v
+e() = 2.718281828459046, M_E = 2.718281828459045, diff = 0.000000000000000
+pi_bbp() = 3.141592653589793, M_PI = 3.141592653589793, diff = 0.000000000000000
+pi_viete() = 3.141592653589775, M_PI = 3.141592653589793, diff = 0.000000000000018
+\end{shlisting}
+
+Note that the newline should occur \emph{after} the printed difference.
+You can refer to the reference program in the resources repostiroy for
+the example output. With the statistics option enabled, the output
+should resemble the following:
+
+\begin{shlisting}{}
+$ ./mathlib-test -e -b -v -s
+e() = 2.718281828459046, M_E = 2.718281828459045, diff = 0.000000000000000
+e terms = 18
+pi_bbp() = 3.141592653589793, M_PI = 3.141592653589793, diff = 0.000000000000000
+pi_bbp() terms = 11
+pi_viete() = 3.141592653589775, M_PI = 3.141592653589793, diff = 0.000000000000018
+pi_viete() terms = 23
+\end{shlisting}
+
+You will specially test your \texttt{sqrt\_newton()} function in the
+range $[0,\,10)$ in steps of $0.1$. Again, you can refer to the
+reference program in the resources repository for the example output.
+Any \texttt{double} that is printed should use the following
+\texttt{printf()} format specifier:
+
+\begin{clisting}{}
+double pi = M_PI;
+printf("%16.15lf\n", pi); // Newline is included as an example.
+\end{clisting}
+

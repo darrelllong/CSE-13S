@@ -1,0 +1,35 @@
+.TH addtorepos 1 "" "" gitlab-canvas-utils
+
+.SH NAME
+addtorepos - Adds students to a set of GitLab repos
+
+.SH SYNOPSIS
+.B addtorepos [OPTIONS] [list of repoids]
+
+.SH DESCRIPTION
+Adds students to a set of GitLab repos.
+Reads \fBstdin\fP for a CSV with rows formatted as \fB[name, CanvasID, CruzID,
+repo]\fP.
+Outputs CSV rows of students that were added to \fBstdout\fP.
+
+.SH OPTIONS
+.TP
+.BR -h ", " --help
+show program help and exit
+
+.TP
+.BR -v ", " --verbose
+print verbose statistics to \fBstderr\fP
+
+.TP
+.BR -l " " LEVEL ", " --logging-level=LEVEL " " (default: " " info)
+set logging level for logs to \fBstderr\fP (choices: \fBdebug\fP, \fBinfo\fP,
+\fBwarning\fP, \fBerror\fP, \fBcritical\fP, \fBoff\fP)
+
+.SH SEE ALSO
+checkout(1),
+clone(1),
+createrepos(1),
+pushfiles(1),
+rmfiles(1),
+roster(1)

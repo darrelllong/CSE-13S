@@ -1,0 +1,298 @@
+#
+# Configuration file for CSE 13s, Winter 2020
+#
+# Scoping rules:
+#
+#   Configuration parameters (keys) are searched innermost to outermost, with
+#   the first successful lookup determining the value.  However, some keys
+#   are only considered at the top level. For example, testcounter, assignments,
+#   and max_accesses_per_day are only considered when the script starts, not
+#   for each run.
+#
+#   Please set timeout values as small as possible to minimize the impact on
+#   testing resources of infinite loop code.
+#
+#   Please keep max_accesses_per_day small, to no more than about 3. We don't
+#   have server resources to make it larger.
+ 
+# URL of the Web script that lists the prior accesses
+testcounter = 'https://teaching.ethanmiller.org/gitlab-testing/count_accesses.py'
+gitlab_server = 'gitlab.soe.ucsc.edu'
+#testcounter = ''
+
+# Number of seconds after which the command will be killed as non-responsive
+timeout = 10.0
+
+# Should required file patterns be bash-style globs or Python-style regular expressions?
+patterns = "glob"
+# patterns = "re"
+
+# List of valid assignments. An assignment may be removed from here when it's done,
+# or you can just rely on fromdate and todate to restrict when assignment tests are run.
+assignments = ['asgn0', 'asgn1', 'asgn2', 'asgn3', 'asgn4', 'asgn5', 'asgn6', 'asgn7']
+
+# Maximum number of runs per day
+max_accesses_per_day = 3
+
+# Maximum number of bytes to output from standard error from a failed job.
+# We don't print stderr for successful jobs.
+# We don't use the number of *lines* because there's no limit on characters
+# in a single line.
+stderr_size = 200
+
+# Maximum number of bytes to output from standard output from a failed job.
+# We don't print stdout for successful jobs.
+# We don't use the number of *lines* because there's no limit on characters
+# in a single line.
+stdout_size = 0
+
+# The default is to only run tests for grading. Make them visible for testing
+# as well by doing: tags = ['grade', 'test']
+tags = ['grade']
+
+# Default is for a test to be worth 0 points. It's likely you'll want to include
+# points for each test, but you might not.
+points = 0
+
+############################################################################
+# The check_submission and run_tests sections each have an error message
+# and build message for the entire section.  You shouldn't need to
+# change these.
+############################################################################
+submit_ok_msg = '''\
+.......................................................
+++++ Your submission has met minimum requirements for assignment {asgn}.
+++++ You may submit commit ID {commit_id} for {asgn}.
+.......................................................'''
+submit_error_msg = '''\
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!! ERRORS OCCURRED - check failed for {asgn}!
+!!!! Please see above for error messages.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'''
+
+run_tests_msg = '''
+*** Please note that this is a SUBSET of the tests that we'll run to grade your assignment. ***
+'''
+
+############################################################################
+#
+# Per-assignment configuration goes below here.
+#
+############################################################################
+
+# Assignment 0
+[asgn0]
+# This is the date that the script starts running the requirements tests for this assignment
+fromdate = "2019-09-05 00:01 PDT"
+
+# This is the date that the script stops running the requirements tests for this assignment
+todate = "2019-10-14 21:02 PDT"
+
+# This modifies timeout for asgn0 *only*, overriding the global default made above.
+timeout = 6.0
+
+    # Indentation doesn't matter, but makes it easier to read.
+    [asgn0.requirements]
+
+    # Specifies pattern matching for asgn0 *only*
+    patterns = "glob"
+
+    # These are the files that must be in the repo when it's checked out.
+    # A pattern prefixed by ! means that, if it's satisfied, the requirements
+    # check *fails* (opposite of no !).
+    # Note that paths are relative to the root directory.
+    prefiles = "!asgn0/*.o !asgn0/hello !asgn0/hello asgn0/CHEATING.pdf asgn0/hello.c"
+
+    # The label for assignment zero - [asgn0] need not be the same as the directory name.
+    # For example, asgn0 could be in the main (root) directory, in which case we'd
+    # use a declaration like this:
+    # prefiles = "!*.o !*.d !dog Makefile"
+
+    # These are the commands to run to test basic submission requirements.
+    # In this case, we need to be able to build without error.
+    commands = "cd asgn0; echo '-- Files in asgn0 --' ; ls ; echo '-- Running make --' ; make"
+
+    # These are the files that must be in the directory after running the commands above.
+    # It's usually not a good idea to look for files that must *not* be present
+    # (though nothing stops you) - do that in prefiles.
+    postfiles = "asgn0/CHEATING.pdf asgn0/hello"
+
+    [asgn0.build]
+    # Commands to build the assignment. The last command ensures that the dog binary
+    # is actually produced.
+    commands = ["cd asgn0",
+                "clang -c hello hello.c",
+                "stat hello"
+                ]
+    # Message printed before the build
+    message = "Building hello for asgn0"
+    timeout = 20.0
+
+# Assignment 1
+[asgn1]
+fromdate = "2019-10-14 22:00 PDT"
+todate = "2019-10-31 21:02 PDT"
+# Default timeout is 10 seconds per command
+timeout = 10.0
+
+    [asgn1.requirements]
+    prefiles = "!asgn1/*.o !asgn1/*.exe !asgn1/*.d !asgn1/lrc asgn1/lrc.c asgn1/Makefile"
+    postfiles = "asgn1/DESIGN.pdf asgn1/README.md asgn1/lrc"
+    patterns = "glob"
+    commands = "cd asgn1; echo '-- Files in asgn1 --' ; ls ; echo '-- Running make --' ; make"
+
+    [asgn1.build]
+    # Commands to build the assignment.
+    # The last command ensures that the binary actually exists
+    commands = ["cd asgn1",
+                "make",
+                "stat lrc"
+                ]
+    # Message printed before the build
+    message = "Building lrc for Assignment 1"
+    timeout = 20.0
+
+
+[asgn2]
+fromdate = "2019-11-06 09:00 PDT"
+todate = "2019-11-23 21:02 PDT"
+# Default timeout is 10 seconds per command
+timeout = 20.0
+
+    [asgn2.requirements]
+    prefiles = "!asgn2/*.o !asgn2/*.exe !asgn2/math asgn2/math.c asgn2/Makefile"
+    postfiles = "asgn2/DESIGN.pdf asgn2/README.md asgn2/WRITEUP.pdf asgn2/math"
+    patterns = "glob"
+    commands = "cd asgn2; echo '-- Files in asgn2 --' ; ls ; echo '-- Running make --' ; make"
+
+    [asgn2.build]
+    # Commands to build the assignment.
+    # The last command ensures that the binary actually exists
+    commands = ["cd asgn2",
+                "make",
+                "stat math"
+                ]
+    # Message printed before the build
+    message = "Building math for Assignment 2"
+    timeout = 20.0
+
+# Assignment 3
+[asgn3]
+fromdate = "2019-11-21 21:00 PDT"
+todate = "2019-12-09 21:02 PDT"
+# Default timeout is 20 seconds per command
+timeout = 20.0
+
+    [asgn3.requirements]
+    prefiles = "!asgn3/*.o !asgn3/*.exe !asgn3/tower asgn3/tower.c asgn3/stack.c asgn3/stack.h asgn3/Makefile"
+    postfiles = "asgn3/DESIGN.pdf asgn3/README.md asgn3/WRITEUP.pdf asgn3/tower"
+    patterns = "glob"
+    commands = "cd asgn3; echo '-- Files in asgn3 --' ; ls ; echo '-- Running make --' ; make"
+
+    [asgn3.build]
+    # Commands to build the assignment.
+    # The last command ensures that the binary actually exists
+    commands = ["cd asgn3",
+                "make",
+                "stat tower"
+                ]
+    # Message printed before the build
+    message = "Building tower for Assignment 3"
+    timeout = 20.0
+
+# Assignment 4
+[asgn4]
+fromdate = "2019-11-21 21:00 PDT"
+todate = "2019-12-09 21:02 PDT"
+# Default timeout is 20 seconds per command
+timeout = 20.0
+
+    [asgn4.requirements]
+    prefiles = "!asgn4/*.o !asgn4/*.exe !asgn4/factor asgn4/factor.c asgn4/bv.c asgn4/bv.h asgn4/sieve.h asgn4/sieve.c asgn4/Makefile"
+    postfiles = "asgn4/DESIGN.pdf asgn4/README.md asgn4/factor"
+    patterns = "glob"
+    commands = "cd asgn4; echo '-- Files in asgn4 --' ; ls ; echo '-- Running make --' ; make"
+
+    [asgn4.build]
+    # Commands to build the assignment.
+    # The last command ensures that the binary actually exists
+    commands = ["cd asgn4",
+                "make",
+                "stat factor"
+                ]
+    # Message printed before the build
+    message = "Building tower for Assignment 4"
+    timeout = 20.0
+
+# Assignment 5
+[asgn5]
+fromdate = "2019-11-21 21:00 PDT"
+todate = "2019-12-09 21:02 PDT"
+# Default timeout is 20 seconds per command
+timeout = 20.0
+
+    [asgn5.requirements]
+    prefiles = "!asgn5/*.o !asgn5/*.exe !asgn5/sorting asgn5/sortA.c asgn3/sortA.h asgn5/sortB.c asgn5/sortB.h asgn5/sortC.c asgn5/sortC.h asgn5/sortD.c asgn5/sortD.h  asgn5/Makefile"
+    postfiles = "asgn5/DESIGN.pdf asgn5/README.md asgn5/WRITEUP.pdf asgn5/sorting"
+    patterns = "glob"
+    commands = "cd asgn5; echo '-- Files in asgn5 --' ; ls ; echo '-- Running make --' ; make"
+
+    [asgn5.build]
+    # Commands to build the assignment.
+    # The last command ensures that the binary actually exists
+    commands = ["cd asgn5",
+                "make",
+                "stat sorting"
+                ]
+    # Message printed before the build
+    message = "Building sorting for Assignment 5"
+    timeout = 20.0
+
+# Assignment 6
+[asgn6]
+fromdate = "2019-11-21 21:00 PDT"
+todate = "2019-12-09 21:02 PDT"
+# Default timeout is 20 seconds per command
+timeout = 20.0
+
+    [asgn6.requirements]
+    prefiles = "!asgn6/*.o !asgn6/*.exe !asgn6/tower asgn6/newspeak.c asgn6/speck.c asgn6/speck.h asgn6/hash.c asgn6/hash.h asgn6/ll.c asgn6/ll.h asgn6/Makefile"
+    postfiles = "asgn6/DESIGN.pdf asgn6/README.md asgn6/newspeak"
+    patterns = "glob"
+    commands = "cd asgn6; echo '-- Files in asgn6 --' ; ls ; echo '-- Running make --' ; make"
+
+    [asgn6.build]
+    # Commands to build the assignment.
+    # The last command ensures that the binary actually exists
+    commands = ["cd asgn6",
+                "make",
+                "stat newspeak"
+                ]
+    # Message printed before the build
+    message = "Building newspeak for Assignment 6"
+    timeout = 20.0
+
+# Assignment 7
+[asgn7]
+fromdate = "2019-11-21 21:00 PDT"
+todate = "2019-12-09 21:02 PDT"
+# Default timeout is 20 seconds per command
+timeout = 20.0
+
+    [asgn7.requirements]
+    prefiles = "!asgn7/*.o !asgn7/*.exe !asgn7/lzwcoder asgn7/main.c asgn7/trie.c asgn7/trie.h asgn7/word.c asgn7/word.h asgn7/io.c asgn7/io.h asgn7/Makefile"
+    postfiles = "asgn7/DESIGN.pdf asgn7/README.md asgn7/lzwcoder"
+    patterns = "glob"
+    commands = "cd asgn7; echo '-- Files in asgn7 --' ; ls ; echo '-- Running make --' ; make"
+
+    [asgn7.build]
+    # Commands to build the assignment.
+    # The last command ensures that the binary actually exists
+    commands = ["cd asgn7",
+                "make",
+                "stat lzwcoder"
+                ]
+    # Message printed before the build
+    message = "Building lzwcoder for Assignment 7"
+    timeout = 20.0
+

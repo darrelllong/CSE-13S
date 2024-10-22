@@ -1,0 +1,118 @@
+<html>
+  <head>
+    <title>UCSC GitLab Course Setup Webform</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
+    <script
+      src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js">
+    </script>
+  </head>
+  <body>
+    <div id="container">
+      <h2>UCSC GitLab Course Setup</h2>
+      <form action="/create" method="post" enctype="multipart/form-data"
+                    class="flex-container" style="display:block;">
+
+        <span id="token" tooltip="Your personal GitLab access token.">
+        <h5>Personal Access Token</h5>
+        <input required type="text" name="token"/>
+        </span>
+
+        <span tooltip="If you have a template repo for your course containing
+          source code and other files, supply the url to the repo here.">
+        <h5>Template Repo To Import</h5>
+        </span>
+        <input required type="text" name="template"
+          value="https://git.ucsc.edu/teaching-utils/empty-repo.git">
+
+        <span tooltip="By default, students are given the role of developer, as
+          it's the lowest level role that still allows pushing to a repo. It is
+          possible, but not advised, to give students a higher level role.">
+        <h5>Default Student Repo Role</h5>
+        </span>
+        <select name="role">
+          <option value="developer" selected>Developer</option>
+          <option value="reporter">Reporter</option>
+          <option value="maintainer">Maintainer</option>
+        </select>
+
+        <span tooltip="The department your course is listed under.">
+        <h5>Department</h5>
+        </span>
+        <select name="department">
+          <option value="cse" selected>CSE</option>
+          <option value="ee">EE</option>
+        </select>
+
+        <span tooltip="The course ID of your course.">
+        <h5>Course ID</h5>
+        </span>
+        <input required type="text" name="course_id"
+          placeholder="e.g. 13s, 111"/>
+
+        <span tooltip="The quarter in which your course will be administered.">
+        <h5>Quarter</h5>
+        </span>
+        <select name="quarter">
+          <option value="fall" selected>Fall</option>
+          <option value="winter">Winter</option>
+          <option value="spring">Spring</option>
+          <option value="summer">Summer</option>
+        </select>
+
+        <span tooltip="The year in which your course will be administered.">
+        <h5>Year</h5>
+        </span>
+        <select name="year" id="year"></select>
+
+        <span tooltip="Repos can be set up in one of two ways. Either students
+          each get their own repo, or a group of students share one repo.">
+        <h5>Repo Setup</h5>
+        </span>
+        <select id="shared" name="shared" onchange="check()">
+          <option value="no" selected>Individual (one per student)</option>
+          <option value="yes">Shared (one for a group)</option>
+        </select>
+
+        <span tooltip="In the event that a group of students share one repo,
+          students that drop the course can be removed from the group repo they
+          had access to.">
+        <h5 id="remove_text" style="display:none;">Remove Unenrolled Students
+          From Shared Repos</h5>
+        </span>
+        <select id="remove" name="remove" style="display:none;">
+          <option value="yes" selected>Yes</option>
+          <option value="no">No</option>
+        </select>
+
+        <span tooltip="If students each get their own repo, supply a file of
+                       student CruzIDs separated by newline. If a group of
+                       students share one repo ...">
+        <h5 id="file">Student Roster Text File</h5>
+        </span>
+        <input type="file" name="file" required/>
+
+        <h1></h1>
+        <input type="submit" id="submit" value="Setup Course"/>
+      </form>
+    </div>
+  </body>
+  <script type="text/javascript">
+    var y = new Date().getFullYear();
+    for (var i = 0; i < 4; i++) {
+      $('#year').append($('<option />').val(y + i).html(y + i));
+    }
+  </script>
+  <script type="text/javascript">
+    function check() {
+      if (document.getElementById("shared").value == "no") {
+        document.getElementById("remove_text").style.display = "none";
+        document.getElementById("remove").style.display = "none";
+      } else {
+        document.getElementById("remove_text").style.display = "block";
+        document.getElementById("remove").style.display = "block";
+      }
+    }
+  </script>
+</html>

@@ -1,0 +1,78 @@
+\section{Your Task}
+Use the \texttt{Makefile} that is provided for you.
+
+Create a program called \texttt{classify.c} that takes two arguments:
+
+\texttt{-p} that determines whether to print only perfect numbers
+
+\texttt{-n \#} that determines the largest number to classify
+
+It will classify each number into one of \emph{four} categories: prime, perfect, deficient or abundant.
+
+You will do this using the `getopt()` library
+
+\subsection{\em bonus pro opere superior}
+
+Some of you may be thinking that this assignment is too simple, it
+does not test your abilities. Consequently, we are offering you the
+opportunity to earn  an extra 20\% by finding the so-called
+\emph{weird numbers}.
+
+A \emph{semiperfect number} is
+a natural number that is equal to the sum of \emph{some or all} of its
+proper divisors. A semiperfect number that is equal to the sum of
+all its proper divisors is a perfect number.  Most abundant numbers
+are also semiperfect; abundant numbers that are not semiperfect are
+called \emph{weird numbers}.
+
+Determining whether a number is semiperfect requires that the sum
+of \emph{every subset} of its proper divisors be checked. The set
+of all subsets of a set $S$ is called its \emph{power set}.
+Let $|S|$ be the number of elements in $S$, then the power set, written
+${\cal P} (S)$ and has cardinality $2^k, k = |S|$.
+
+An algorithm for cycling through all subsets naturally comes from
+looking at the binary representation of a number. Assume that we
+have an array $d_0, \ldots, d_{k-1}$ that hold the $k$ proper
+divisors of our number $n$. Let $i = 1, \ldots, 2^{k-1}$. For each
+such $k$ select the divisors that correspond to $1$ bits in the
+binary representation of $i$.
+
+Let's see how we might accomplish this in Python:
+
+\begin{pylisting}{Semiperfection}
+def combination(d):
+    for c in range(1 << len(d)):
+        yield [ _ for _ in range(len(d)) if c & (1 << _) ]
+
+def semiperfect(d, n):
+    for c in combination(d):
+        if sum([ d[_] for _ in c ]) == n:
+            return True
+    return False
+\end{pylisting}
+
+How to we accomplish a similar operation in \textbf{C}? Consider this simple program:
+
+\begin{clisting}{Checking for set bits}
+#include <stdio.h>
+
+int main(void) {
+    int x = 1962;
+    for (int i = 0; i < 32; i += 1) {
+        if (x & 1 << i) { printf("bit %d is 1\n", i); }
+    }
+    return 0;
+}
+\end{clisting}
+
+If you decide to try for extra credit, what should your output look
+like? Here's a simple example. Be warned, do not expect finding
+weird numbers to be fast---they are few in number, and you have to
+evaluate the power set for each number.
+
+\begin{shlisting}{Example}
+eco $ ./classify -w -n 100 | grep weird
+70: [1, 2, 5, 7, 10, 14, 35], abundant and weird
+836 {11}: [1, 2, 4, 11, 19, 22, 38, 44, 76, 209, 418], abundant and weird
+\end{shlisting}

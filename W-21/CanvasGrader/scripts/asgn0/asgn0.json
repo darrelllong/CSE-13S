@@ -1,0 +1,8 @@
+{
+  "executable": "hello",
+  "files": [
+    "CHEATING.pdf",
+    "hello.c"
+  ],
+  "makefile_targets": []
+}

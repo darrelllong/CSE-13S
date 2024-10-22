@@ -1,0 +1,157 @@
+\section{Your Task}
+
+\epigraphwidth=0.5\textwidth
+\epigraph{\emph{The people will believe what the media tells them they
+believe.}}{---George Orwell}
+
+\noindent
+\begin{itemize}
+  \item Initialize your Bloom filter and hash table.
+  \item Read in a list of \emph{badspeak} words with \texttt{fscanf()}.
+    Again, badspeak is simply oldspeak without a newspeak translation.
+    Badspeak is strictly forbidden. Each badspeak word should be added
+    to the Bloom filter and the hash table. The list of proscribed words
+    will be in \texttt{badspeak.txt}, which can be found in the
+    \texttt{resources} repository.
+  \item Read in a list of \emph{oldspeak} and \emph{newspeak} pairs with
+    \texttt{fscanf()}. Only the oldspeak should be added to the Bloom
+    filter. The oldspeak \emph{and} newspeak are added to the hash
+    table. The list of oldspeak and newspeak pairs will be in
+    \texttt{newspeak.txt}, which can also be found in the
+    \texttt{resources} repository.
+  \item Now that the lexicon of badspeak and oldspeak/newspeak
+    translations has been populated, you can start to filter out words.
+    Read words in from \texttt{stdin} using the supplied parsing module.
+  \item For each word that is read in, check to see if it has been added
+    to the Bloom filter. If it has not been added to the Bloom filter,
+    then no action is needed since the word isn't a proscribed word.
+  \item If the word has most likely been added to the Bloom filter,
+    meaning \texttt{bf\_probe()} returned \texttt{true}, then further
+    action needs to be taken.
+    \begin{enumerate}
+      \item If the hash table contains the word and the word \emph{does
+        not} have a newspeak translation, then the citizen who used this
+        word is guilty of \texttt{thoughtcrime}. Insert this badspeak
+        word into a list of badspeak words that the citizen used in
+        order to notify them of their errors later. What data structure
+        could be used to store these words?
+      \item If the hash table contains the word, and the word \emph{does}
+        have a newspeak translation, then the citizen requires
+        counseling on proper \emph{Rightspeak}. Insert this oldspeak
+        word into a list of oldspeak words with newspeak translations in
+        order to notify the citizen of the revisions needed to be made
+        in order to practice Rightspeak.
+      \item If the hash table does not contain the word, then all is
+        good since the Bloom filter issued a false positive. No
+        disciplinary action needs to be taken.
+    \end{enumerate}
+  \item If the citizen is accused of thoughtcrime \emph{and} requires
+    counseling on proper \emph{Rightspeak}, then they are given a
+    reprimanding \emph{mixspeak message} notifying them of their
+    transgressions and promptly sent off to \emph{joycamp}. The message
+    should contain the list of badspeak words that were used followed by
+    the list of oldspeak words that were used with their proper newspeak
+    translations.
+
+  \begin{shlisting}{}
+Dear beloved citizen of the GPRSC,
+
+We have some good news, and we have some bad news.
+The good news is that there is bad news. The bad news is that you will
+be sent to joycamp and subjected to a week-long destitute existence.
+This is the penalty for using degenerate words, as well as using
+oldspeak in place of newspeak. We hope you can correct your behavior.
+
+Your transgressions, followed by the words you must think on:
+
+kalamazoo
+antidisestablishmentarianism
+write -> papertalk
+sad -> happy
+read -> papertalk
+music -> noise
+liberty -> badfree\end{shlisting}
+
+  \item If the citizen is accused solely of thoughtcrime, then they are
+    issued a thoughtcrime message and also sent off to \emph{joycamp}.
+    The \emph{badspeak message} should contain the list of badspeak
+    words that were used.
+
+  \begin{shlisting}{}
+Dear beloved citizen of the GPRSC,
+
+You have been caught using degenerate words that may cause
+distress among the moral and upstanding citizens of the GPSRC.
+As such, you will be sent to joycamp. It is there where you will
+sit and reflect on the consequences of your choice in language.
+
+Your transgressions:
+
+kalamazoo
+antidisestablishmentarianism\end{shlisting}
+
+  \item If the citizen only requires counseling, then they are issued an
+    encouraging \emph{goodspeak message}. They will read it, correct
+    their \emph{wrongthink}, and enjoy the rest of their stay in the
+    GPRSC. The message should contain the list of oldspeak words that
+    were used with their proper newspeak translations.
+
+    \begin{shlisting}{}
+Dear beloved citizen of the GPRSC,
+
+We recognize your efforts in conforming to the language standards
+of the GPSRC. Alas, you have been caught uttering questionable words
+and thinking unpleasant thoughts. You must correct your wrongspeak
+and badthink at once. Failure to do so will result in your deliverance
+to joycamp.
+
+Words that you must think on:
+
+write -> papertalk
+sad -> happy
+read -> papertalk
+music -> noise
+liberty -> badfree\end{shlisting}
+
+  \item Each of the messages are defined for you in \texttt{messages.h}.
+    \textcolor{red}{You may not modify this file}.
+
+  \item The list of the command-line options your program must support
+    is listed below. \emph{Any} combination of the command-line options
+    must be supported.
+    \begin{itemize}
+      \item \texttt{-h} prints out the program usage. Refer to the
+      reference program in the resources repository for what to print.
+      \item \texttt{-t size} specifies that the hash table
+        will have \texttt{size} entries (the default will be $2^{16}$).
+      \item \texttt{-f size} specifies that the Bloom filter
+        will have \texttt{size} entries (the default will be $2^{20}$).
+      \item \texttt{-s} will enable the printing of statistics to
+        \texttt{stdout}. The statistics to calculate are:
+        \begin{itemize}
+          \item Average binary search tree size
+          \item Average binary search tree height
+          \item Average branches traversed
+          \item Hash table load
+          \item Bloom filter load
+        \end{itemize}
+        The latter three statistics are computed as follows:
+        \begin{align*}
+          \text{Average branches traversed} &=
+          \frac{\texttt{branches}}{\texttt{lookups}} \\
+          \text{Hash table load} &= 100 \times \frac{\texttt{ht\_count()}}{\texttt{ht\_size()}} \\
+          \text{Bloom filter load} &= 100 \times \frac{\texttt{bf\_count()}}{\texttt{bf\_size()}}
+        \end{align*}
+        The hash table load and Bloom filter load should be printed with
+        up to 6 digits of precision. \textcolor{red}{Enabling the
+        printing of statistics should \emph{suppress all messages} the
+        program may otherwise print.} The number of lookups is defined
+        as the number of times \texttt{ht\_lookup()} and
+        \texttt{ht\_insert()} is called. The number of branches is
+        defined as the count of links traversed during calls to
+        \texttt{bst\_find()} and \texttt{bst\_insert()}. The global
+        variable \texttt{lookups} should be defined in \texttt{ht.c} and
+        the global variable \texttt{branches} should be defined in
+        \texttt{bst.c}.
+    \end{itemize}
+\end{itemize}

@@ -1,0 +1,41 @@
+\section{Sine and Cosine}\label{section:sincos}
+
+The sine and cosine functions repeat over the interval $[-2\pi, 2\pi]$. That is,
+$\sin(x)=\sin(x +2k\pi)$ and $\cos(x)=\cos(x +2k\pi)$ for every integer $k$.
+Centering their series around $0$ makes computation simpler and more efficient.
+
+The Taylor series for $\sin(x)$
+centered about $0$ is:
+$$
+\sin(x)= \sum_{k=0}^{\infty} (-1)^k \frac{x^{2k + 1}}{(2k +1)!}.
+$$
+If we expand a few terms, then we get:
+$$
+  \sin(x) = x - \mlterm{3} + \mlterm{5} - \mlterm{7} + \mlterm{9} - \mlterm{11}
+              + \mlterm{13} + \operatorname{O}(x^{14}).
+$$
+
+We can implement this series as a simple loop. We will continue the loop until
+the last term is less than the error we have agreed is acceptable. Why not loop
+until it reaches \emph{zero}? Think about it: $\texttt{float} \ne {\mathbb R}$.
+
+\begin{pylisting}{Implementation of $\sin(x)$}
+def sin(x, epsilon = 1e-14):
+    s, v, t, k = 1.0, x, x, 3.0
+    while abs(t) > epsilon:
+        t = t * (x * x) / ((k - 1) * k)
+        s = -s
+        v += s * t
+        k += 2.0
+    return v
+\end{pylisting}
+
+The series for $\cos(x)$ centered about $0$ is:
+$$
+\cos(x)= \sum_{k=0}^{\infty} (-1)^k \frac{x^{2k}}{(2k)!} .
+$$
+If we expand a few terms, then we get:
+$$
+  \cos(x) = 1 - \mlterm{2} + \mlterm{4} - \mlterm{6} + \mlterm{8} - \mlterm{10}
+              + \mlterm{12} + \operatorname{O}(x^{14}).
+$$

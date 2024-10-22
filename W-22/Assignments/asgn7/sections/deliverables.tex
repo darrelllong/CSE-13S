@@ -1,0 +1,107 @@
+\section{Deliverables}
+
+\noindent You will need to turn in the following source code and header files:
+
+\begin{enumerate}
+  \item \texttt{bf.h}: Defines the interface for the Bloom filter ADT.
+    \textcolor{red}{Do not modify this.}
+
+  \item \texttt{bf.c}: Contains the implementation of the Bloom filter
+    ADT.
+
+  \item \texttt{bv.h}: Defines the interface for the bit vector ADT.
+    \textcolor{red}{Do not modify this.}
+
+  \item \texttt{bv.c}: Contains the implementation of the bit vector
+    ADT.
+
+  \item \texttt{ht.h}: Defines the interface for the hash table ADT and the hash
+    table iterator ADT. \textcolor{red}{Do not modify this.}
+
+  \item \texttt{ht.c}: Contains the implementation of the hash table
+    ADT and the hash table iterator ADT.
+
+  \item \texttt{identify.c}: Contains \texttt{main()} and the implementation of
+    the author identification program.
+
+  \item \texttt{metric.h}: Defines the enumeration for the distance metrics and
+    their respective names stored in an array of strings. \textcolor{red}{Do not
+    modify this.}
+
+  \item \texttt{node.h}: Defines the interface for the node ADT.
+    \textcolor{red}{Do not modify this.}
+
+  \item \texttt{node.c}: Contains the implementation of the node ADT.
+
+  \item \texttt{parser.h}: Defines the interface for the regex parsing
+    module. \textcolor{red}{Do not modify this.}
+
+  \item \texttt{parser.c}: Contains the implementation of the regex
+    parsing module.
+
+  \item \texttt{pq.h}: Defines the interface for the priority queue ADT.
+    \textcolor{red}{Do not modify this.}
+
+  \item \texttt{pq.c}: Contains the implementation for the priority queue ADT.
+
+  \item \texttt{salts.h}: Defines the primary, secondary, and tertiary
+    salts to be used in your Bloom filter implementation. Also defines
+    the salt used by the hash table in your hash table implementation.
+
+  \item \texttt{speck.h}: Defines the interface for the hash function
+    using the SPECK cipher. \textcolor{red}{Do not modify this.}
+
+  \item \texttt{speck.c}: Contains the implementation of the hash
+    function using the SPECK cipher. \textcolor{red}{Do not modify this.}
+
+  \item \texttt{text.h}: Defines the interface for the text ADT.
+    \textcolor{red}{Do not modify this.}
+
+  \item \texttt{text.c}: Contains the implementation for the text ADT.
+\end{enumerate}
+
+You may have other source and header files, but \emph{do not try to be
+overly clever}. You will also need to turn in the following:
+
+\begin{enumerate}
+  \item \texttt{Makefile}: This is a file that will allow the grader to
+    type \texttt{make} to compile your program.
+
+    \begin{itemize}
+      \item \texttt{CC = clang} must be specified.
+      \item \texttt{CFLAGS = -Wall -Wextra -Werror -Wpedantic}
+        must be included.
+      \item \texttt{make} should build the \texttt{identify}
+        executable, as should \texttt{make all} and \texttt{make
+        identify}.
+      \item \texttt{make clean} must remove all files that are compiler
+        generated.
+      \item \texttt{make format} should format all your source code,
+        including the header files.
+    \end{itemize}
+
+  \item Your code must pass \texttt{scan-build} \emph{cleanly}. If there
+    are any bugs or errors that are false positives, document them and
+    explain why they are false positives in your \texttt{README.md}.
+
+  \item \texttt{README.md}: This must be in \emph{Markdown}. This must
+    describe how to use your program and \texttt{Makefile}. This
+    includes listing and explaining the command-line options that your
+    program accepts. Any false positives reported by \texttt{scan-build}
+    should go here as well.
+
+  \item \texttt{DESIGN.pdf}: This \emph{must} be a PDF. The design
+    document should describe your design for your program with enough
+    detail that a sufficiently knowledgeable programmer would be able to
+    replicate your implementation. This does not mean copying your
+    entire program in verbatim. You should instead describe how your
+    program works with supporting pseudocode. For this program, pay
+    extra attention to how you build each necessary component.
+
+  \item \texttt{WRITEUP.pdf}: This document \emph{must} be a PDF. The
+    writeup must discuss what you observe about your program's behavior as you
+    tune the number of noise words that are filtered out and the amount of text
+    that you feed your program. Does your program accurately identify the author
+    for a small passage of text? What about a large passage of text? How do the
+    different metrics (Euclidean, Manhattan, Cosine) compare against each other?
+\end{enumerate}

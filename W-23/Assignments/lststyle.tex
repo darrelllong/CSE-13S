@@ -1,0 +1,152 @@
+\usepackage[most]{tcolorbox}
+
+\definecolor{cblack}{HTML}{161616}
+\definecolor{cgray}{HTML}{676767}
+\definecolor{cred}{HTML}{FD4285}
+\definecolor{cgreen}{HTML}{A6E22D}
+\definecolor{cyellow}{HTML}{E5DA72}
+\definecolor{corange}{HTML}{FD9720}
+\definecolor{cblue}{HTML}{0094D8}
+\definecolor{cmagenta}{HTML}{9A37FF}
+\definecolor{ccyan}{HTML}{50B6D8}
+\definecolor{cwhite}{HTML}{C7C7C7}
+
+\lstloadlanguages{C,C++,make,python,fortran,bash}
+
+\newtcolorbox{prelab}[1]{
+  colback=red!5!white, colframe=red!75!black, title=#1
+}
+
+\newcommand\Warning{%
+ \makebox[1.4em][c]{%
+ \makebox[0pt][c]{\raisebox{.1em}{\small!}}%
+ \makebox[0pt][c]{\color{red}\Large$\bigtriangleup$}}}%
+
+\lstdefinestyle{c99}{
+  language=C++,
+  upquote=true,
+  backgroundcolor=\color{cblack},
+  emphstyle=\color{ccyan},
+  emph={
+    int,
+    void,
+    char,
+    long,
+    float,
+    double,
+    signed, unsigned
+    int8_t, int16_t, int32_t, uint64_t,
+    uint8_t, uint16_t, uint32_t, uuint64_t,
+  },
+  keywordstyle=\color{cred},
+  keywordstyle=[2]\color{cgreen},
+  morekeywords=[2]{main,printf,getopt,random,srandom,scanf,fprintf,puts},
+  stringstyle=\color{cyellow},
+  directivestyle=\color{cmagenta},
+  commentstyle=\color{cgray},
+  identifierstyle=\color{cwhite},
+  numberstyle=\ttfamily\color{corange},
+  basicstyle=\footnotesize\ttfamily\color{cwhite},
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  keepspaces=true,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  numbers=left,
+  numbersep=7pt,
+  xleftmargin=10pt,
+  tabsize=4
+}
+
+\lstdefinestyle{python}{
+  language=python,
+  upquote=true,
+  backgroundcolor=\color{cblack},
+  keywordstyle=\color{cred},
+  keywordstyle=[2]\color{cgreen},
+  morekeywords=[2]{main,print,sqrt},
+  stringstyle=\color{cyellow},
+  commentstyle=\color{cgray},
+  identifierstyle=\color{cwhite},
+  numberstyle=\ttfamily\color{corange},
+  basicstyle=\footnotesize\ttfamily\color{cwhite},
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  keepspaces=true,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  numbers=left,
+  numbersep=7pt,
+  xleftmargin=10pt,
+  tabsize=4
+}
+
+\lstdefinestyle{bash}{
+  language=bash,
+  upquote=true,
+  backgroundcolor=\color{cblack},
+  keywordstyle=\color{cwhite},
+  keywordstyle=[2]\color{cwhite},
+  morekeywords=[2]{main,print,sqrt},
+  stringstyle=\color{cyellow},
+  commentstyle=\color{cgray},
+  identifierstyle=\color{cwhite},
+  basicstyle=\footnotesize\ttfamily\color{cwhite},
+  numbers=none,
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  keepspaces=true,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  xleftmargin=-5pt,
+  tabsize=4
+}
+
+\newtcblisting{clisting}[2][]{
+  title=#2, #1,
+  fonttitle=\footnotesize\bfseries,
+  colframe=black!75,
+  colback=cblack,
+  listing only,
+  listing options={style=c99},
+  top=-5pt,
+  bottom=-5pt,
+  enlarge top by=5pt
+}
+
+\newtcblisting{pylisting}[2][]{
+  title=#2, #1,
+  fonttitle=\footnotesize\bfseries,
+  colframe=black!75,
+  colback=cblack,
+  listing only,
+  listing options={style=python},
+  top=-5pt,
+  bottom=-5pt,
+  enlarge top by=5pt
+}
+
+\newtcblisting{shlisting}[2][]{
+  title=#2, #1,
+  fonttitle=\footnotesize\bfseries,
+  colframe=black!75,
+  colback=cblack,
+  listing only,
+  listing options={style=bash},
+  top=-5pt,
+  bottom=-5pt,
+  enlarge top by=5pt
+}
+
+\hypersetup{
+  colorlinks,
+  linkcolor={green!80!black},
+  citecolor={red!70!black},
+  urlcolor={blue!70!black}
+}

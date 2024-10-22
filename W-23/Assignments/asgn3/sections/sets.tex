@@ -1,0 +1,159 @@
+\section{Sets}
+
+For this assignment, you are required to use a \emph{set} to track which
+command-line options are specified when your program is run. The
+function declarations for sets is given in the resources repository in
+\texttt{set.h}. \textcolor{red}{You may not modify this file.}
+
+You are tasked with implementing the functions listed within
+\texttt{set.h} in a separate file named \texttt{set.c}.  In the context
+of this assignment, a \texttt{Set} is nothing more than a type alias for
+a $32$ bit integer.  As you should recall from CSE 12, a bit may have
+one of two states, either $0$ or $1$.  Membership of a set will be
+handled similarly, either an index is a member of the set, or it isn't.
+Every bit within the set represents membership of a different element
+up until a maximum of $32$ possible elements, numbered $0$ through $31$
+inclusively.
+
+For manipulating the bits in a set, we use bit-wise operators. These
+operators, as the name suggests, will perform an operation on every bit
+in a number. The following are the six bit-wise operators specified in
+\textbf{C}:
+
+\begin{center}
+  \begin{tabular}{|c|l|l|}
+    \hline
+    \verb|&| & bit-wise AND & Performs the AND operation on every bit
+    of two numbers. \\
+    \hline
+    \verb||| & bit-wise OR & Performs the OR operation on every bit of
+    two numbers. \\
+    \hline
+    \verb|~| & bit-wise NOT & Inverts all bits in the given number. \\
+    \hline
+    \verb|^| & bit-wise XOR & Performs the exclusive-OR operation on
+    every bit of two numbers. \\
+    \hline
+    \verb|<<| & left shift & Shifts bits in a number to the left by a
+    specified number of bits. \\
+    \hline
+    \verb|>>| & right shift & Shifts bits in a number to the right by a
+    specified number of bits. \\
+    \hline
+  \end{tabular}
+\end{center}
+
+\noindent Recall that the basic set operations are: \emph{membership},
+\emph{union}, \emph{intersection} and \emph{negation}.  Using these
+functions, you will set (make the bit 1) or clear (make the bit 0) bits
+in the \texttt{Set} depending on the command-line options read by
+\texttt{getopt()}. You can then check the states of all the bits (the
+members) of the \texttt{Set} using a single \texttt{for} loop and
+execute the corresponding sort. Note: you most likely won't use all the
+functions, but you \emph{must} use sets to track which command-line
+options are specified when running your program.
+
+\begin{funcdoc}{\texttt{Set set\_empty(void)}}
+  This function is used to return an empty set. In this context, an empty
+  set would be a set in which all bits are equal to 0.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{Set set\_universal(void)}}
+  This function is used to return a set in which every possible member
+  is part of the set.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{Set set\_insert(Set s, uint8\_t x)}}
+  This function inserts \texttt{x} into \texttt{s}. That is, it returns
+  set \texttt{s} with the bit corresponding to \texttt{x} set to 1.
+  Here, the bit is set using the bit-wise OR operator. The first operand
+  for the OR operation is the set \texttt{s}. The second operand is
+  value obtained by left shifting 1 by \texttt{x} number of bits.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{Set set\_remove(Set s, uint8\_t x)}}
+
+\begin{align*}
+  s - x = \{y | y \in s \land y \ne x\}
+\end{align*}
+
+  This function deletes (removes) \texttt{x} from \texttt{s}. That is,
+  it returns set \texttt{s} with the bit corresponding to \texttt{x}
+  cleared to 0. Here, the bit is cleared using the bit-wise AND
+  operator. The first operand for the AND operation is the set
+  \texttt{s}. The second operand is a negation of the number 1 left
+  shifted to the same position that \texttt{x} would occupy in the set.
+  This means that the bits of the second operand are all 1s except for
+  the bit at \texttt{x}'s position. The function returns set \texttt{s}
+  after removing \texttt{x}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool set\_member(Set s, uint8\_t x)}}
+
+\begin{align*}
+  x \in s \iff x\, \text{is a member of set}\, s
+\end{align*}
+
+  \noindent This function returns a \texttt{bool} indicating the
+  presence of the given value \texttt{x} in the set \texttt{s}. The
+  bit-wise AND operator is used to determine set membership. The first
+  operand for the AND operation is the set \texttt{s}. The second
+  operand is the value obtained by left shifting 1 \texttt{x} number of
+  times. If the result of the AND operation is a non-zero value, then
+  \texttt{x} is a member of \texttt{s} and \texttt{true} is returned to
+  indicate this. \texttt{false} is returned if the result of the AND
+  operation is 0.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{Set set\_union(Set s, Set t)}}
+
+\begin{align*}
+  s \cup t = \{x | x \in s \lor x \in  t\}
+\end{align*}
+
+  \noindent The union of two sets is a collection of all elements in
+  both sets. Here, to calculate the union of the two sets \texttt{s} and
+  \texttt{t}, we need to use the OR operator. Only the bits
+  corresponding to members that are equal to 1 in either \texttt{s} or
+  \texttt{t} are in the new set returned by the function.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{Set set\_intersect(Set s, Set t)}}
+
+\begin{align*}
+  s \cap t = \{x | x \in s \land x \in  t\}
+\end{align*}
+
+  \noindent The intersection of two sets is a collection of elements that
+  are common to both sets. Here, to calculate the intersection of the
+  two sets \texttt{s} and \texttt{t}, we need to use the AND operator.
+  Only the bits corresponding to members that are equal to 1 in both
+  \texttt{s} and \texttt{t} are in the new set returned by the function.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{Set set\_difference(Set s, Set t)}}
+  The difference of two sets refers to the elements of set \texttt{s}
+  which are not in set \texttt{t}. In other words, it refers to the
+  members of set \texttt{s} that are unique to set \texttt{s}. The
+  difference is calculated using the AND operator where the two operands
+  are set \texttt{s} and the negation of set \texttt{t}. The function
+  then returns the set of elements in \texttt{s} that are not in
+  \texttt{t}.
+
+  This function can be used to find the complement of a given set as well,
+  in which case the first operand would be the universal set $\mathbb{U}$
+  and the second operand would be the set you want to complement as shown
+  below.
+\end{funcdoc}
+
+\begin{align*}
+  \overline{s} = \{ x | x \notin s\} = \mathbb{U} -s
+\end{align*}
+
+\begin{funcdoc}{\texttt{Set set\_complement(Set s)}}
+  This function is used to return the complement of a given set. By
+  complement we mean that all bits in the set are flipped using the NOT
+  operator. Thus, the set that is returned contains all the elements of
+  the universal set $\mathbb{U}$ that are not in \texttt{s} and contains
+  none of the elements that are present in \texttt{s}.
+\end{funcdoc}

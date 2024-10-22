@@ -1,0 +1,12 @@
+$ ./identify -k 10 < texts/william-shakespeare.txt
+Top 10, metric: Euclidean distance, noise limit: 100
+1) William Shakespeare [0.000000000000000]
+2) William D. McClintock [0.026516404305561]
+3) Dante Alighieri [0.026865145178097]
+4) Edgar Allan Poe [0.027829100437714]
+5) Johann Wolfgang von Goethe [0.027873601844574]
+6) Henry Timrod [0.028370953256889]
+7) Lew Wallace [0.028546232963706]
+8) Saxo Grammaticus [0.029282174356059]
+9) Rudyard Kipling [0.029385152618790]
+10) Various [0.029410943073263]

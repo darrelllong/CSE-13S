@@ -1,0 +1,75 @@
+\section{Deliverables}
+
+You will need to turn in the following source code and header files:
+
+\begin{enumerate}
+  \item \texttt{bbp.c}: This contains the implementation of the
+    Bailey-Borwein-Plouffe formula to approximate $\pi$ and the function
+    to return the number of computed terms.
+  \item \texttt{e.c}: This contains the implementation of the Taylor
+    series to approximate Euler's number $e$ and the function to return
+    the number of computed terms.
+  \item \texttt{euler.c}: This contains the implementation of Euler's
+    solution used to approximate $\pi$ and the function to return the
+    number of computed terms.
+  \item \texttt{madhava.c}: This contains the implementation of the
+    Madhava series to approximate $\pi$ and the function to return the
+    number of computed terms.
+  \item \texttt{mathlib-test.c}: This contains the \texttt{main()}
+    function which tests each of your math library functions.
+  \item \texttt{mathlib.h}: This contains the interface for your math
+    library.
+  \item \texttt{newton.c}: This contains the implementation of the
+    square root approximation using Newton's method and the function to
+    return the number of computed iterations.
+  \item \texttt{viete.c}: This contains the implementation of
+    Vi\`{e}te's formula to approximate $\pi$ and the function to return
+    the number of computed factors.
+\end{enumerate}
+
+You may have other source and header files, but \emph{do not make things
+over complicated}. \textcolor{red}{Any additional source code and header
+files that you may use must not use global variables.}
+You will also need to turn in the following:
+
+\begin{enumerate}
+  \item \texttt{Makefile}:
+    \begin{itemize}
+      \item \texttt{CC = clang} must be specified.
+      \item \texttt{CFLAGS = -Wall -Wextra -Werror -Wpedantic} must be specified.
+      \item \texttt{make} must build the \texttt{mathlib-test}
+        executable, as should \texttt{make all} and \texttt{make
+        mathlib-test}.
+      \item \texttt{make clean} must remove all files that are compiler
+        generated.
+      \item \texttt{make format} should format all your source code,
+        including the header files.
+    \end{itemize}
+  \item \texttt{README.md}: This must use proper Markdown syntax. It
+    must describe how to use your program and \texttt{Makefile}. It
+    should also list and explain any command-line options that your
+    program accepts. Any false positives reported by \texttt{scan-build}
+    should be documented and explained here as well. Note down any known
+    bugs or errors in this file as well for the graders.
+  \item \texttt{DESIGN.pdf}: This document \emph{must} be a proper
+    PDF\@. This design document must describe your design and design
+    process for your program with enough detail such that a sufficiently
+    knowledgeable programmer would be able to replicate your
+    implementation. \textcolor{red}{This does not mean copying your
+    entire program in verbatim}. You should instead describe how your
+    program works with supporting pseudocode.
+  \item \texttt{WRITEUP.pdf}: This document \emph{must} be a proper
+    PDF\@. This writeup must include, at least, the following:
+      \begin{itemize}
+        \item Graphs displaying the difference between the values
+          reported by your implemented functions and that of the math
+          library's. Use a \textsc{Unix} tool --- not some website ---
+          to produce these graphs. \texttt{gnuplot} is recommended.
+          Attend section for examples of using \texttt{gnuplot} and
+          other \textsc{Unix} tools. An example script for using
+          \texttt{gnuplot} to help plot your graphs will be supplied in
+          the resources repository.
+        \item Analysis and explanations for any discrepancies and
+          findings that you glean from your testing.
+      \end{itemize}
+\end{enumerate}

@@ -1,0 +1,332 @@
+\section{An Small Example}
+\epigraphwidth=0.3\textwidth
+\epigraph{\emph{I don't like half the folks I love.}}{---Paul Thorn}
+
+We will now go through a simple example of Huffman encoding and
+decoding. Assume we are encoding the input \texttt{banana}. We will need
+to create a histogram of the input.
+
+\begin{center}
+  \begin{tabular}{ |c|c| }
+   \hline
+     Symbol & Frequency \\
+   \hline
+     \texttt{a} & 3 \\
+   \hline
+     \texttt{b} & 1 \\
+   \hline
+     \texttt{n} & 2 \\
+   \hline
+  \end{tabular}
+\end{center}
+
+Nodes corresponding to each symbol are then placed into a priority
+queue. The lower the frequency of the symbol, the higher the priority of
+its corresponding node. The priority queue will be visually represented
+using a \emph{min heap}. The priority queue is used to construct the
+Huffman tree, which will be shown alongside the priority queue. The
+Huffman tree is initially empty.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.4\linewidth}
+    \centering
+    \begin{forest} for tree={circle,draw,inner sep=5pt,l=10pt,l sep=6pt,s sep=14pt}
+      [\texttt{b:1}
+        [\texttt{a:3}]
+        [\texttt{n:2}]
+      ]
+    \end{forest}
+    \caption{Priority queue}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\linewidth}
+    \caption{Huffman tree}
+  \end{subfigure}
+\end{figure}
+
+First, we dequeue the node containing \texttt{b}. After fixing the heap,
+we dequeue the node containing \texttt{s}. We have now dequeued the two
+nodes of highest priority. We \emph{join} the dequeued nodes together
+into a new node, giving it the symbol \texttt{\$}. The frequency of the
+new node is the sum of the frequency of \texttt{b} and the frequency of
+\texttt{s}. The new node is then enqueued.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.4\linewidth}
+    \centering
+    \begin{forest} for tree={circle,draw,inner sep=5pt,l=10pt,l sep=6pt,s sep=14pt}
+      [\texttt{a:3}
+        [\texttt{\$:3}]
+        [,phantom]
+      ]
+    \end{forest}
+    \caption{Priority queue}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\linewidth}
+    \centering
+      \begin{forest} for tree={circle,draw,inner sep=5pt,l=10pt,l sep=6pt,s sep=14pt}
+        [\texttt{\$:3}
+          [\texttt{b:1}]
+          [\texttt{n:2}]
+        ]
+      \end{forest}
+    \caption{Huffman tree}
+  \end{subfigure}
+\end{figure}
+
+We repeat the same step of dequeuing two nodes and joining them
+together.
+We will give the new node the symbol \texttt{!}, just for
+distinction. The new node is then enqueued.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.4\linewidth}
+    \centering
+    \begin{forest} for tree={circle,draw,inner sep=5pt,l=10pt,l sep=6pt,s sep=14pt}
+      [\texttt{!:6}]
+    \end{forest}
+    \caption{Priority queue}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\linewidth}
+    \centering
+      \begin{forest} for tree={circle,draw,inner sep=5pt,l=10pt,l sep=6pt,s sep=14pt}
+        [\texttt{!:6}
+          [\texttt{a:3}]
+          [\texttt{\$:3}
+            [\texttt{b:1}]
+            [\texttt{n:2}]
+          ]
+        ]
+      \end{forest}
+    \caption{Huffman tree}
+  \end{subfigure}
+\end{figure}
+
+We stop when there is exactly one node left in the priority queue. The
+remaining node is the root of the constructed Huffman tree. Here is some
+Python pseudocode to help with the construction of the Huffman tree.
+
+\begin{pylisting}{}
+def construct(q):
+    while len(q) > 1:
+        left = dequeue(q)
+        right = dequeue(q)
+        parent = join(left, right)
+        enqueue(q, parent)
+    root = dequeue(q)
+    return root
+\end{pylisting}
+
+We will now proceed to assign unique codes to each symbol by traversing
+the tree. Here is some more Python pseudocode to help with the building
+of the codes.
+
+\begin{pylisting}{}
+Code c = code_init()
+
+def build(node, table):
+    if node is not None:
+        if not node.left and not node.right:
+            table[node.symbol] = c
+        else:
+            push_bit(c, 0)
+            build(node.left, table)
+            pop_bit(c)
+
+            push_bit(c, 1)
+            build(node.right, table)
+            pop_bit(c)
+\end{pylisting}
+
+The assigned codes after building the tree is shown in the following
+code table:
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.4\linewidth}
+    \centering
+    \begin{tabular}{ |c|c| }
+     \hline
+       Symbol & Code \\
+     \hline
+       \texttt{a} & 0 \\
+     \hline
+       \texttt{b} & 10 \\
+     \hline
+       \texttt{n} & 11 \\
+     \hline
+    \end{tabular}
+    \caption{Code table}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\linewidth}
+    \centering
+      \begin{forest} for tree={circle,draw,inner sep=5pt,l=10pt,l sep=6pt,s sep=14pt}
+        [\texttt{!:6}
+          [\texttt{a:3}, edge label={node[midway,above left,font=\scriptsize]{0}}]
+          [\texttt{\$:3}, edge label={node[midway,above right,font=\scriptsize]{1}}
+            [\texttt{b:1}, edge label={node[midway,above left,font=\scriptsize]{0}}]
+            [\texttt{n:2}, edge label={node[midway,above right,font=\scriptsize]{1}}]
+          ]
+        ]
+      \end{forest}
+    \caption{Huffman tree}
+  \end{subfigure}
+\end{figure}
+
+Next, we dump the constructed tree and output the encoding of the input.
+The tree dump produced through the post-order traversal of the tree
+following the specification of \texttt{dump\_tree()}: \texttt{LaLbLnII}.
+Here is some Python pseudocode to help with the dumping of the tree.
+
+\begin{pylisting}{}
+def dump(outfile, root):
+    if root:
+        dump(outfile, root.left)
+        dump(outfile, root.right)
+
+        if not root.left and not root.right:
+            # Leaf node.
+            write('L')
+            write(node.symbol)
+        else:
+            # Interior node.
+            write('I')
+\end{pylisting}
+
+All that remains is to iterate over each symbol in the input,
+\texttt{banana}, and emit each symbol's corresponding code. The binary
+emitted, written from the \textbf{least significant bit (LSB)} to the
+\textbf{most significant bit (MSB)}, is: \texttt{100110110}.
+
+To decode this, we need to first reconstruct the Huffman tree from its
+tree dump. We iterate over the tree dump (\texttt{LaLbLnII}), following
+the algorithm described in step (\ref{rebuild}) in
+\S\ref{decoder_specifics}. The first symbol we push onto the stack is
+\texttt{a}. The frequency of the node is not of particular importance,
+so we leave it as 0.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.4\linewidth}
+    \centering
+    \begin{tikzpicture}[stack/.style={rectangle split, rectangle split parts=#1,draw, anchor=center}]
+      \node[stack=5]  {
+        \nodepart{five}\texttt{a:0}
+      };
+    \end{tikzpicture}
+    \caption{Stack}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\linewidth}
+    \caption{Huffman tree}
+  \end{subfigure}
+\end{figure}
+
+The next symbol we push onto the stack is \texttt{b}.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.4\linewidth}
+    \centering
+    \begin{tikzpicture}[stack/.style={rectangle split, rectangle split parts=#1,draw, anchor=center}]
+      \node[stack=5]  {
+        \nodepart{four}\texttt{b:0}
+        \nodepart{five}\texttt{a:0}
+      };
+    \end{tikzpicture}
+    \caption{Stack}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\linewidth}
+    \caption{Huffman tree}
+  \end{subfigure}
+\end{figure}
+
+The last symbol we push onto the stack is \texttt{n}.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.4\linewidth}
+    \centering
+    \begin{tikzpicture}[stack/.style={rectangle split, rectangle split parts=#1,draw, anchor=center}]
+      \node[stack=5]  {
+        \nodepart{three}\texttt{n:0}
+        \nodepart{four}\texttt{b:0}
+        \nodepart{five}\texttt{a:0}
+      };
+    \end{tikzpicture}
+    \caption{Stack}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\linewidth}
+    \centering
+    \caption{Huffman tree}
+  \end{subfigure}
+\end{figure}
+
+Continuing the iteration, we encounter our first \texttt{`I'}. This
+means we pop the stack twice to obtain two nodes. The first node popped
+is the right child and the second node is the left child. The nodes are
+joined together and the newly created node is pushed onto the stack.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.4\linewidth}
+    \centering
+    \begin{tikzpicture}[stack/.style={rectangle split, rectangle split parts=#1,draw, anchor=center}]
+      \node[stack=5]  {
+        \nodepart{four}\texttt{\$:0}
+        \nodepart{five}\texttt{a:0}
+      };
+    \end{tikzpicture}
+    \caption{Stack}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\linewidth}
+      \centering
+      \begin{forest} for tree={circle,draw,inner sep=5pt,l=10pt,l sep=6pt,s sep=14pt}
+        [\texttt{\$:0}
+          [\texttt{b:0}]
+          [\texttt{n:0}]
+        ]
+      \end{forest}
+    \caption{Huffman tree}
+  \end{subfigure}
+\end{figure}
+
+We encounter another \texttt{`I'}. We repeat what was done before,
+popping two nodes, joining them, and pushing the joined node onto the
+stack. Like with the encoding example previously, the joined node's
+symbol is set to \texttt{!} for distinction.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.4\linewidth}
+    \centering
+    \begin{tikzpicture}[stack/.style={rectangle split, rectangle split parts=#1,draw, anchor=center}]
+      \node[stack=5]  {
+        \nodepart{five}\texttt{!:0}
+      };
+    \end{tikzpicture}
+    \caption{Stack}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\linewidth}
+      \centering
+      \begin{forest} for tree={circle,draw,inner sep=5pt,l=10pt,l sep=6pt,s sep=14pt}
+        [\texttt{!:0}
+          [\texttt{a:0}, edge label={node[midway,above left,font=\scriptsize]{0}}]
+          [\texttt{\$:0}, edge label={node[midway,above right,font=\scriptsize]{1}}
+            [\texttt{b:0}, edge label={node[midway,above left,font=\scriptsize]{0}}]
+            [\texttt{n:0}, edge label={node[midway,above right,font=\scriptsize]{1}}]
+          ]
+        ]
+      \end{forest}
+    \caption{Huffman tree}
+  \end{subfigure}
+\end{figure}
+
+The last node in the stack is the root of the reconstructed Huffman
+tree. To decode the encoded input, we iterate over the emitted binary:
+\texttt{100110110}. Starting from the root of the tree, we walk down to
+the left child on a 0-bit and walk down to the right child on a 1-bit.
+Whenever a leaf is reached, we output its symbol and reset back to the
+root of the tree. Following this procedure produces the decoded output:
+\texttt{banana}.

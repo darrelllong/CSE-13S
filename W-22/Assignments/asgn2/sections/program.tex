@@ -1,0 +1,106 @@
+\section{The Main Program}
+
+\epigraphwidth=0.6\textwidth
+\epigraph{\emph{A few dud universes can really clutter up your
+basement.}} {---Neal Stephenson, \emph{In the Beginning\ldots Was the
+Command Line}}
+
+\noindent As stated in \S\ref{section:task}, you are expected to write a
+dedicated program, \texttt{integrate}, that computes the numerical
+integration of a function over a specified interval using the composite
+Simpson's rule. This program, implemented in \texttt{integrate.c}, must
+use \texttt{getopt()} and must accept the following command-line
+options:
+
+\begin{itemize}
+  \item \textbf{\texttt{-a}} : Sets the function to integrate to
+    $\sqrt{1 - x^4}$.
+  \item \textbf{\texttt{-b}} : Sets the function to integrate to
+    ${1}/{\log(x)}$.
+  \item \textbf{\texttt{-c}} : Sets the function to integrate to
+    $e^{-x^2}$.
+  \item \textbf{\texttt{-d}} : Sets the function to integrate to
+    $\sin(x^2)$.
+  \item \textbf{\texttt{-e}} : Sets the function to integrate to
+    $\cos(x^2)$.
+  \item \textbf{\texttt{-f}} : Sets the function to integrate to
+    $\log(\log(x))$.
+  \item \textbf{\texttt{-g}} : Sets the function to integrate to
+    ${\sin(x)}/{x}$.
+  \item \textbf{\texttt{-h}} : Sets the function to integrate to
+    ${e^{-x}}/{x}$.
+  \item \textbf{\texttt{-i}} : Sets the function to integrate to
+    $e^{e^x}$.
+\item \textbf{\texttt{-j}} : Sets the function to integrate to $\sqrt{\sin^2(x) + \cos^2(x)}$.
+  \item \textbf{\texttt{-n partitions}} : Sets the upper limit of
+    partitions to use in the composite Simpson's rule to
+    \texttt{partitions}. This should have a default value of 100.
+  \item \textbf{\texttt{-p low}} : Sets the low end of the interval to
+    integrate over to \texttt{low}. This \emph{should not} have a
+    default value and must be specified each time the program is run.
+  \item \textbf{\texttt{-q high}} : Sets the high end of the interval to
+    integrate over to \texttt{high}. This \emph{should not} have a
+    default value and must be specified each time the program is run.
+  \item \textbf{\texttt{-H}} : Displays the program's usage and
+    synopsis.
+\end{itemize}
+
+The functions you will integrate will be provided to you in the
+\texttt{functions.c} file in the resources repository. Each function is
+implemented using functions from \emph{your} math library, so be sure to finish
+the library first.
+
+You are given Table \ref{table:values}, as well as a working reference program
+in the resources repository, for you to compare the results of your numerical
+integrations against. Each function should be integrated using \emph{even}
+numbered partitions from $2, 4, \ldots,n-2, n$, where $n$ is the specified upper
+partition limit. The output of your program \emph{must} be formatted as follow:
+
+\begin{shlisting}{}
+$ ./integrate -a -p 0.0 -q 1.0 -n 10
+sqrt(1 - x^4),0.000000,1.000000,10
+2,0.812163891034571
+4,0.852988388966857
+6,0.862714108378597
+8,0.866720323920874
+10,0.868814915051592
+\end{shlisting}
+
+The first line of output should be
+\texttt{<function>,<low>,<high>,<partitions>}. The subsequent lines
+should be \texttt{<partition>,<value>}, where \texttt{value} is the
+approximated integrated value. Commas should be used as the delimiting
+character. This format will help you plot your results in your
+assignment writeup.
+
+\def\fz{\phantom{x}}
+\begin{table}\label{fns}
+  \centering
+  \caption{Table of approximated values.}\label{table:values}
+  \medskip
+  \begin{tabular}{lrrr}
+    \toprule
+    \multicolumn{1}{c}{Integral} & \multicolumn{1}{c}{Low} &
+    \multicolumn{1}{c}{High} & \multicolumn{1}{c}{Value} \\
+    \midrule
+    $\sqrt{1-x^4}$ & $0$ & $1$ & 0.87401918476405\fz\fz \\
+    ${1}/{\log(x)}$ & $2$ & $3$ & 1.118424814549702\fz \\
+    $e^{-x^2}$ & $-10$ & $10$ & 1.772453850905508\fz \\
+    $\sin(x^2)$ & $-\pi$ & $\pi$ & 1.545303425380133\fz \\
+    $\cos(x^2)$ & $-\pi$ & $\pi$ & 1.131387027213366\fz \\
+    $\log(\log(x))$ & $2$ & $10$ & 3.952914142858876\fz \\
+    ${\sin(x)}/{x}$& $-4\pi$ & $4\pi$ & 2.984322451168924\fz \\
+    ${e^{-x}}/{x}$ & $1$ & $10$ & 0.2193797774265986 \\
+    $e^{e^x}$ & $0$ & $1$ & 6.316563839027766\fz \\
+    $\sqrt{\sin^2(x)+\cos^2(x)}$ & 0 & $\pi$ & 3.141592653589797\fz \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The values that you compute should be close to Table\xspace\ref{table:values}.
+How close your approximations comes will depend on the number of intervals that
+you select. \emph{Do not just choose a large number}. An important task in
+numerical analysis is to understand what is necessary to gain the desired
+accuracy. Indeed, if you make the number of intervals \emph{too large} you will
+not only waste computing resources, but you may find that your accuracy
+\emph{goes down}.

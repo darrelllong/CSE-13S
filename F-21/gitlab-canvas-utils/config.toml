@@ -1,0 +1,10 @@
+canvas_url = "https://canvas.ucsc.edu"
+canvas_course_id = 47245
+canvas_token = '9270~I6eJffMzHBaKm31Jpp3fkMyOBHFpwRaG4LtU3mUM0MEdqau4xJ9sSAVligYrMS8p'
+course = "cse13s"
+quarter = "fall"
+year = "2021"
+gitlab_server = "https://git.ucsc.edu"
+gitlab_token = "<your token here>"
+gitlab_role = "developer"
+template_repo = "https://git.ucsc.edu/euchou/cse13s-template.git"

@@ -1,0 +1,892 @@
+\documentclass{article}
+\usepackage{fullpage,fourier,amsmath,amssymb}
+\usepackage{listings,color,url,hyperref}
+\usepackage{graphicx}
+\usepackage{epigraph,wrapfig}
+\usepackage[x11names]{xcolor}
+\usepackage{tcolorbox}
+\usepackage{gensymb}
+
+\title{Assignment 6\\The Great Firewall of Santa Cruz:\\Bloom Filters,
+Linked Lists and Hash Tables}
+\author{Prof. Darrell Long \\
+CSE 13S -- Winter 2020}
+\date{Due: March $1^\text{st}$ at 11:59 pm}
+
+\input{../footer}
+\input{../lststyle}
+
+\newtcolorbox{prelab}[1]{colback=red!5!white, colframe=red!75!black, title=#1}
+\lstset{language=C, style=c99}
+\lstdefinestyle{stylePython}{
+language = Python,
+}
+
+\begin{document}\maketitle
+
+\section{Introduction}
+\epigraphwidth=0.5\textwidth \epigraph{\emph{War is peace. Freedom
+is slavery. Ignorance is strength.}}{ ---George Orwell, 1984}
+
+\noindent
+You have been selected through thoroughly democratic processes (and the
+machinations of your friend Ernst Blofeld) to be the Dear and Beloved Leader
+of the Glorious People's Republic of Santa Cruz following the failure of the
+short-lived anarcho-syndicalist commune, where each person in turn acted as
+a form of executive officer for the week. In order to promote virtue and
+prevent vice, and to preserve social cohesion and discourage unrest, you have
+decided that the Internet content must be filtered so that your beloved
+children are not corrupted through the use of unfortunate, hurtful, offensive,
+and far too descriptive language.
+
+\section{Background}
+\epigraphwidth=0.75\textwidth
+\epigraph{\emph{The Ministry of Peace concerns itself with war, the Ministry
+of Truth with lies, the Ministry of Love with torture and the Ministry of
+Plenty with starvation. These contradictions are not accidental, nor do they
+result from from ordinary hypocrisy: they are deliberate exercises in
+\textbf{doublethink}.}}{---George Orwell, 1984}
+\subsection{Bloom Filters}
+\noindent
+The Internet is very large, very fast and full of \emph{badthink}. The masses
+spend their days sending each other cat videos. Your hero, Ernst Blofeld,
+decided that in his country of Pacifica that a more neutral \emph{newspeak}
+was required to keep the people content, pure, and from thinking
+too much. But how do you process so many words as they flow into
+your little country at $10\,$Gbits/second? The solution that comes to
+your brilliant and pure mind --- a \emph{Bloom filter}.
+\begin{wrapfigure}{r}{0.133\textwidth}
+\centering
+\includegraphics[width=0.130\textwidth]{1984-Big-Brother.jpg}
+\end{wrapfigure}
+
+
+A Bloom filter is similar to a hash table, where the entries in the hash table are simply
+single bits.  Consider \texttt{h(}\emph{text}\texttt{) = k}, then if $B_k = 0$
+then the entry is definitely missing; if $B_k = 1$ then the entry may be
+present. The latter is called a false positive, and the false positive rate
+depends on the size of the Bloom filter and the number of texts that hash to the
+same position (hash collisions).
+
+You assign your programming minions to take every \emph{potentially offensive}
+word that they can find in an English dictionary and hash them into the Bloom
+filter. That is, for each word the corresponding bit in the filter is set to
+$1$.
+
+You will make a Bloom filter with \emph{three} salts for \emph{three} different
+hash functions. Why? To reduce the chance of a \emph{false positive}.
+
+\lstset{language=C, style=c99}
+\begin{lstlisting}[title=bf.h]
+#ifndef NIL
+#define NIL (void *)0
+#endif
+
+#ifndef __BF_H__
+#define __BF_H__
+
+#include "bv.h"
+#include <inttypes.h>
+#include <stdbool.h>
+
+//
+// Struct definition for a BloomFilter.
+//
+// primary:     Primary hash function salt.
+// secondary:   Secondary hash function salt.
+// tertiary:    Tertiary hash function salt.
+// filter:      BitVector that determines membership of a key.
+//
+typedef struct BloomFilter {
+  uint64_t primary  [2]; // Provide for three different hash functions
+  uint64_t secondary[2];
+  uint64_t tertiary [2];
+  BitVector *filter;
+} BloomFilter;
+
+//
+// Constructor for a BloomFilter.
+//
+// size:  The number of entries in the BloomFilter.
+//
+BloomFilter *bf_create(uint32_t size);
+
+//
+// Destructor for a BloomFilter.
+//
+// bf:  The BloomFilter.
+//
+void bf_delete(BloomFilter *bf);
+
+//
+// Inserts a new key into the BloomFilter.
+// Indices to set bits are given by the  hash functions.
+//
+// bf:    The BloomFilter.
+// key:   The key to insert into the BloomFilter.
+//
+void bf_insert(BloomFilter *bf, char *key);
+
+//
+// Probes a BloomFilter to check if a key has been inserted.
+//
+// bf:    The BloomFilter.
+// key:   The key in which to check membership.
+//
+bool bf_probe(BloomFilter *bf, char *key);
+
+#endif
+\end{lstlisting}
+
+\begin{lstlisting}[title=bf.c]
+#include "bf.h"
+#include <stdlib.h>
+
+//
+// Constructor for a BloomFilter.
+//
+// size:  The number of entries in the BloomFilter.
+//
+BloomFilter *bf_create(uint32_t size) {
+  BloomFilter *bf = (BloomFilter *)malloc(sizeof(BloomFilter));
+  if (bf) {
+    bf->primary  [0] = 0xfc28ca6885711cf7; // U.S. Constitution
+    bf->primary  [1] = 0x2841af568222f773;
+    bf->secondary[0] = 0x85ae998311115ae3; // Il nome della rosa
+    bf->secondary[1] = 0xb6fac2ae33a40089;
+    bf->tertiary [0] = 0xd37b01df0ae8f8d0; // The Cremation of Sam McGee
+    bf->tertiary [1] = 0x911d454886ca7cf7;
+    bf->filter = bv_create(size);
+    return bf;
+  }
+  return (BloomFilter *)NIL;
+}
+
+// The rest of the functions you must implement yourselves.
+\end{lstlisting}
+
+A stream of words is passed to the Bloom filter. If the Bloom filter rejects all
+words then the person responsible is \emph{innocent} of a \emph{thoughtcrime}.
+But if any word has a corresponding bit set in the Bloom filter, it is likely
+that they are \emph{guilty} of a \emph{thoughtcrime}, and that is very ungood
+indeed. To make certain, we must consult the \emph{hash table} and if the word
+is there as a \emph{proscribed} word then they will be placed into the care of
+\emph{Miniluv} and is sent off to \emph{joycamp}.  If the word passed both Bloom
+filters and is not a forbidden word, the hash table will provide a translation
+that will replace offensive, insensitive, and otherwise dangerous words with new
+approved words. The advantage is that your government can augment this list at
+any time via the \emph{Minitrue}. Minitrue can also add words that you, in your wisdom, have determined are not wholesome for your
+people to use. Simply put, there are three cases to consider:
+
+\begin{enumerate}
+\item Words that are approved will \emph{not} appear in the Bloom filter.
+\item Words that should be replaced, which will have a mapping from the old
+    word, \emph{oldspeak}, to the new approved word, \emph{newspeak} (also
+    referred to as a \emph{translation}).
+\item Words without translations to new approved words means that it's
+    off to \emph{joycamp}.
+\end{enumerate}
+
+You will use the \emph{BitVector} data structure that you developed
+for \emph{Assignment 4} to implement your Bloom filter.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\medskip
+\begin{prelab}{Pre-lab Part 1}
+  \begin{enumerate}
+    \item Write down the pseudocode for inserting and deleting elements from a
+        Bloom filter.
+    \item Assuming that you are creating a bloom filter with $m$ bits and $k$ hash
+        functions, discuss its time and space complexity.
+  \end{enumerate}
+\end{prelab}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Hash Tables}
+\epigraph{\emph{To send men to the firing squad, judicial proof is unnecessary
+\ldots These procedures are an archaic bourgeois detail.}}{Ernesto Ch\'e
+Guevara}
+\noindent
+In general, rather than punish them, we would rather counsel them how to \emph{Rightspeak}. You
+decide that the easiest way to make word replacements is through a translation
+table, with entries of the form:
+
+\lstset{language=C, style=c99}
+\begin{lstlisting}[title=\texttt{GoodSpeak struct}]
+typedef struct GoodSpeak {
+  char *oldspeak;
+  char *newspeak;
+} GoodSpeak;
+\end{lstlisting}
+
+\begin{wrapfigure}{r}{0.133\textwidth}
+\centering
+\includegraphics[width=0.130\textwidth]{Blofeld.png}
+\end{wrapfigure}
+If a word is in your Bloom filter, then it is either a proscribed word or a word that needs to be translated by the hash table. You will use the hash
+table to locate that word. If it is found, the system
+helpfully provides the appropriate new improved word in its place.
+
+A hash table is one that is indexed by a function, \texttt{hash()}, applied to
+the \emph{key}. The key in this case will be the word in \emph{oldspeak}.  As we
+have said, this provides a mapping from \emph{oldspeak} to \emph{newspeak}.
+Words for which there is no translation result in \emph{joycamp}.  All other
+words must have a replacement \emph{newspeak} word.
+
+What happens when two \emph{oldspeak} words have the same hash value? This is
+called a \emph{hash collision}, and must be resolved. Rather than doing
+\emph{open addressing} (as discussed in class), we will be using \emph{linked
+lists} to resolve \emph{oldspeak} hash collisions.
+
+\subsection{Hashing with the SPECK Cipher}
+\epigraph{\emph{Every record has been destroyed or falsified, every book has
+been rewritten, every picture has been repainted, every statue and street
+building has been renamed, every date has been altered. And that process is
+continuing day be day and minute by minute. History has stopped. Nothing
+exists except the endless present in which the party is always
+right.}}{---George Orwell}
+
+\noindent
+First of all, you need a good hash function. We have discussed hash functions in
+class, and rather than risk having a poor one implemented, we will simply
+provide you one. The
+SPECK\footnote{
+Ray Beaulieu, Stefan Treatman-Clark, Douglas Shors, Bryan Weeks, Jason Smith,
+and Louis Wingers, ``The {SIMON} and {SPECK} lightweight block ciphers.'' In
+Proceedings of the 52nd ACM/EDAC/IEEE Design Automation Conference (DAC), pp.
+1--6. IEEE, 2015.}
+block cipher is provided for use as a hash function.
+
+SPECK is a family of lightweight block ciphers publicly released by the National
+Security Agency (NSA) in June 2013.  SPECK has been optimized for performance in
+software implementations, while its sister algorithm, SIMON, has been optimized
+for hardware implementations. SPECK is an add-rotate-xor (ARX) cipher. The
+reason a cipher is used for this is because encryption generates random output
+given some input; exactly what we want for a hash.
+
+Encryption is the process of taking some file you wish to protect, usually
+called plaintext, and transforming its data such that only authorized parties
+can access it. This transformed data is referred to as ciphertext. Decryption
+is the inverse operation of encryption, taking the ciphertext and transforming
+the encrypted data back to its original state as found in the original
+plaintext.
+
+Encryption algorithms that utilize the same key for both encryption and
+decryption, like SPECK, are symmetric-key algorithms, and algorithms that don't,
+such as RSA, are asymmetric-key algorithms.
+
+\lstset{language=C, style=c99}
+\begin{lstlisting}[title=speck.h]
+#ifndef __SPECK_H__
+#define __SPECK_H__
+
+#include <inttypes.h>
+
+uint32_t hash(uint64_t salt[], char *key);
+
+#endif
+\end{lstlisting}
+\begin{lstlisting}[title=speck.c]
+#include "speck.h"
+#include <inttypes.h>
+#include <stddef.h>
+#include <string.h>
+
+#define LCS(X, K)                                                              \
+  (X << K) | (X >> (sizeof(uint64_t) * 8 - K)) // left circular shift
+#define RCS(X, K)                                                              \
+  (X >> K) | (X << (sizeof(uint64_t) * 8 - K)) // right circular shift
+
+// Core SPECK operation
+#define R(x, y, k) (x = RCS(x, 8), x += y, x ^= k, y = LCS(y, 3), y ^= x)
+
+
+void speck_expand_key_and_encrypt(uint64_t pt[], uint64_t ct[], uint64_t K[]) {
+  uint64_t B = K[1], A = K[0];
+  ct[0] = pt[0];
+  ct[1] = pt[1];
+
+  for (size_t i = 0; i < 32; i += 1) {
+    R(ct[1], ct[0], A);
+    R(B, A, i);
+  }
+}
+
+uint64_t keyed_hash(const char *s, uint32_t length, uint64_t key[]) {
+  uint64_t accum = 0;
+
+  union {
+    char b[sizeof(uint64_t)]; // 16 bytes fit into the same space as
+    uint64_t ll[2]; // 2 64 bit numbers.
+  } in;
+
+  uint64_t out[2]; // SPECK results in 128 bits of ciphertext
+  uint32_t count;
+
+  count = 0; // Reset buffer counter
+  in.ll[0] = 0x0;
+  in.ll[1] = 0x0; // Reset the input buffer (zero fill)
+
+  for (size_t i = 0; i < length; i += 1) {
+    in.b[count++] = s[i]; // Load the bytes
+
+    if (count % (2 * sizeof(uint64_t)) == 0) {
+      speck_expand_key_and_encrypt(in.ll, out, key); // Encrypt 16 bytes
+      accum ^= out[0] ^ out[1]; // Add (XOR) them in for a 64 bit result
+      count = 0; // Reset buffer counter
+      in.ll[0] = 0x0;
+      in.ll[1] = 0x0; // Reset the input buffer
+    }
+  }
+
+  // There may be some bytes left over, we should use them.
+  if (length % (2 * sizeof(uint64_t)) != 0) {
+    speck_expand_key_and_encrypt(in.ll, out, key);
+    accum ^= out[0] ^ out[1];
+  }
+
+  return accum;
+}
+
+//
+// Wrapper function to get a 32-bit hash value by using SPECK's key hash.
+// SPECK's key hash requires a key and a salt.
+//
+// ht:     The HashTable.
+// key:    The key to hash.
+//
+uint32_t hash(uint64_t salt[], char *key) {
+  union {
+    uint64_t full;
+    uint32_t half[2];
+  } value;
+
+  value.full = keyed_hash(key, strlen(key), salt);
+
+  return value.half[0] ^ value.half[1];
+}
+\end{lstlisting}
+
+\lstset{language=C, style=c99}
+\begin{lstlisting}[title=hash.h]
+
+#ifndef __HASH_H__
+#define __HASH_H__
+
+#ifndef NIL
+#define NIL (void *)0
+#endif
+
+#include <inttypes.h>
+#include "ll.h"
+
+//
+// Struct definition for a HashTable.
+//
+// salt:       The salt of the HashTable (used for hashing).
+// length:     The maximum number of entries in the HashTable.
+// heads:      An array of linked list heads.
+//
+typedef struct HashTable {
+  uint64_t salt[2];
+  uint32_t length;
+  ListNode **heads;
+} HashTable;
+
+//
+// Constructor for a HashTable.
+//
+// length:  Length of the HashTable.
+// salt:    Salt for the HashTable.
+//
+HashTable *ht_create(uint32_t length);
+
+//
+// Destructor for a HashTable.
+//
+// ht:  The HashTable.
+//
+void ht_delete(HashTable *ht);
+
+//
+// Searches a HashTable for a key.
+// Returns the ListNode if found and returns NULL otherwise.
+// This should call the ll_lookup() function.
+//
+// ht:      The HashTable.
+// key:     The key to search for.
+//
+ListNode *ht_lookup(HashTable *ht, char *key);
+
+//
+// First creates a new ListNode from GoodSpeak.
+// The created ListNode is then inserted into a HashTable.
+// This should call the ll_insert() function.
+//
+// ht:          The HashTable.
+// gs:          The GoodSpeak to add to the HashTable.
+//
+void ht_insert(HashTable *ht, GoodSpeak *gs);
+
+#endif
+\end{lstlisting}
+
+\lstset{language=C, style=c99}
+\begin{lstlisting}[title=hash.c]
+#include "hash.h"
+#include "ll.h"
+#include <inttypes.h>
+#include <stdlib.h>
+
+//
+// Constructor for a HashTable.
+//
+// length:  Length of the HashTable.
+// salt:    Salt for the HashTable.
+//
+HashTable *ht_create(uint32_t length) {
+  HashTable *ht = (HashTable *)malloc(sizeof(HashTable));
+  if (ht) {
+    ht->salt[0] = 0x85ae998311115ae3; // Il nome della rosa
+    ht->salt[1] = 0xb6fac2ae33a40089;
+    ht->length = length;
+    ht->heads = (ListNode **)calloc(length, sizeof(ListNode *));
+    return ht;
+  }
+
+  return (HashTable *)NIL;
+}
+
+// The rest of the functions you must implement yourselves.
+\end{lstlisting}
+
+
+\subsection{Linked Lists}
+\epigraph{\emph{Education is a weapon, whose effect depends on who holds it in
+his hands and at whom it is aimed.}}{---Joseph Stalin}
+
+\noindent
+A \emph{linked list} will be used to resolve hash collisions. Each node of
+the linked list contains a \texttt{GoodSpeak struct} which contains
+\emph{oldspeak} and its \emph{newspeak} translation if it exists. The \emph{key}
+to search with in the linked list is \emph{oldspeak}.
+
+\lstset{language=C, style=c99}
+\begin{lstlisting}[title=ll.h]
+#ifndef __LL_H__
+#define __LL_H__
+
+#ifndef NIL
+#define NIL (void *)0
+#endif
+
+#include <stdbool.h>
+
+// If flag is set, ListNodes that are queried are moved to the front.
+extern bool move_to_front;
+
+typedef struct ListNode ListNode;
+
+//
+// Struct definition of a ListNode.
+//
+// gs:  GoodSpeak struct containing oldspeak and its newspeak translation.
+//
+struct ListNode {
+  GoodSpeak *gs;
+  ListNode *next;
+};
+
+//
+// Constructor for a ListNode.
+//
+// gs:  GoodSpeak struct containing oldspeak and its newspeak translation.
+//
+ListNode *ll_node_create(GoodSpeak *gs);
+
+//
+// Destructor for a ListNode.
+//
+// n:  The ListNode to free.
+//
+void ll_node_delete(ListNode *n);
+
+//
+// Destructor for a linked list of ListNodes.
+//
+// head:   The head of the linked list.
+//
+void ll_delete(ListNode *head);
+
+//
+// Creates and inserts a ListNode into a linked list.
+//
+// head:  The head of the linked list to insert in.
+// gs:    GoodSpeak struct.
+//
+ListNode *ll_insert(ListNode **head, GoodSpeak *gs);
+
+//
+// Searches for a specific key in a linked list.
+// Returns the ListNode if found and NULL otherwise.
+//
+// head:   The head of the linked list to search in.
+// key:    The key to search for.
+ListNode *ll_lookup(ListNode **head, char *key);
+
+#endif
+\end{lstlisting}
+
+
+You will be implementing this in two forms, and comparing the performance of
+the methods:
+\begin{itemize}
+\item Inserting each new word at the front of the list and
+\item Inserting each new word at the front of the list, but \emph{each} time
+it is searched for it is \emph{moved to the front} of the list.
+\end{itemize}
+
+The move-to-front technique moves a node that was just searched for in the
+linked list to the front. This decreases look-up times for
+frequently-searched-for nodes. You will learn more about optimality in your
+future classes. You will keep track of the \emph{average number of links
+followed} in order to find each word in a linked list.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\medskip
+\begin{prelab}{Pre-lab Part 2}
+  \begin{enumerate}
+    \item Draw the pictures to show the how elements are being inserted in different ways in the Linked list.
+    \item Write down the pseudocode for the above functions in the Linked List
+        data type.
+  \end{enumerate}
+\end{prelab}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Lexical Analysis with Regular Expressions}
+\epigraph{\emph{Ideas are more powerful than guns. We would not let our enemies
+have guns, why should we let them have ideas.}}{---Joseph Stalin}
+
+\noindent
+You will need a function to pick words from an input stream. The words should be
+just valid words, and these can include \emph{contractions}. A valid word is any
+sequence of one or more characters, that are considered part of the word
+character set in regex. A word character set in regex contains characters from
+$a-z$, $A-Z$, $0-9$, including the underscore character. Since your program also
+accepts contractions like ``don't'' where you will have to account for apostrophes, and words like
+``pseudo-code'' where you will have to account for hyphens.
+
+You will need to write your own \emph{regular expression} for a word, utilizing
+the \texttt{regex.h} library to lexically analyze the input stream for words. To
+aid you with this, here is a simple module that lexically analyzes the input
+stream using your regular expression. You are not required to use the module
+itself, but it is \emph{mandatory} that you parse through an input stream for
+words using at least one regular expression.
+
+\begin{lstlisting}[title=parser.h]
+#ifndef __PARSER_H__
+#define __PARSER_H__
+
+#include <regex.h>
+#include <stdio.h>
+
+//
+// Returns the next word that matches the specified regular expression.
+// Words are buffered and returned as they are read from the input file.
+//
+// infile:      The input file to read from.
+// word_regex:  Pointer to a compiled regular expression for a word.
+// returns:     The next word if it exists, a null pointer otherwise.
+//
+char *next_word(FILE *infile, regex_t *word_regex);
+
+//
+// Clears out the static word buffer.
+//
+void clear_words(void);
+
+#endif
+\end{lstlisting}
+
+\begin{lstlisting}[title=parser.c]
+#include "parser.h"
+#include <regex.h>
+#include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define BLOCK   4096
+
+static char *words[BLOCK] = { NULL };  // Stores a block of words maximum.
+
+//
+// Returns the next word that matches the specified regular expression.
+// Words are buffered and returned as they are read from the input file.
+//
+// infile:      The input file to read from.
+// word_regex:  Pointer to a compiled regular expression for a word.
+// returns:     The next word if it exists, a null pointer otherwise.
+//
+char *next_word(FILE *infile, regex_t *word_regex) {
+  static uint32_t index = 0;  // Track the word to return.
+  static uint32_t count = 0;  // How many words have we stored?
+
+  if (!index) {
+    clear_words();
+
+    regmatch_t match;
+    uint32_t matches = 0;
+    char buffer[BLOCK] = { 0 };
+
+    while (!matches) {
+      if (!fgets(buffer, BLOCK, infile)) {
+        return NULL;
+      }
+
+      char *cursor = buffer;
+
+      for (uint16_t i = 0; i < BLOCK; i += 1) {
+        if (regexec(word_regex, cursor, 1, &match, 0)) {
+          break;  // Couldn't find a match.
+        }
+
+        if (match.rm_so < 0) {
+          break;  // No more matches.
+        }
+
+        uint32_t start  = (uint32_t)match.rm_so;
+        uint32_t end    = (uint32_t)match.rm_eo;
+        uint32_t length = end - start;
+
+        words[i] = (char *)calloc(length + 1, sizeof(char));
+        if (!words[i]) {
+          perror("calloc");
+          exit(1);
+        }
+
+        memcpy(words[i], cursor + start, length);
+        cursor += end;
+        matches += 1;
+      }
+
+      count = matches;  // Words stored is number of matches.
+    }
+  }
+
+  char *word = words[index];
+  index = (index + 1) % count;
+  return word;
+}
+
+//
+// Clears out the static word buffer.
+//
+void clear_words(void) {
+  for (uint16_t i = 0; i < BLOCK; i += 1) {
+    if (words[i]) {
+      free(words[i]);
+      words[i] = NULL;
+    }
+  }
+
+  return;
+}
+\end{lstlisting}
+
+The function \texttt{next\_word()} requires two inputs, the input stream
+\texttt{infile}, and a pointer to a compiled regular expression,
+\texttt{word\_regex}. Notice the word \emph{compiled}: you must first compile
+your regular expression using \texttt{regcomp()} before passing it to the
+function. Make sure you remember to call the function \texttt{clear\_words()} to
+free any memory used by the module when you're done reading in words. Note that
+you will need to transform all of your words from \emph{mixed case} to
+\emph{lowercase} before adding them to your Bloom filter and hash table.
+
+\section{Your Task}
+\epigraph{\emph{The people will believe what the media tells them they
+believe.}}{---George Orwell}
+
+\begin{itemize}
+\item Read in a list of \emph{forbidden} words, setting the corresponding bit
+    for each word in the Bloom filter. This list is the badspeak.txt file we mentioned earlier in the assignment.
+\item Create a \texttt{GoodSpeak struct} for each forbidden word. The word
+    should be stored in \texttt{oldspeak}, and \texttt{newspeak} should be
+    set to \texttt{NULL}; forbidden words do not have translations.
+\item Read in a space-separated list of \emph{oldspeak}, \emph{newspeak} pairs.
+    This list is the newspeak.txt file we mentioned earlier in the assignment.
+\item Create a \texttt{GoodSpeak struct} for each \emph{oldspeak},
+    \emph{newspeak} pair, placing them in \texttt{oldspeak} and
+    \texttt{newspeak} respectively.
+\item The hash index for each \emph{forbidden} word is determined by using
+    \texttt{oldspeak} as the key.
+\item Read text from \emph{standard input} (I/O redirection must be supported).
+\item Words that pass through the Bloom filter but have no translation are forbidden,
+    which constitutes a \emph{thoughtcrime}.
+\item The use of forbidden words constitutes a \emph{thoughtcrime}. If only
+    forbidden words were used, you will send them a \emph{thoughtcrime message}.
+\begin{lstlisting}[title=Example thoughtcrime message.]
+Dear Comrade,
+
+You have chosen to use degenerate words that may cause hurt
+feelings or cause your comrades to think unpleasant thoughts.
+This is doubleplus bad. To correct your wrongthink and
+preserve community consensus we will be sending you to joycamp
+administered by Miniluv.
+
+Your errors:
+
+kalamazoo
+antidisestablishmentarianism
+\end{lstlisting}
+\item The use of only \emph{oldspeak} words that have \emph{newspeak}
+    translations elicits a \emph{goodspeak message} to provide encouragement.
+\begin{lstlisting}[title=Example goodspeak message.]
+Dear Comrade,
+
+Submitting your text helps to preserve feelings and prevent
+badthink. Some of the words that you used are not goodspeak.
+The list shows how to turn the oldspeak words into newspeak.
+
+sad -> happy
+liberty -> badfree
+music -> noise
+read -> papertalk
+write -> papertalk
+\end{lstlisting}
+\item The use of forbidden words and words that have \emph{newspeak}
+    translations warrants a combination of a \emph{thoughtcrime message} and a
+    \emph{goodspeak} encouragement message.
+\begin{lstlisting}[title=Example thoughtcrime/goodspeak message.]
+Dear Comrade,
+
+You have chosen to use degenerate words that may cause hurt
+feelings or cause your comrades to think unpleasant thoughts.
+This is doubleplus bad. To correct your wrongthink and
+preserve community consensus we will be sending you to joycamp
+administered by Miniluv.
+
+Your errors:
+
+kalamazoo
+antidisestablishmentarianism
+
+Think of these words on your vacation!
+
+sad -> happy
+liberty -> badfree
+music -> noise
+read -> papertalk
+write -> papertalk
+\end{lstlisting}
+\item The list of proscribed words is available as
+    \verb+~euchou/Newspeak/badspeak.txt+
+    on \texttt{unix.ucsc.edu}.
+\item The list of \emph{oldspeak} words and their respective \emph{newspeak}
+    translations is available as \verb+~euchou/Newspeak/newspeak.txt+ on
+    \texttt{unix.ucsc.edu}.
+\item Your executable, \texttt{./newspeak}, will provide the following options:
+        \begin{itemize}
+        \item \texttt{./newspeak -s} will suppress the letter from the censor,
+            and instead print the statistics that were computed.
+        \item \texttt{./newspeak -h size} specifies that the hash table will
+            have \texttt{size} entries (the default will be $10000$).
+        \item \texttt{./newspeak -f size} specifies that the Bloom filter will
+            have \texttt{size} entries (the default will be $2^{20}$).
+        \item \texttt{./newspeak -m} will use the \emph{move-to-front rule}.
+        \item \texttt{./newspeak -b} will not use the \emph{move-to-front rule}.
+        \item ANY combination of these flags except for \texttt{-m -b}
+            \emph{must be supported}.
+        \end{itemize}
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Deliverables}
+\epigraph{\emph{I would rather have questions that can't be answered than
+answers that can't be questioned.}}{---Richard P. Feynman}
+
+You will need to turn in:
+
+\begin{enumerate}
+\item \texttt{newspeak.c}: This contains \texttt{main()} and \emph{may} contain
+    the other functions necessary to complete the assignment.
+\item \texttt{speck.c} and \texttt{speck.h}: These two files have already been pushed to your git repository in the asgn6 folder.
+\item \texttt{hash.c} and \texttt{hash.h}: These contain your implementation of
+    the hash table ADT.
+\item \texttt{ll.c} and \texttt{ll.h}: These contain your implementation of the
+    linked list ADT.
+\item You may have other source and header files, but \emph{do not make things overly complicated}. For example the \texttt{parser.c} and
+    \texttt{parser.h} have already been pushed to your git respository under the asgn6 folder.
+\item \texttt{Makefile}: This is a file that will allow the grader to type
+    \texttt{make} to compile your program. Typing \texttt{make} must build your
+    program.
+\begin{itemize}
+    \item \texttt{CFLAGS=-Wall -Wextra -Werror -Wpedantic -std=c99} must be
+        included.
+    \item \texttt{CC=clang} must be specified.
+    \item \texttt{make clean} must remove all files that are compiler generated.
+    \item \texttt{make infer} runs \texttt{infer} on your program. Complaints
+        generated by \texttt{infer} must either be fixed or explained in your
+        \texttt{README}.
+    \item \texttt{make} should build your program, as should \texttt{make all}.
+    \item Your program executable \emph{must} be named \texttt{newspeak}.
+\end{itemize}
+
+\item \texttt{README.md}: This must be in markdown. This must describe how to
+    use your program and \texttt{Makefile}. This should also contain
+    explanations for any complaints from \texttt{infer}.
+
+\item \texttt{DESIGN.pdf}: This \emph{must} be a PDF. The design document
+    should contain answers to the pre-lab questions at the beginning and
+    describe your design for your program with enough detail that a sufficiently
+    knowledgeable programmer would be able to replicate your implementation.
+    This does not mean copying your entire program in verbatim. You should
+    instead describe how your program works with supporting pseudo-code. For
+    this program, pay extra attention to how you build each necessary component.
+
+\item \texttt{WRITEUP.pdf}: Your writeup should contain a discussion on the following topics:
+\begin{itemize}
+\item {What happens when you vary the size of a hash table?}
+\item {What happens when you vary the Bloom filter size?}
+\item {Do you really need the \textit{move to front} rule?}
+\end{itemize}
+    
+    \textcolor{red}{You \emph{must} push the \texttt{DESIGN.pdf} before you push
+    \emph{any} code.}
+\end{enumerate}
+
+All of these files must be in the directory \texttt{asgn6}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Submission}
+\epigraph{\emph{We can and must write in a language which sows among the
+masses hate, revulsion, and scorn toward those who disagree with
+us.}}{---Vladimir Lenin}
+
+\noindent
+To submit your assignment, refer back to \texttt{assignment0} for
+the steps on how to submit your assignment through \texttt{git}.
+Remember: \emph{add, commit,} and \emph{push}!
+
+\textcolor{red}{Your assignment is turned in \emph{only} after you
+have pushed and turned in the commit ID to Canvas. If you forget to push,
+you have not turned in your assignment and you will get a \emph{zero}.
+``I forgot to push'' is not a valid excuse. It is \emph{highly} recommended
+to commit and push your changes \emph{often}.}
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Supplemental Readings}
+\epigraph{\emph{The more you read, the more things you will know. The
+more that you learn, the more places you'll go.}}{---Dr.\ Seuss}\noindent
+
+\begin{itemize}
+    \item \textit{The C Programming Language} by Kernighan \& Ritchie
+    \begin{itemize}
+	\item Chapter 1 \S 1.5
+        \item Chapter 5 \S 5.6--5.12
+	\item Chapter 8 \S 8.1--8.3
+    \end{itemize}
+\end{itemize}

@@ -1,0 +1,9 @@
+== Honesty
+
+Academic honesty is very important in computer science, and life in general. The
+goal of this course is for you to learn the material, not simply for you to get
+a mark on your transcript saying you passed the class. All students in the class
+must sign and turn in an acknowledgment that they understand the cheating policy
+for the class. We will not accept or grade any assignments from a student unless
+they have turned in the `CHEATING.pdf`. We encourage you to ask for
+clarifications in the academic policy if you have any questions.

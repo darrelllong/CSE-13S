@@ -1,0 +1,20 @@
+\section{Command-line Options}
+
+\epigraphwidth=0.6\textwidth
+\epigraph{\emph{A few dud universes can really clutter up your basement.}}{Neal
+Stephenson, \emph{In the Beginning\ldots Was the Command Line}}
+
+Your program should accept the following command-line options:
+
+\begin{itemize}
+  \item \texttt{-t}\ : Specify that the Game of Life is to be played on a \emph{toroidal}
+    universe.
+  \item \texttt{-s}\ : Silence \texttt{ncurses}. Enabling this option means
+    that nothing should be displayed by \texttt{ncurses}.
+  \item \texttt{-n} \emph{generations}\ : Specify the number of generations that the
+    universe goes through. The default number of generations is 100.
+  \item \texttt{-i} \emph{input}\ : Specify the input file to read in order to populate
+    the universe. By default the input should be \texttt{stdin}.
+  \item \texttt{-o} \emph{output}\ : Specify the output file to print the final state
+    of the universe to. By default the output should be \texttt{stdout}.
+\end{itemize}

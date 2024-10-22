@@ -1,0 +1,3 @@
+[submodule "gitlab-canvas-utils"]
+	path = gitlab-canvas-utils
+	url = ssh://git@git.ssrc.us:4022/euchou/gitlab-canvas-utils.git

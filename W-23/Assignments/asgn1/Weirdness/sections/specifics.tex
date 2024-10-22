@@ -1,0 +1,111 @@
+\section{Specifics}\label{section:specifics}
+
+You will be writing a \C program, and the first thing is to include
+the appropriate header files.
+
+\begin{clisting}{Header Files}
+#include <stdbool.h> // Gives us the bool data type
+#include <stdio.h>   // ... standard I/O
+#include <stdlib.h>  // ... strtoul() and other useful things
+#include <string.h>  // ... string utilities
+#include <unistd.h>  // ... getopt() and other useful things
+\end{clisting}
+
+You will need to process the command line arguments.
+The \texttt{-p} option determines whether you will print just
+\emph{perfect numbers} or all numbers (which is the default).
+
+\begin{clisting}{Command line arguments}
+#define DEFAULT_MAXIMUM 1000
+#define OPTIONS "pn:"
+
+int main(int argc, char **argv) {
+    int n = DEFAULT_MAXIMUM;
+    bool imperfect = true;
+    int opt;
+
+    while ((opt = getopt(argc, argv, OPTIONS)) != -1) {
+        switch (opt) {
+        case 'p':
+            imperfect = !imperfect;
+            break;
+        case 'n':
+            n = strtoul(optarg, NULL, 10);
+            break;
+        }
+    }
+    // Your other code goes here ...
+}
+\end{clisting}
+
+For each positive integer from the ordered set $n\in\left\{ 2, \ldots, n\right\}$ you will classify it
+as \emph{prime}, \emph{perfect}, \emph{deficient} or \emph{abundant}.
+
+You will print the number, followed by a list of all of its
+\emph{proper divisors}, followed by its classification.
+Classifying a number requires you to determine \emph{all} of its proper divisors.
+\begin{itemize}
+\item How do you know if a number $n$ is \emph{prime}? It has only
+$1$ as a \emph{proper divisor}.
+
+\item How do you know if a number $n$ is \emph{perfect}? The \emph{sum}
+of the proper divisors $s(n) = n$.
+
+\item How do you know if a number $n$ is \emph{deficient}? The
+\emph{sum} of the proper divisors $s(n) < n$.
+
+\item How do you know if a number $n$ is \emph{abundant}? The
+\emph{sum} of the proper divisors $s(n) > n$.
+
+\end{itemize}
+You should see a pattern here that you can (and should) exploit.
+
+You will want to keep an array of the proper divisors, alternatively,
+you can keep a string of their decimal representation, but that seems inelegant, especially if you are trying for \emph{extra credit}. You will need to
+do this because the \texttt{-p} option will prevent printing of all
+\emph{imperfect} numbers. You will not know which class a number
+falls into until you have examined all divisors.
+
+\begin{shlisting}{Example}
+eco :: ./classify -n 20
+2 : [1] is prime
+3 : [1] is prime
+4 : [1, 2] is deficient
+5 : [1] is prime
+6 : [1, 2, 3] is perfect
+7 : [1] is prime
+8 : [1, 2, 4] is deficient
+9 : [1, 3] is deficient
+10 : [1, 2, 5] is deficient
+11 : [1] is prime
+12 : [1, 2, 3, 4, 6] is abundant
+13 : [1] is prime
+14 : [1, 2, 7] is deficient
+15 : [1, 3, 5] is deficient
+16 : [1, 2, 4, 8] is deficient
+17 : [1] is prime
+18 : [1, 2, 3, 6, 9] is abundant
+19 : [1] is prime
+20 : [1, 2, 4, 5, 10] is abundant
+\end{shlisting}
+
+\begin{shlisting}{Example}
+eco :: ./classify -n 10000 -p
+6 : [1, 2, 3] is perfect
+28 : [1, 2, 4, 7, 14] is perfect
+496 : [1, 2, 4, 8, 16, 31, 62, 124, 248] is perfect
+8128 : [1, 2, 4, 8, 16, 32, 64, 127, 254, 508, 1016, 2032, 4064] is perfect
+\end{shlisting}
+
+\subsection{Executables}
+
+An executable on \Unix{} is just another name for a program. The terms
+\emph{program}, \emph{executable}, \emph{executable binary}, and sometimes just
+\emph{binary}, all refer to a program that can be run, or \emph{executed}. The
+distinction between an plain old executable and an executable binary is in its
+representation. An executable binary is platform specific and is simply a file
+full of machine code: pure binary. An executable could be a shell script, which
+contains readable text. The only thing these two share is that they must have
+the executable bit set in order to be run. Refer to the discussion of \Unix{}
+file permissions in assignment 0 if you have forgotten what the executable bit
+refers to.

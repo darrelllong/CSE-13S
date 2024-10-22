@@ -1,0 +1,348 @@
+\documentclass{article}
+\usepackage{fullpage,fourier,amsmath,amssymb}
+\usepackage{listings,color,url,hyperref}
+\usepackage{mdframed}
+\usepackage{epigraph}
+\usepackage[x11names]{xcolor}
+
+\title{Assignment 5 \\ Factoring (fun with bit vectors)}
+\author{Prof. Darrell Long \\
+CSE 13S -- Fall 2019}
+\date{Due: November 3$^\text{rd}$ at 11:59\,pm}
+
+\input{../footer}
+\input{../lststyle}
+
+\begin{document}\maketitle
+
+\lstset{language=C, style=c99}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+
+We are going to answer some simple but fundamental questions about
+the sequence of natural numbers ${\mathbb N} = 1, 2, 3, \ldots$ We
+are going to look at primality and composites.
+Primes numbers are fundamental in mathematics and Computer Science. You will also be concerned with the execution time of your programs.
+
+\subsection{Prime Numbers}
+\epigraphwidth=0.65\textwidth
+\epigraph{\emph{God may not play dice with the universe, but something strange is going on with the prime numbers.}}{---Paul Erd\"os}
+
+Prime numbers are among the most interesting of the natural numbers.
+A number $p \in \mathbb{N}$ is \emph{prime} if it is evenly divisible
+by only $1$ and $p$.  That means that $(\forall m \in \mathbb{N},
+1 < m < p) m \nmid p$ or alternatively, $(\forall m \in \mathbb{N},
+1 < m < p)p \bmod m \ne 0$.  The first prime number is $2$, all
+primes except $2$ must be odd, since all even numbers are divisible
+by $2$.  There are an infinity of primes, which was proved by Euclid
+about 300 B.C.  There is no formula for finding the primes, but the
+\emph{prime number theorem} tells us that the probability of a given
+$m\in \mathbb{N}, 1<m\le N$ being prime is very close to $\tfrac{1}{\ln N}$, since
+the number of primes less than $N$, denoted $\pi(N)$, is
+$$
+\frac{N}{\ln N - (1 - \epsilon)} < \pi(N) < \frac{N}{\ln N - (1 +
+\epsilon)}.
+$$
+
+Determining whether a number $n$ is prime and if it evenly divides by $n$ is conceptually simple, all that must be done is to try every $k \in \{ 2, \ldots, n - 1\}$.
+The execution time for this method is $O(n)$, which for large $n$ is prohibitive.
+A little thought shows that we do not need to check so many, and that evaluating
+$k \mid n$ for $k\in \{2, \ldots, \lceil \sqrt{n} \,\rceil \}$ is sufficient.
+The resulting execution time of $O(\sqrt{n})$ is a great improvement.
+Is that the best that we can hope for? No, but a lower bound is \emph{unknown}.
+
+\subsection{Composite Numbers}
+\epigraphwidth=0.75\textwidth
+\epigraph{\emph{The problem of distinguishing prime numbers from composite numbers and of resolving the latter into their prime factors is known to be one of the most important and useful in arithmetic.}}{---Carl Friedrich Gauss}
+
+All natural numbers that are not prime are called \emph{composite}.
+The \emph{fundamental theorem of arithmetic,}
+also called the \emph{unique factorization theorem},
+states that every integer $m>1$ is either prime or a unique
+product of primes ($p_0, \ldots, p_k$).
+That is,
+$$
+m = p_0^{\alpha_0} \times p_1^{\alpha_1} \times \ldots \times p_k^{\alpha_k}
+= \prod_{i=0}^{k} p_i^{\alpha_k}.
+$$
+For example, $8\,3736=2^3\times 3^2\times 1163$.
+In 1801, the fundamental theorem of arithmetic was proved by Carl Friedrich Gauss in his book
+\emph{Disquisitiones Arithmetic\ae{}}.
+
+Determining the prime factorization of $m$ can be accomplished trying all
+primes $p_0, \ldots, p_k \le m$.
+The execution time is difficult to compute, since each successful division reduces the complexity, but it is bounded from above by $O(\log m)$, provided you have a list of primes to consult.
+
+One \emph{could} write a function:
+\begin{lstlisting}
+uint64_t next_prime(uint64_t n) {
+  // Find the first prime after n.
+}
+\end{lstlisting}
+However, that would be foolishness, even though the prime density is
+approximately $\tfrac{1}{\ln n}$. Instead, you will use a sieve.
+The easiest to implement is the \emph{Sieve of Eratosthenes}, but ambitious
+students are encouraged to use a more sophisticated method. The number of operations to find up to $N$ primes is
+$$
+\log\log N - \frac{1}{\log N} \left ( 1 - \frac{4}{\sqrt N} \right ) + M - \log 2,
+$$
+where $M\approx 0.261\,497\,212\,847\,642\,783\,755\ldots$ (the Meissel-Mertens constant).
+Is this the best that can be done? No, the \emph{general number
+field sieve} is the most efficient classical algorithm \emph{known}
+for factoring integers larger than $10^{100}$. Is it the best possible? We
+simply do not know. Cryptography makes use of the fact that it is extremely
+difficult to find the prime factorization of very large numbers.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Your Task}
+\epigraph{\emph{Mathematics reveals its secrets only to those who approach it
+with pure love, for its own beauty.}}{---Archimedes}
+
+Your task is to go through each natural number beginning with $2$ and determine whether it is \emph{prime} (\texttt{P}) or \emph{composite} (\texttt{C}).
+Prime numbers cannot be factored, but you must perform a \emph{prime factorization} of all composites. Consider the example given below. This shows the \emph{required} format of the output.
+
+\begin{lstlisting}[title=Example]
+2 P
+3 P
+4 C: 2 2
+5 P
+6 C: 2 3
+7 P
+8 C: 2 2 2
+9 C: 3 3
+10 C: 2 5
+11 P
+12 C: 2 2 3
+13 P
+14 C: 2 7
+15 C: 3 5
+16 C: 2 2 2 2
+17 P
+18 C: 2 3 3
+19 P
+20 C: 2 2 5
+\end{lstlisting}
+
+What you should observe immediately is that you will need to store
+some quantities. You may want to store the prime factors of each
+composite. Is that necessary? The most obvious data structure for storing those divisors is an \emph{array}.
+
+We will test your program by comparing its output with the output of a known correct program. Refer to the example output given above. Your program should match it exactly (for as far as the example goes, the test will go to $100000$).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Specifics}
+\epigraph{\emph{Don't try to cover your mistakes with false words. Rather,
+correct your mistakes with examination.}}{---Pythagoras}
+
+Writing the program using the na\"ive approach of finding primes
+up to the value of a given number into order to find its prime
+factorization is, frankly, silly. You can and will do much better,
+and you will do so by using a \emph{sieve}. Your sieve will take as its sole argument a \emph{BitVector}.
+
+\begin{lstlisting}[title=sieve.h]
+// sieve.h - Header file for the Sieve of Eratosthenes function.
+
+#ifndef __SIEVE_H__
+#define __SIEVE_H__
+
+#include "bv.h"
+
+//
+// The Sieve of Eratosthenes.
+// Set bits in a BitVector represent prime numbers.
+// Composite numbers are sieved out by clearing bits.
+//
+// v:  The BitVector to sieve.
+//
+void sieve(BitVector *v);
+
+# endif
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Bit Vectors}
+\epigraph{\emph{Symmetrical equations are good in their place, but `vector'
+is a useless survival, or offshoot from quaternions, and has never been of the
+slightest use to any creature.}}{---Lord Kelvin}
+Bit Vectors are a rarely taught but essential tool in the kit of all computer
+scientists and engineers. A Bit Vector is an ADT that represents an array of
+bits, the bits in which are used to denote if something is true or false (1 or
+0). This is an efficient ADT since, in order to represent the truth or falsity
+of an array of $n$ items, we can use $n / 8 + 1$ \texttt{uint8\_t}'s instead of $n$, and
+being able to access 8 indices with a single integer access is extremely cost
+efficient. You are expected to implement the following ADT interface for
+Bit Vectors.
+
+\begin{lstlisting}[title=bv.h]
+// bv.h - Contains the function declarations for the BitVector ADT.
+
+#ifndef __BV_H__
+#define __BV_H__
+
+#include <inttypes.h>
+#include <stdbool.h>
+
+//
+// Struct definition for a BitVector.
+//
+// vector:     The vector of bytes to hold bits.
+// length:     The length in bits of the BitVector.
+//
+typedef struct BitVector {
+  uint8_t *vector;
+  uint32_t length;
+} BitVector;
+
+//
+// Creates a new BitVector of specified length.
+//
+// bit_len:    The length in bits of the BitVector.
+//
+BitVector *bv_create(uint8_t bit_len);
+
+//
+// Frees memory allocated for a BitVector.
+//
+// v:  The BitVector.
+//
+void bv_delete(BitVector *v);
+
+//
+// Returns the length in bits of the BitVector.
+//
+// v:  The BitVector.
+//
+uint32_t bv_get_len(BitVector *v);
+
+//
+// Sets the bit at index in the BitVector.
+//
+// v:  The BitVector.
+// i:  Index of the bit to set.
+//
+void bv_set_bit(BitVector *v, uint8_t i);
+
+//
+// Clears the bit at index in the BitVector.
+//
+// v:  The BitVector.
+// i:  Index of the bit to clear.
+//
+void bv_clr_bit(BitVector *v, uint8_t i);
+
+//
+// Gets a bit from a BitVector.
+//
+// v:  The BitVector.
+// i:  Index of the bit to get.
+//
+uint8_t bv_get_bit(BitVector *v, uint8_t i);
+
+//
+// Sets all bits in a BitVector.
+//
+// v:  The BitVector.
+//
+void bv_set_all_bits(BitVector *v);
+
+#endif
+\end{lstlisting}
+
+The header file \texttt{bv.h} defines the BitVector ADT and its associated
+operations. Even though \textbf{C} will not prevent you from directly accessing
+\texttt{struct} fields, you must avoid that temptation and only use the functions defined
+in \texttt{bv.h} --- no exceptions!
+
+You must implement each of the functions specified in the header
+file. Most of them are just a line of two of \textbf{C} code, but
+their implementation can be subtle. You are warned \emph{again}
+against using code that you may find on the Internet.
+
+
+\begin{lstlisting}
+//
+// The Sieve of Eratosthenes.
+// Set bits in a BitVector represent prime numbers.
+// Composite numbers are sieved out by clearing bits.
+//
+// v:  The BitVector to sieve.
+//
+void sieve(BitVector *v) {
+  bv_set_all_bits(v);   // Assume all are prime.
+  bv_clr_bit(v, 0);     // 0 is, well, zero.
+  bv_clr_bit(v, 1);     // 1 is unity.
+  bv_set_bit(v, 2);     // 2 is prime.
+  for (uint32_t i = 2; i <= sqrtl(bv_get_len(v)); i += 1) {
+    // Prime means bit is set.
+    if (bv_get_bit(v, i)) {
+      for (uint32_t k = 0; (k + i) * i <= bv_get_len(v); k += 1) {
+        bv_clr_bit(v, (k + i) * i); // Its multiples are composite
+      }
+    }
+  }
+  return;
+}
+\end{lstlisting}
+
+Since you have been given the code for the Sieve of Eratosthenes,
+you \emph{must} cite it and give proper credit if you use it. If,
+for example, you were to implement the Sieve of Sundaram, or the
+more modern Sieve of Atkin, you would not need to cite beyond the
+source of the algorithm and any pseudocode that you followed.
+
+\textcolor{red}{Hint: You are not penalized for using this code. Choose another \emph{only} if you are highly motivated.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Deliverables}
+
+You will need to turn the following files into the \texttt{assignment5} directory:
+
+\begin{enumerate}
+\item Your program \emph{must} have the source and header files:
+\begin{itemize}
+\item \texttt{bv.h} to specify the bit vector operations and abstract data type \texttt{bitV}.
+\item \texttt{bv.c} to implement the functionality.
+\item \texttt{sieve.h} specifies the interface to the sieve.
+\item \texttt{sieve.c} to implement the sieve algorithm of your choice.
+\item \texttt{factor.c} contains \texttt{main()} and \emph{may} contain the other functions necessary to complete the assignment.
+\end{itemize}
+You may have other source and header files, but \emph{do not try to be overly clever}.
+
+\item \texttt{Makefile}: This is a file that will allow the grader to type \texttt{make} to compile your program. At this point you will have learned about \texttt{make} and can create your own \texttt{Makefile}.
+\begin{itemize}
+\item \texttt{CFLAGS=-Wall -Wextra -Werror -Wpedantic} must be included.
+\item \texttt{CC=clang} must be specified.
+\item \texttt{make clean} must remove all files that are compiler generated.
+\item \texttt{make} should build your program, as should \texttt{make all}.
+\item Your program executable must be named \texttt{factor}.
+\end{itemize}
+
+\item \texttt{README.md}: This \emph{must} be in \emph{markdown}. This must describe how to use your program and Makefile.
+
+\item \texttt{DESIGN.pdf}: This must be a PDF. The design document should describe your design for your program with enough detail that a sufficiently knowledgeable programmer would be able to replicate your implementation. This does \emph{not} mean copying your entire program in verbatim. You should instead describe how your program works with supporting pseudo-code.
+
+\end{enumerate}
+
+\noindent Your program must also:
+\begin{itemize}
+  \item Dynamically allocate memory.
+  \item Not have \emph{any} memory leaks.
+  \item Cleanly pass infer --- fix any errors or explain any complaints that infer has in your \texttt{README}.
+  \item \emph{Not} have any compiler warnings.
+  \item By \emph{default} your program runs up through $100\,000$. \emph{Optionally}, you can provide for \texttt{./factor -n K} were \texttt{K} is the largest natural number considered.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Submission}
+
+To submit your assignment, refer back to \texttt{assignment0} for the steps on how to submit your assignment through \texttt{git}. Remember: \emph{add, commit,} and \emph{push}!
+
+\textcolor{red}{Your assignment is turned in \emph{only} after you have pushed.
+If you forget to push, you have not turned in your assignment and you will get
+a \emph{zero}. ``I forgot to push'' is not a valid excuse. It is \emph{highly} recommended to commit and push your changes \emph{often}.}
+
+\end{document}

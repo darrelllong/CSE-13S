@@ -1,0 +1,119 @@
+#!/usr/bin/python3
+
+from canvasapi import Canvas
+from git import Repo, GitCommandError
+from os.path import expanduser
+import argparse, csv, toml, logging, os, re, sys
+
+def get_assignment(canvas_course, asgn_num):
+    '''
+    Returns the specified assignment object.
+    Note: this ignores assignments on Canvas for DESIGN.pdf submissions (if applicable).
+    '''
+    for asgn in canvas_course.get_assignments():
+        if f"Assignment {asgn_num}" in asgn.name and "DESIGN" not in asgn.name:
+            return asgn
+    return None
+
+def get_commit_id(body):
+    '''
+    Returns the submitted commit ID in the Canvas text-entry box.
+    '''
+    match = re.search(r"\b([a-fA-F0-9]{8,40})\b", body)
+    if match:
+        return match.group(1)
+    return None
+
+def checkout_assignment_repos(canvas_course, repodir, asgn_num):
+    '''
+    Checks out each student repo in the CSV read from stdin.
+    Only repos that have been cloned already will be checked out.
+    The commit that is checked out is the one submitted on Canvas for the assignment.
+    '''
+    if not os.path.exists(repodir):
+        logging.error(f"{repodir}: directory not found")
+        return
+
+    asgn = get_assignment(canvas_course, asgn_num)
+    if not asgn:
+        logging.error(f"assignment {asgn_num} not found")
+        return
+
+    reader = csv.reader(sys.stdin, delimiter=',')
+    writer = csv.writer(sys.stdout, delimiter=',')
+
+    for row in reader:
+        _, canvasid, cruzid, _ = row
+        repopath = os.path.join(repodir, cruzid)
+
+        try:
+            submission = asgn.get_submission(canvasid)
+        except Exception as err:
+            logging.error(f"{cruzid}: assignment submission error")
+            continue
+
+        if os.path.exists(repopath) and submission.submitted_at:
+            repoclone = Repo(repopath)
+
+            commit_id = get_commit_id(submission.body)
+            if not commit_id:
+                logging.error(f"{cruzid}: invalid or missing commit ID submission")
+                continue
+
+            try:
+                repoclone.git.checkout(commit_id)
+                logging.info(f"{cruzid}: checked out commit {commit_id}")
+                writer.writerow(row)
+            except (Exception, ValueError, GitCommandError) as err:
+                logging.error(f"{cruzid}: failed to check out {commit_id}: {err}")
+
+def main():
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter,
+        description=(
+            "Checks out cloned student repos to commit IDs submitted to a Canvas assignment.\n"
+            "The repos are assumed to have been cloned using the cloner script.\n"
+            "Unless otherwise specified, the repos are assumed to be cloned under /tmp/repos/.\n"
+            "Reads stdin for a CSV with rows formatted as [name, CanvasID, CruzID, repo].\n"
+            "Outputs CSV rows of students whose repos were checked out to stdout.\n"
+        )
+    )
+    parser.add_argument(
+        "-a", "--asgn", nargs="?", required=True,
+        help="the number of the assignment to checkout repos for"
+    )
+    parser.add_argument(
+        "-r", "--repodir", nargs="?", default="/tmp/repos",
+        help="the directory that contains the cloned repos (default: /tmp/repos)"
+    )
+    parser.add_argument(
+        "-l", "--logging-level", default="INFO",
+        choices=['debug', 'info', 'warning', 'error', 'critical', 'off'],
+        help="set logging level for logs to stderr (default: info)"
+    )
+    args = parser.parse_args()
+
+    if args.logging_level == "off":
+        logging.disable(logging.CRITICAL)
+    else:
+        logging.basicConfig(
+            stream=sys.stderr, level=args.logging_level.upper(),
+            format='[%(levelname)s] %(message)s'
+        )
+
+    # Disable canvasapi logging.
+    canvas_logger = logging.getLogger("canvasapi")
+    canvas_logger.propagate = False
+
+    # Load and setup Canvas config.
+    config = toml.load(f"{expanduser('~')}/.config/gcu/config.toml")
+    canvas_url = config["canvas_url"]
+    canvas_course_id = config["canvas_course_id"]
+    canvas = Canvas(canvas_url, config["canvas_token"])
+    canvas_course = canvas.get_course(canvas_course_id)
+
+    # Check out the repos.
+    checkout_assignment_repos(canvas_course, args.repodir, args.asgn)
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,973 @@
+\documentclass{article}
+\usepackage{fullpage,fourier,amsmath,amssymb}
+\usepackage{listings,color,url,hyperref}
+\usepackage{mdframed}
+\usepackage[x11names]{xcolor}
+
+\usepackage{epigraph}
+\title{Assignment 8 \\ Lempel-Ziv-Welch Compression}
+\author{Prof. Darrell Long \\
+CSE 13S -- Fall 2019}
+\date{Due: December 6th at 11:59 pm}
+
+\input{../lststyle}
+\input{../footer}
+
+\begin{document}\maketitle
+
+\lstset{language=C, style=c99}
+
+\epigraphwidth=0.65\textwidth
+\epigraph{\emph{Everyday, we create 2.5 quintillion bytes of data -- so much
+that 90\% of the data in the world today has been created in the last two years
+alone.}}{---IBM report on Big Data (2011)}
+
+\section{Introduction}
+Compressing data means reducing the number of bits needed to represent it.
+Compressed data, due to its reduced size, is a lot faster to transfer and less expensive
+to store, freeing up storage and increasing network capacity. Algorithms
+that perform data compression are known as data compression algorithms. Data
+compression algorithms are divided into two categories: lossy and lossless.
+Lossy compression algorithms compress more than lossless compression algorithms,
+but at the cost of losing some information, which can't be recovered. Lossy
+compression algorithms are typically used for audio and video files, where a
+loss in quality is tolerable and often not noticeable. Lossless compression
+algorithms on the other hand don't compress as much, but do not lose any
+data, meaning compressed information can be exactly reconstructed back into its
+uncompressed form. Lossless compression algorithms are used for data that must
+maintain integrity, such as binaries, text documents, and source code.
+
+\section{Lempel-Ziv-Welch}
+Lempel-Ziv-Welch (LZW) is a lossless compression algorithm commonly used for
+GIF, PDF, and TIFF formatted files. The idea behind LZW is to identify patterns
+in data and to assign each one a unique code. In LZW, codes are typically 12 or
+16-bit integers, and sequences of characters found in data are commonly
+referred to as words.
+
+As an example of LZW, take some string $s =$ ``$abcabcabc$''. Assume that we are
+using 16-bit codes and have a look-up table with $2^{16}$ indices. Each index of
+the table stores a word. The table is initialized with each of the ASCII
+characters as words, meaning indices 0 --- 255 are already taken, and the next
+available code is 256.  We compress $s$ by parsing through it character by
+character. The first character is an `$a$', which already exists in our table
+with a code of 97, so we move onto the next character, keeping track that we
+just read an `$a$'. We then read a `$b$', which we append onto our previously
+read `$a$'. Now the current constructed word we have is ``$ab$'', which doesn't
+yet exist in our table. We add ``$ab$'' to our table and assign it the next
+available code (in this case, 256), reset the previously read word to just the
+`$b$', output the code for `$b$' to a compressed file, which is 98, and move
+onto processing the rest of the word in a similar fashion. In a file full of
+repeated words, it's clear that the words added to the table only get longer and
+longer, growing by at most one character each time, while our code numbers only
+increase in bit-length each time the limit of the current bit-length is reached.
+
+Of course, a compression algorithm is useless without a corresponding
+decompression algorithm. Assume we're reading in the compressed file we
+generated from the compression example. Again, assume we have the same look-up
+table as we used for compression where each index is a word and is initialized
+with the ASCII characters, and that the next available code is 256. To
+decompress, we read one code at a time from the file. The first code that
+compression output was 97, which decodes to an `$a$'. We keep track of 97 as the
+previously read code. We move onto the next code, which is 98. This is the key
+part of LZW: at this point, not only can we decode 98 into a `$b$', but we can
+also append `$b$' onto `$a$' (which we get from decoding the previously read
+code) to create a new word ``$ab$'', which we give the next available code of
+256. This new word is now added to the table. As you can see, decompression
+mirrors what compression does but one step behind. Although the table that
+decompression and compression builds is the same, decompression needs to read
+one extra code to match the table built by compression.
+
+If the basic idea behind the compression and decompression algorithms do not
+immediately make sense to you, or if you desire a more visual representation of
+how the algorithms work, make sure to attend section; there will be a
+presentation and walkthrough of the assignment.
+
+\section{Your Task}
+
+Your task is to implement a program that performs LZW compression and
+decompression. Your program \texttt{must} be able to perform the following:
+\begin{enumerate}
+\item Compress any file, text or binary.
+\item Decompress any file, text or binary, without losing any original information.
+\item Use variable length codes up to 16 bits.
+\item Operate on little and big endian systems. \emph{Interoperability is required}.
+\item Perform read and writes in efficient blocks of 4KB.
+\end{enumerate}
+
+\section{Specifics}
+
+You will need to implement some new ADTs for this assignment: an ADT for tries
+and an ADT for words. In addition to these new ADTS, you will need to
+be concerned about variable-length codes, I/O, and endianness.
+
+\subsection{Tries}
+The most costly part of compression is checking for existing prefixes. You could
+utilize a hash table, or just an array of words to store prefixes, but that
+wouldn't be optimal, as many of the prefixes you need to store are prefixes of
+other prefixes. Instead you choose to utilize a \emph{trie}.
+
+A trie\footnote{Edward Fredkin, ``{T}rie memory.'' \emph{Communications of the
+ACM} 3, no. 9 (1960): 490--499.}
+is an efficient information re-\emph{trie}-val data structure, commonly
+known as a prefix tree. Each node in a trie represents a symbol, or a character,
+and contains $n$ child nodes, where $n$
+is the size of the alphabet you are using. In most cases, the alphabet used is
+the set of ASCII characters, so $n = 256$. You will use a trie during
+compression to store words.
+
+As an example, suppose we are searching for the word ``$hello$'' in the trie. We
+start at the root of the trie and read in the first character: `$h$'. We check
+if the root node has a child node representing `$h$' exists. If it does, we step
+down the trie to the child trie node representing `$h$', and read in the next
+character, with the node we now step from the node we just stepped down to.  If
+it doesn't, then the word doesn't exist in the trie. You repeat this process of
+stepping down the trie to check if the word exists in the trie. You \emph{must}
+follow the specification shown below when implementing your trie ADT.
+
+\begin{lstlisting}[title=trie.h]
+#ifndef __TRIE_H__
+#define __TRIE_H__
+
+#include <inttypes.h>
+#include <stdbool.h>
+
+// Typedef TrieNode to be just TrieNode.
+typedef struct TrieNode TrieNode;
+
+//
+// Struct definition for a TrieNode.
+//
+// children:   An array of TrieNode pointers.
+// code:       The TrieNode's unique code.
+//
+struct TrieNode {
+  TrieNode *children[256];
+  uint16_t code;
+};
+
+//
+// Constructor for a TrieNode.
+//
+// code: The TrieNode's unique code.
+//
+TrieNode *trie_node_create(uint16_t code);
+
+//
+// Destructor for a TrieNode.
+//
+// n: The TrieNode to be freed.
+//
+void trie_node_delete(TrieNode *n);
+
+//
+// Creates and initializes a new trie.
+// All ASCII characters are initially added as the root's children.
+//
+TrieNode *trie_create(void);
+
+//
+// Resets a trie back to its original state of only ASCII characters.
+//
+// root: The root of the trie to reset.
+//
+void trie_reset(TrieNode *root);
+
+//
+// Frees memory allocated for an entire trie.
+//
+// n: The root of the trie to free.
+//
+void trie_delete(TrieNode *n);
+
+//
+// Steps down to child the TrieNode that represents the symbol.
+// Returns NULL if the symbol doesn't exist.
+//
+// n:   The TrieNode to step from.
+// sym: The symbol to step to.
+//
+TrieNode *trie_step(TrieNode *n, uint8_t sym);
+
+#endif
+\end{lstlisting}
+
+The \texttt{TrieNode struct} will have the three fields shown above. Each trie
+node has an
+array of 256 pointers to trie nodes as children, one for each ASCII character. It should be
+easy to see how this simplifies searching for the next character in a word in
+the trie. The \texttt{code} field stores the 16-bit code for the word that ends
+with the trie node containing the code. This means that the code for
+some word ``$abc$'' would be contained in the trie node for `$c$'. Note that
+there isn't a field that indicates what character a trie node represents. This is
+because the trie node's index in its parent's array of child nodes indicates what
+character it represents. The \texttt{trie\_step()} function
+will be repeatedly called to check if a word exists in the trie. A word only
+exists if the trie node returned by the last step corresponding to the last
+character in the word isn't \texttt{NULL}.
+
+\subsection{Word Tables}
+
+Although compression can be performed using a trie, decompression still needs to
+use a look-up table for quick code to word translation. This look-up table will
+be defined as a new \texttt{struct} called a \texttt{WordTable}. Your assignment
+will only use up to 16-bit codes, so we can used a fixed word table size of
+\texttt{UINT16\_MAX}, a macro defined in \texttt{inttypes.h} as the max value a
+16-bit integer can have. Why not a hash table? Because there is a finite number
+of codes. Each index of this word table will be a new \texttt{struct} called a
+\texttt{Word}. You will store words in byte arrays, or arrays of
+\texttt{uint8\_t}'s. This is because strings in \textbf{C} are null-terminated,
+and problems with compression occur if a binary file is being compressed and
+contains null characters that are placed into strings. Since we need to know how
+long a word is, a \texttt{Word} will also have a field for storing the length of
+the byte array, since we can't use \texttt{string.h} functions like
+\texttt{strlen()} on byte arrays. You \emph {must} use the following
+specification for the new \texttt{Word} ADT.
+
+\begin{lstlisting}
+#ifndef __WORD_H__
+#define __WORD_H__
+
+#include <inttypes.h>
+
+//
+// Struct definition of a Word.
+// A word in LZW is just a byte array.
+//
+// word:    The byte array.
+// length:  The length of the word.
+//
+typedef struct Word {
+  uint8_t *word;
+  uint64_t length;
+} Word;
+
+//
+// Struct definition of a WordTable.
+// Each index is a Word.
+//
+// entries:     An array of Word pointers.
+//
+typedef struct WordTable {
+  Word *entries[UINT16_MAX];
+} WordTable;
+
+//
+// Constructor for a Word.
+//
+// word:    The byte array.
+// length:  The length of the word.
+//
+Word *word_create(uint8_t *word, uint64_t length);
+
+//
+// Destructor for a Word.
+//
+// w:   The Word.
+//
+void word_delete(Word *w);
+
+//
+// Constructor for a WordTable.
+// Is initialized with all ASCII characters.
+//
+WordTable *wt_create(void);
+
+//
+// Resets a word table to its original state of just ASCII characters.
+//
+// wt: The word table to reset.
+//
+void wt_reset(WordTable *wt);
+
+//
+// Destructor for a WordTable.
+//
+// wt:  The WordTable.
+//
+void wt_delete(WordTable *wt);
+
+#endif
+\end{lstlisting}
+
+\subsection{Codes}
+Your implementation of LZW will use \emph{variable length codes}. This means
+that the length in bits of codes that are written to a compressed file is the
+\emph{minumum number of bits needed to represent the code}. What does this mean?
+Assume we have the code of 256. The minimum number of bits needed to represent
+256 is 9, so the bit length of the code for 256 is 9. You can calculate the
+minimum number of bits to represent an integer $x$ using the formula $log_2(x) +
+1$. That being said, codes can only increase in bit length. As you know,
+compression writes codes to files and decompression reads codes from files. This
+means that decompression \emph{must} know at all times how long in bits the next
+code is. Assume that the code we are writing represents 5 and our current bit
+length is 9. Thus, since 3 bits is all that is needed to represent 5, we need to
+pad out the code with 6 zeroes, so ``101000000''.
+
+\subsection{I/O}
+
+You will need to be mindful about how I/O is done in this assignment. More
+specifically, you will need to think about how to read and write codes to and
+from files. Your initial thought might be to write each code to the output file
+after constructing it. \emph{This will not work with variable length codes.} The
+smallest unit of data you can write to a file is a \emph{byte}. If your codes
+have extra bits of padding between them, your program won't work correctly.
+Additionally, most, if not all, file systems write in blocks of 4KB, so you must
+buffer your variable length codes and characters to write efficiently in blocks
+of 4KB. The following is a module interface to help streamline all the I/O that
+will be done for this assignment.
+
+\begin{lstlisting}[title=io.h]
+#ifndef __IO_H__
+#define __IO_H__
+
+#include "word.h"
+#include <inttypes.h>
+
+#define MAGIC           0xdeadcafe
+#define BLOCK_SIZE      4096
+
+//
+// Struct definition for a compressed file's header.
+//
+// magic:      Magic number that verifies this compression program.
+// file_size:  File size of original, uncompressed file.
+// protection: Holds mask of original protection bits.
+// padding:    Padding to align struct to 32 bits.
+//
+typedef struct FileHeader {
+  uint32_t magic;
+  uint64_t file_size;
+  uint16_t protection;
+  uint16_t padding;
+} FileHeader;
+
+//
+// Reads a FileHeader struct from the input file.
+// This should read sizeof(FileHeader) bytes into the header.
+// Should verify the magic number in the header that is read in.
+// Programs with an incorrect magic number should not be decompressed.
+//
+// infile:     The input file descriptor.
+// header:     FileHeader to read into from the input file.
+//
+void read_header(int infile, FileHeader *header);
+
+//
+// Writes a FileHeader struct to the output file.
+// This should write sizeof(FileHeader) bytes from the header.
+//
+// outfile:    The output file descriptor.
+// header:     FileHeader to write from to the output file.
+//
+void write_header(int outfile, FileHeader *header);
+
+//
+// Returns the next character, or byte, from the input file.
+// Should utilize a static 4KB uint8_t array to store bytes.
+// 4KB (BLOCK_SIZE) are read into the buffer whenever the buffer is empty.
+// A byte index is used to indicate the next character to return.
+// This is called once for each byte in the input file.
+//
+// infile:     The input file descriptor.
+//
+uint8_t next_char(int infile);
+
+//
+// Adds the binary representation of a code to a buffer.
+// Should utilize a static 4KB uint8_t array to store bits.
+// The buffer is written to the output file whenever it is full.
+// The binary code to add should be padded out to bit_len bits.
+// Ex. buffer_code(outfile, 5, 6) means adding "101000".
+// A bit index is used to indicate which bit to set in the
+// buffer when adding a code.
+//
+// outfile:    The output file descriptor.
+// code:       Code to buffer.
+// bit_len:    The length in bits of the code to buffer.
+//
+void buffer_code(int outfile, uint16_t code, uint8_t bit_len);
+
+//
+// Flushes any remaining codes in the buffer used to store codes.
+// Warning: this may not necessarily mean 4KB of codes.
+//
+// outfile:    The output file descriptor.
+//
+void flush_codes(int outfile);
+
+//
+// Returns the next code in the input file.
+// Should utilize a static 4KB uint8_t array to store bits.
+// 4KB (BLOCK_SIZE) are read into the buffer whenever it is empty.
+// The binary of the next code is bit_len number of bits long.
+// Converts the binary of the next code into a uint16_t and returns it.
+// Called until main decompression loop decodes all characters.
+//
+// infile:     The input file descriptor.
+// bit_len:    The length in bits of the code to read.
+//
+uint16_t next_code(int infile, uint8_t bit_len);
+
+//
+// Adds a Word into a buffer.
+// Should utilize a static 4KB uint8_t array to store bytes.
+// The buffer is written when it's full of characters.
+// Should utilize a byte index to keep track of where each byte
+// of the Word to add should be set in the static 4KB buffer.
+// This will involve looping through the byte array in a Word.
+// Why? Each byte in the array of a Word must be buffered.
+//
+// outfile:    The output file descriptor.
+// w:          Word to buffer.
+//
+void buffer_word(int outfile, Word *w);
+
+//
+// Flushes the buffer used to store words to the output file.
+// Warning: this many not necessarily mean 4KB of characters.
+//
+// outfile:    The output file descriptor.
+//
+void flush_words(int outfile);
+
+#endif
+\end{lstlisting}
+
+Notice that there is a \texttt{struct} definition in the module interface. That
+is the \texttt{struct} definition for the file header, which contains the magic
+number for your program, the file size of the original, uncompressed file, the
+protection bit mask for the original file, and some padding to align the
+\texttt{struct} to 32 bits. The file header is the first thing that appears in a
+compressed file. The magic number field, \texttt{magic}, serves as a unique
+identifier for your program.  Your program should only be able to decompress
+files which have the same magic number in the file header. The function
+\texttt{read\_header()} reads in the header and verifies the magic number.  The
+protection bit mask comes from the original file. The output file in which you
+write to must have the same protection bits as the original file. The
+\texttt{padding} field exists solely for alignment, and thus its value does not
+matter. Before writing the file header to the compressed file using
+\texttt{write\_header()}, you must swap the endianness of the fields if
+necessary since \emph{interoperability is required}. If your program is run on a
+system using big endian, the fields must be swapped to little endian, since
+little endian is canonical. Here is another module specifically for handling
+endianness:
+
+\begin{lstlisting}[title=endian.h]
+#ifndef __ENDIAN_H__
+#define __ENDIAN_H__
+
+#include <inttypes.h>
+#include <stdbool.h>
+
+//
+// Checks if the order of bytes on the system is big endian.
+//
+static inline bool is_big(void) {
+  union {
+    uint8_t bytes[2];
+    uint16_t word;
+  } test;
+  test.word = 0xFF00;
+  return test.bytes[0];
+}
+
+//
+// Checks if the order of bytes on the system is little endian.
+//
+static inline bool is_little(void) {
+  return !is_big();
+}
+
+//
+// Swaps the endianness of a uint16_t.
+//
+// x:  The uint16_t.
+//
+static inline uint16_t swap16(uint16_t x) {
+  uint16_t result = 0;
+  result |= (x & 0x00FF) << 8;
+  result |= (x & 0xFF00) >> 8;
+  return result;
+}
+
+//
+// Swaps the endianness of a uint32_t.
+//
+// x:  The uint32_t.
+//
+static inline uint32_t swap32(uint32_t x) {
+  uint32_t result = 0;
+  result |= (x & 0x000000FF) << 24;
+  result |= (x & 0x0000FF00) << 8;
+  result |= (x & 0x00FF0000) >> 8;
+  result |= (x & 0xFF000000) >> 24;
+  return result;
+}
+
+//
+// Swaps the endianness of a uint64_t.
+//
+// x:  The uint64_t.
+//
+static inline uint64_t swap64(uint64_t x) {
+  uint64_t result = 0;
+  result |= (x & 0x00000000000000FF) << 56;
+  result |= (x & 0x000000000000FF00) << 40;
+  result |= (x & 0x0000000000FF0000) << 24;
+  result |= (x & 0x00000000FF000000) << 8;
+  result |= (x & 0x000000FF00000000) >> 8;
+  result |= (x & 0x0000FF0000000000) >> 24;
+  result |= (x & 0x00FF000000000000) >> 40;
+  result |= (x & 0xFF00000000000000) >> 56;
+  return result;
+}
+
+#endif
+\end{lstlisting}
+
+All reads and writes in this program must be done using \texttt{read()} and
+\texttt{write()}, which means that you must use the system calls \texttt{open()}
+and \texttt{close()} to get your file descriptors.  The functions in
+\texttt{io.h} that deal with \emph{reading} from files will require you to read
+4KB at a time into a static buffer, which you iterate through for each
+individual byte or bit. These functions are \texttt{next\_code()} and
+\texttt{next\_char()}. The functions in \texttt{io.h} that deal with
+\emph{writing} to files will similarly require you to store codes and words into
+a static buffer to write 4KB at a time. These functions are
+\texttt{buffer\_code()}, \texttt{buffer\_word()}, \texttt{flush\_codes()}, and
+\texttt{flush\_words()}.  \emph{Hint: you will want to use a variable that is
+designated to keep track of the byte or bit index of the static buffer you are
+using. This goes for the static buffer for both reading from and writing to
+files. This means two static 4KB uint8\_t arrays to serve as buffers: one to
+store bits/codes and the other to store characters.}
+
+So how does \texttt{buffer\_code()} work? The function takes in a file
+descriptor, a code, and a bit length as its parameters. The file descriptor is
+where to output codes to once your buffer is filled, the code is the code to
+buffer, and the bit length is the length in bits to pad the code to before
+buffering it. For example, if the code to buffer is 13 and the bit length is 9,
+what is placed into the buffer is ``101100000''. Notice that the binary placed
+into the buffer is reversed. This is because the function \texttt{next\_code()}
+reads in a set number of bits for the next code given by the bit length
+parameter and sums the bits into a \texttt{uint16\_t} code.
+
+\section{Program Options}
+You will use \texttt{getopt()} to handle the following options:
+\begin{itemize}
+    \item \texttt{-v} : verbose option
+    \item \texttt{-c} : perform compression
+    \item \texttt{-d} : perform decompression
+    \item \texttt{-i <input file>} : sets the input file (default is \texttt{stdin})
+    \item \texttt{-o <output file>} : sets the output file (default is \texttt{stdout})
+\end{itemize}
+Compression and decompression are mutually exclusive; only one may be chosen at
+a time. You should also be able to perform compression or decompression if
+\texttt{argv[0]} is ``$encode$'' or ``$decode$'' respectively. This is done
+using \emph{linked files}. Read the man page on it for details (\texttt{man
+ln}). If an input file or an output file is not specified, \texttt{stdin} and
+\texttt{stdout} are used by default respectively. If any of these conditions
+aren't held while processing command-line arguments, print an error message
+about program usage and exit with a status code indicating an error occurred.
+The verbose option enables a flag to print out informative statistics about the
+compression or decompression that is performed. These statistics include the
+original file size, the compressed file size, the compression ratio, and the
+longest word length. The formula for the compression ratio is
+$100\times(1-(\text{compressed size} / \text{original size}))$. The verbose
+output of both compression and decompression must match the following:
+
+\begin{lstlisting}
+Original file size: X
+Compressed file size: X
+Compression ratio: XX.XXXX%
+Longest word length: X
+\end{lstlisting}
+
+\section{Compression}
+The following steps for compression will refer to the input file to compress as
+\texttt{infile} and the compressed output file as \texttt{outfile}.
+
+\begin{enumerate}
+    \item Open \texttt{infile} with \texttt{open()}. If an error occurs, print a
+        helpful message and exit with a status code indicating that an error
+        occurred. If an input file name wasn't specified, set \texttt{infile} to
+        be \texttt{stdin}.
+    \item The first thing in \texttt{outfile} must be the file header, as
+        defined in the file \texttt{io.h}. The magic number in the header must
+        be \texttt{0xdeadcafe}. The file size and the protection bit mask you
+        will obtain using \texttt{fstat()}. See the man page on it for details.
+    \item Open \texttt{outfile} using \texttt{open()}. The permissions for
+        \texttt{outfile} should match the protection bits as set in your file
+        header. Any errors with opening \texttt{outfile} should be handled like
+        with \texttt{infile}. If an output file name wasn't specified, set
+        \texttt{outfile} to be \texttt{stdout}.
+    \item Write the filled out file header to \texttt{outfile} using
+        \texttt{write\_header()}. This means writing out the \texttt{struct}
+        itself to the file, as described in the comment block of the function.
+    \item Create a trie and add all 256 ASCII characters as children
+        to the trie's root. Their respective codes are their respective
+        ASCII values. You will need to make a copy of the root node and use the
+        copy to step through the trie to check for existing prefixes. This root
+        node copy will be referred to as \texttt{curr\_node}. The reason a copy
+        is needed is that you will eventually need to reset whatever trie node
+        you've stepped to back to the top of the trie, so using a copy lets you
+        use the root node as a base to return to.
+    \item You will need a monotonic counter to keep track of the next available
+        code. This counter should start at 256, since code numbers 0 --- 255
+        are reserved for each individual ASCII character that is added to the
+        trie initially. This should be a \texttt{uint16\_t} since the largest
+        code in your implementation is 16 bits. This will be referred to as
+        \texttt{next\_avail\_code}.
+    \item This is the main loop for compressing:
+        \begin{enumerate}
+            \item Get the next character from \texttt{infile} with
+                \texttt{next\_char()}. Step down the trie based on the
+                character you just read with \texttt{trie\_step()}.
+                The returned node will be referred to as \texttt{next\_node}.
+            \item If you haven't processed any characters yet, or
+                \texttt{next\_node} isn't \texttt{NULL}, set \texttt{curr\_node}
+                to be \texttt{next\_node} and move on to processing the next
+                character.
+            \item Else, \texttt{next\_node} must be \texttt{NULL}, meaning the
+                word doesn't exist in the trie. Buffer the current code stored
+                in \texttt{curr\_node} using \texttt{buffer\_code()}. The bit
+                length for the code is the minimum number of bits needed to
+                represent the next available code. You should be keeping
+                track of this using your monotonic counter. Add a new child node
+                to \texttt{curr\_node} whose code is the next available code.
+                The index of this child node is the ASCII value of the character
+                that was just read. Make sure to increment the next available
+                code counter by 1 every time you assign a word a code.
+                Reset \texttt{curr\_node} to be the child node of the trie's
+                root for the character you just read, which should be one of the
+                ASCII characters the trie was initialized with.
+            \item Check if the next available code has hit the 16-bit limit,
+                which is defined by the macro \texttt{UINT16\_MAX} in
+                \texttt{inttypes.h}. If it has, reset the trie to just having
+                the ASCII characters and reset the next available code as well
+                back to 256. We have this limit since codes are of type
+                \texttt{uint16\_t}, and we want to avoid integer overflow.
+            \item If your 4KB code buffer has filled up, write the contents to
+                \texttt{outfile}.
+        \end{enumerate}
+    \item Pseudocode for the compression loop:
+\begin{lstlisting}
+while (encoded_chars != header.file_size):
+  curr_char = next_char()
+  next_node = trie_step(curr_node, curr_char)
+
+  if (encoded_chars == 0 or next_node != NULL):
+    curr_node = next_node
+  else:
+    bit_len = log2(next_avail_code) + 1
+    buffer_code(curr_code, bit_len)
+    curr_node.children[curr_char] = trie_node_create(next_avail_code)
+    curr_node = root.children[curr_char]
+    next_avail_code += 1
+
+  if (next_avail_code == UINT16_MAX):
+    trie_reset(root)
+    curr_node = root.children[curr_char]
+    next_avail_code = 256
+\end{lstlisting}
+
+    \item After processing all the characters in \texttt{infile}, check if there
+        are any characters left in the current word. If there are, this means
+        that the word they comprise exists in the trie, so you can just buffer
+        the code for that word.
+    \item Make sure to use \texttt{flush\_codes()} to flush any codes left in
+        your code buffer.
+    \item Use \texttt{close()} to close \texttt{infile} and \texttt{outfile}.
+\end{enumerate}
+
+\section{Decompression}
+The following steps for decompression will refer to the input file to decompress
+as \texttt{infile} and the uncompressed output file as \texttt{outfile}.
+
+\begin{enumerate}
+    \item Open \texttt{infile} with \texttt{open()}. If an error occurs, print a
+        helpful message and exit with a status code indicating that an error
+        occurred. If an input file name wasn't specified, set \texttt{infile} to
+        be \texttt{stdin}.
+    \item Read in the file header with \texttt{read\_header()}, which also
+        verifies the magic number. If the magic number is verified then
+        decompression is good to go and you now have a header which contains the
+        original file's size and protection bit mask. You will be decoding
+        characters until the number of decoded characters matches the original
+        file size.
+    \item Open \texttt{outfile} using \texttt{open()}. The permissions for
+        \texttt{outfile} should match the protection bits as set in your file
+        header. Any errors with opening \texttt{outfile} should be handled like
+        with \texttt{infile}. If an output file name wasn't specified, set
+        \texttt{outfile} to be \texttt{stdout}.
+    \item Create a new word table and make sure each of its entries are set to
+        \texttt{NULL}. Initialize the table to have all ASCII characters.
+    \item You will need to store the current and
+        previously decoded words as byte arrays. You are recommended to use two
+        buffers to store the words that are initially dynamically allocated to
+        hold up to 4KB. If the buffers fill up, reallocate twice the amount of
+        space for them. The worst case scenario is wasting half the buffer
+        space.
+    \item You will need two \texttt{uint16\_t}'s to keep track of the
+        current and previously read codes.
+    \item As with compression, you will need a monotonic counter for keeping
+        track of the next available code. This counter will start at 256.
+    \item During compression, the trie is reset when the next available code
+        hits the 16-bit limit. Decompression mirrors this by resetting
+        the word table. You will need to use a flag to keep track of whether or
+        not the table was reset.
+    \item The following is the main loop for decompression:
+        \begin{enumerate}
+            \item Read in the next code with \texttt{next\_code()}. The length
+                of the next code in bits should be the minimum number of bits
+                needed to represent the
+                \emph{code after the next available code}.
+\begin{lstlisting}
+next_avail_code = 256
+bit_len = log2(next_avail_code + 1) + 1
+\end{lstlisting}
+                The reason the length in bits of the next code is the minimum
+                number of bits needed to represent the code after the next
+                available code is because compression is one step ahead of
+                decompression; decompression needs to read one extra code to add
+                a word that compression would have already added. To account
+                for this, decompression must shift code lengths one step in
+                advance so that the codes that are read match the ones what were
+                written.
+            \item Check if the current code, the code you just read using
+                \texttt{next\_code()}, already exists in the word table.
+            \item If this is the first code read or the table was just reset,
+                buffer the current word that the code decodes to (it should
+                already be in your table). Then set the previous word to be the
+                current word and move on to reading in the next code. Make sure
+                to set the reset flag to false.
+            \item If the current code already exists in the table, and
+                isn't the first code read, then copy the current code's word
+                into your current word buffer. You will create and add a new
+                entry, a \texttt{Word}, to the table. The index in the table of
+                the new entry is the next available code. The word for the new
+                entry is the previous word appended with the first character of
+                the current word. The previous word can be found in the table
+                using the previous code as the index. After adding the new
+                entry, buffer the current word and remember to increment the
+                next available code counter.
+            \item Else if it doesn't exist, you must construct and add the
+                missing code entry to the table. Set the current word to be the
+                previous word appended
+                with the first character of the previous word. The index in the
+                table of this missing entry is given by the next available code
+                (again, remember to increment the counter). You can find the
+                previous word in the table from the previous code. Add the
+                current word to your buffer designated for writing with
+                \texttt{buffer\_word()}. This is a rare edge-case for the
+                LZW decompression algorithm and can only occur when the word
+                the missing code entry corresponds to starts and ends with the
+                same character.
+            \item Set the previous code to be the current code.
+            \item You will need to reset the table like you reset the trie in
+                compression. The table is reset when the next available code
+                reaches \texttt{UINT16\_MAX - 1}. Remember that decompression is
+                one step behind compression, and thus to account for the reset
+                performed by compression, decompression has to reset the table
+                one step earlier. The table, once reset, should contain only the
+                ASCII characters. Reset the next available code counter back to
+                256, and set the reset flag to true.
+            \item If the buffer for decoded words is filled at any
+                point during the loop, write its contents out.
+            \item Continue looping until \texttt{infile} is completely decoded.
+        \end{enumerate}
+    \item Pseudocode for the decompression loop:
+\begin{lstlisting}
+while (decoded_chars != header.file_size):
+  bit_len = log2(next_avail_code + 1) + 1
+  curr_code = next_code(bit_len)
+  curr_entry = table[curr_code]
+
+  if (decoded_chars == 0 or reset):
+    buffer_word(curr_entry)
+    prev_word = curr_char
+    reset = false
+  elif (curr_entry != NULL):
+    curr_word = curr_entry.word
+    prev_entry = table[prev_code]
+    prev_word = prev_entry.word
+    new_word = prev_word.append(curr_word[0])
+    table[next_avail_code] = word_create(new_word)
+    next_avail_code += 1
+    buffer_word(curr_entry)
+    decoded_chars += curr_entry.length
+  else:
+    prev_entry = table[prev_code]
+    prev_word = prev_entry.word
+    curr_word = prev_word.append(prev_word[0])
+    missing_entry = word_create(curr_word)
+    table[next_avail_code] = missing_entry
+    next_avail_code += 1
+    buffer_word(missing_entry)
+    decoded_chars += missing_entry.length
+
+  prev_code = curr_code
+
+  if (next_avail_code == UINT16_MAX - 1):
+    wt_reset()
+    next_avail_code = 256
+    reset = true
+\end{lstlisting}
+    \item Flush any remaining decoded characters in your buffer with
+        \texttt{flush\_words()}.
+    \item The number of decoded characters should exactly match the file size
+        from the header if you decompressed \texttt{infile} correctly.
+    \item Close \texttt{infile} and \texttt{outfile} with \texttt{close()}.
+\end{enumerate}
+
+
+\section{LZW Algorithm Pseudocode}
+
+\subsection{Compression}
+\begin{lstlisting}
+write_header()
+root = trie_create()
+curr_node = root
+next_avail_code = 256
+
+while (encoded_chars != header.file_size):
+  curr_char = next_char()
+  next_node = trie_step(curr_node, curr_char)
+
+  if (encoded_chars == 0 or next_node):
+    curr_node = next_node
+  else:
+    bit_len = log2(next_avail_code) + 1
+    buffer_code(curr_node.code, bit_len)
+    curr_node.children[curr_char] = trie_node_create(next_avail_code)
+    curr_node = root.children[curr_char]
+    next_avail_code += 1
+
+  encoded_chars += 1
+
+  if (next_avail_code == UINT16_MAX):
+    trie_reset()
+    curr_node = root.children[curr_char]
+    next_avail_code = 256
+
+bit_len = log2(next_avail_code) + 1
+buffer_code(curr_code, bit_len)
+flush_codes()
+\end{lstlisting}
+
+\subsection{Decompression}
+\begin{lstlisting}
+read_header()
+table = wt_create()
+next_avail_code = 256
+reset = false
+
+while (decoded_chars != header.file_size):
+  bit_len = log2(next_avail_code + 1) + 1
+  curr_code = next_code(bit_len)
+  curr_entry = table[curr_code]
+
+  if (decoded_chars == 0 or reset):
+    buffer_word(curr_entry)
+    prev_word = curr_char
+    reset = false
+  elif (curr_entry != NULL):
+    curr_word = curr_entry.word
+    prev_entry = table[prev_code]
+    prev_word = prev_entry.word
+    new_word = prev_word.append(curr_word[0])
+    table[next_avail_code] = word_create(new_word)
+    next_avail_code += 1
+    buffer_word(curr_entry)
+    decoded_chars += curr_entry.length
+  else:
+    prev_entry = table[prev_code]
+    prev_word = prev_entry.word
+    curr_word = prev_word.append(prev_word[0])
+    missing_entry = word_create(curr_word)
+    table[next_avail_code] = missing_entry
+    next_avail_code += 1
+    buffer_word(missing_entry)
+    decoded_chars += missing_entry.length
+
+  prev_code = curr_code
+
+  if (next_avail_code == UINT16_MAX - 1):
+    wt_reset()
+    next_avail_code = 256
+    reset = true
+
+flush_words()
+
+\end{lstlisting}
+
+
+\section{Deliverables}
+You will need to turn in:
+
+\begin{enumerate}
+    \item \texttt{Makefile}:
+    \begin{itemize}
+        \item \texttt{CFLAGS=-Wall -Wextra -Werror -Wpedantic} must be included.
+        \item \texttt{CC=clang} must be specified.
+        \item \texttt{make clean} must remove all files that are compiler
+            generated.
+        \item \texttt{make infer} must run \texttt{infer} on your program.
+            Complaints generated by \texttt{infer} must be either fixed or
+            explained in your \texttt{README}.
+        \item \texttt{make} should build your program, as should
+            \texttt{make all}.
+        \item Your program should have no memory leaks.
+        \item The generated executable must be named \texttt{lzwcoder}.
+    \end{itemize}
+    \item Your program \emph{must} have the following source and header files:
+    \begin{itemize}
+        \item \texttt{trie.h}: the header file for the Trie ADT.
+        \item \texttt{trie.c}: the source file for the Trie ADT.
+        \item \texttt{word.h}: the header file for the Word ADT.
+        \item \texttt{word.c}: the source file for the Word ADT.
+        \item \texttt{io.h}: the header file for the I/O module.
+        \item \texttt{io.c}: the source file for the I/O module.
+        \item \texttt{endian.h}: the header file for the endianness module.
+        \item \texttt{main.c}: the main source file for the program which should
+            contain the implementations of the LZW compression and decompression
+            algorithms.
+    \end{itemize}
+
+    The header files listed above will all be added to your GitLab repository.
+    The \textbf{C}-files you will implement according to the functions defined
+    in the header files. Remember, your program should be able to handle
+    lossless compression/decompression for text \emph{and} binary files,
+    as well as work on little endian and big endian systems.
+
+    \item You may have other source and header files, but
+        \emph{do not try to be overly clever}.
+    \item \texttt{README.md}: This must be in markdown. This should
+        describe how to use your program and Makefile. This also contains any
+        explanations for complaints generated by \texttt{infer}.
+    \item \texttt{DESIGN.pdf}: This must be a PDF. The design document should
+        describe your design for your program with enough detail that a
+        sufficiently knowledgeable programmer would be able to replicate your
+        implementation. This does not mean copying your entire program in
+        verbatim. You should instead describe how your program works with
+        supporting pseudo-code.
+    \item We will provide a compressed file called ``\emph{<CruzID>}.lzw'' which
+        contains a unique, compressed checksum. Being able to decode this file
+        is a good indication that your program works properly. That being said,
+        it is \emph{highly recommended} that you test your program with other
+        inputs, as the graders will test with other inputs as well. Your program
+        isn't written to pass a test; it is written to \emph{work}.
+\end{enumerate}
+
+
+\section{Submission}
+
+To submit your assignment, refer back to \texttt{assignment0} for the steps on
+how to submit your assignment through \texttt{git}. Remember:
+\emph{add, commit,} and \emph{push}!
+
+\textcolor{red}{Your assignment is turned in \emph{only} after you have pushed.
+If you forget to push, you have not turned in your assignment and you will get
+a \emph{zero}. ``I forgot to push'' is not a valid excuse. It is \emph{highly}
+recommended to commit and push your changes \emph{often}.}
+
+\end{document}

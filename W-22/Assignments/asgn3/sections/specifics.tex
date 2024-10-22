@@ -1,0 +1,36 @@
+\section{Specifics}
+
+\epigraph{\emph{Vielleicht sind alle Drachen unseres Lebens
+  Prinzessinnen, die nur darauf warten uns einmal sch\"on und mutig zu
+sehen. Vielleicht ist alles Schreckliche im Grunde das Hilflose, das von
+uns Hilfe will.}}{---Rainer Maria Rilke}
+
+\noindent The following subsections cover the requirements of your test harness.
+It is crucial that you follow the instructions.
+
+\subsection{Command-line Options}
+
+Your test harness must support any combination of the following
+command-line options:
+
+\begin{itemize}
+  \item \texttt{-a}\ : Enables \emph{all} sorting algorithms.
+  \item \texttt{-b}\ : Enables Bubble Sort.
+  \item \texttt{-s}\ : Enables Shell Sort.
+  \item \texttt{-q}\ : Enables the Quicksort that utilizes a stack.
+  \item \texttt{-Q}\ : Enables the Quicksort that utilizes a queue.
+  \item \texttt{-r seed}\ : Set the random seed to \texttt{seed}.
+    The \emph{default} seed should be 13371453.
+  \item \texttt{-n size}\ : Set the array size to \texttt{size}. The
+    \emph{default} size should be 100.
+  \item \texttt{-p elements}\ : Print out \texttt{elements} number of
+    elements from the array. The \emph{default} number of elements to
+    print out should be 100. \textcolor{red}{If the size of the array is
+      less than the specified number of elements to print, print out the
+    entire array and nothing more.}
+\end{itemize}
+
+It is important to read this \emph{carefully}. None of these options are
+\emph{exclusive} of any other (you may specify any number of them,
+including \emph{zero}). The most natural data structure for this
+problem is a \emph{set}.

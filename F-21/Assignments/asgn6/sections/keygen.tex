@@ -1,0 +1,62 @@
+\section{Key Generator}
+\epigraph{\emph{This method, seemingly very clever, actually played into our hands! And so it often happens that an apparently ingenious idea is in fact a weakness which the scientific cryptographer seizes on for his solution.}}{---Herbert Yardley, \emph{The American Black Chamber}}
+
+\noindent
+Your key generator program should accept the following command-line
+options:
+\begin{itemize}
+  \item \texttt{-b}\,: specifies the minimum bits needed for the public
+    modulus $n$.
+  \item \texttt{-i}\,: specifies the number of Miller-Rabin iterations
+    for testing primes (default: 50).
+  \item \texttt{-n pbfile}\,: specifies the public key file (default:
+    rsa.pub).
+  \item \texttt{-d pvfile}\,: specifies the private key file (default:
+    rsa.priv).
+  \item \texttt{-s}\,: specifies the random seed for the random state
+    initialization (default: the seconds since the \textsc{Unix} epoch,
+    given by \texttt{time(NULL)}).
+  \item \texttt{-v}\,: enables verbose output.
+  \item \texttt{-h}\,: displays program synopsis and usage.
+\end{itemize}
+
+The program should follow these steps:
+\begin{enumerate}
+  \item Parse command-line options using \texttt{getopt()} and handle
+    them accordingly.
+  \item Open the public and private key files using \texttt{fopen()}.
+    Print a helpful error and exit the program in the event of failure.
+  \item Using \texttt{fchmod()} and \texttt{fileno()}, make sure that
+    the private key file permissions are set to \texttt{0600},
+    indicating read and write permissions for the user, and no
+    permissions for anyone else.
+  \item Initialize the random state using \texttt{randstate\_init()},
+    using the set seed.
+  \item Make the public and private keys using \texttt{rsa\_make\_pub()}
+    and \texttt{rsa\_make\_priv()}, respectively.
+  \item Get the current user's name as a string. You will want to use
+    \texttt{getenv()}.
+  \item Convert the username into an \texttt{mpz\_t} with
+    \texttt{mpz\_set\_str()}, specifying the base as 62. Then, use
+    \texttt{rsa\_sign()} to compute the signature of the username.
+  \item Write the computed public and private key to their respective
+    files.
+  \item If verbose output is enabled print the following, each with a
+    trailing newline, in order:
+    \begin{enumerate}
+      \item username
+      \item the signature \texttt{s}
+      \item the first large prime \texttt{p}
+      \item the second large prime \texttt{q}
+      \item the public modulus \texttt{n}
+      \item the public exponent \texttt{e}
+      \item the private key \texttt{d}
+    \end{enumerate}
+    All of the \texttt{mpz\_t} values should be printed with information
+    about the number of bits that constitute them, along with their
+    respective values in \emph{decimal}. See the reference key generator
+    program for an example.
+  \item Close the public and private key files, clear the random state
+    with \texttt{randstate\_clear()}, and clear any \texttt{mpz\_t}
+    variables you may have used.
+\end{enumerate}

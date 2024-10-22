@@ -1,0 +1,44 @@
+\section{Useful Commands}
+
+This section will cover some commands that you'll find useful for this
+assignment and for the course in general. This is not meant to be an exhaustive
+list. We will cover all the commands that were used to create Figure
+\ref{figure:monte_carlo}, but you may end up using commands that aren't listed.
+
+\begin{itemize}
+  \item \texttt{head} --- Prints out the first 10 lines of a file by default.
+    Can be instructed to print out a specific number of lines.
+  \item \texttt{ls} --- Lists the contents of the current working directory.
+  \item \texttt{sort} --- Prints the sorted contents of a file. The contents are
+    sorted lexicographically by default, but can be specified to be sorted
+    numerically if desired.
+  \item \texttt{uniq} --- Filters out repeated lines in a file. Can be used to
+    both filter out repeated lines and count the number of times a line was
+    repeated.
+  \item \texttt{wc} --- Prints out the word, line, and character count of a
+    file.
+\end{itemize}
+
+We have provided a brief description for each command, but should you find
+yourself wanting more information, refer to the command's \texttt{man} page. You
+can do so using \texttt{man <command>}. A \texttt{man} page (short for manual
+page) is software documentation for tools and programs found on \Unix{} systems.
+To view a \texttt{man} page:
+
+\begin{shlisting}{}
+$ man <function, program, tool>
+\end{shlisting}
+
+These manual pages are typically divided into sections, depending on
+their respective purposes. General commands are found in section 1,
+system calls in section 2, and library functions, such as the
+\texttt{printf()} function used in this assignment, are found in section
+3. So, to view the \texttt{man} page for \texttt{printf()}:
+
+\begin{shlisting}{}
+$ man 3 printf
+\end{shlisting}
+
+You will want to get into the habit of checking \texttt{man} pages. They are
+written by programmers for programmers and will be invaluable when you get to
+writing \C{} code.

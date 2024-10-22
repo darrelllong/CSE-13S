@@ -1,0 +1,56 @@
+\section{Iterating Over Hash Tables}\label{sec:iterator}
+
+You will need some mechanism to iterate over all the entries in a hash table.
+High-level languages such as \textbf{Python} and \textbf{Rust} natively provide
+iterators to do exactly this. \textbf{C}, on the other hand, provides no such
+utility. This means that you will need to implement your own hash table iterator
+type. This will be called \texttt{HashTableIterator} and should be defined in
+\texttt{ht.c}. The hash table and the hash table iterator should be implemented
+in the same file. \textcolor{red}{You must use the following \texttt{struct}
+definition for your hash table iterator.}
+
+\begin{clisting}{}
+struct HashTableIterator {
+    HashTable *table; // The hash table to iterate over.
+    uint32_t slot;    // The current slot the iterator is on.
+};
+\end{clisting}
+
+Storing each hash table entry in its own array index makes the hash table
+iterator implementation almost trivial. All an iterator needs to do is keep
+track of which slot it has iterated up to in the hash table. The following
+sections are the functions that must be implemented for your hash table iterator
+interface.
+
+\begin{funcdoc}{HashTableIterator *hti\_create(HashTable *ht)}
+  Creates a new hash table iterator. This iterator should iterate over the
+  \texttt{ht}. The \texttt{slot} field of the iterator should be initialized to
+  0.
+\end{funcdoc}
+
+\begin{funcdoc}{void hti\_delete(HashTableIterator **hti)}
+  Deletes a hash table iterator. You \emph{should not} delete the \texttt{table}
+  field of the iterator, as you may need to iterate over that hash table at a
+  later time.
+\end{funcdoc}
+
+\begin{funcdoc}{Node *ht\_iter(HashTableIterator *hti)}
+  Returns the pointer to the next valid entry in the hash table. This may
+  require incrementing the \texttt{slot} field of the iterator multiple times to
+  get to the next valid entry. Return \texttt{NULL} if the iterator has iterated
+  over the entire hash table.
+  \begin{clisting}{Example hash table iterator usage.}
+HashTable *ht = ht_create(4);
+ht_insert(ht, "hello");
+ht_insert(ht, "world");
+HashTableIterator *hti = hti_create(ht);
+Node *n = NULL;
+while ((n = ht_iter(hti)) != NULL) {
+  print("%s\n", n->word);
+}
+hti_delete(&hti);
+ht_delete(&ht);
+  \end{clisting}
+  The above code should print either "hello" then "world" or "world" then
+  "hello" depending on how the hash function works.
+\end{funcdoc}

@@ -1,0 +1,59 @@
+== Submission
+
+"The cost of freedom is always high, but Americans have always paid it. And one
+path we shall never choose, and that is the path of surrender, or submission."
+-- John F. Kennedy
+
+Now that you have learned about some useful `git` commands, it's time to put
+them to use. The steps to submitting assignments will not change throughout the
+course. If you ever forget the steps, refer back to this PDF. Remember: _add_,
+_commit_, and _push_! In the case you do mess something up, _don't panic._ Take
+a step back and think things throughly. The Internet, TAs and tutors are here as
+resources.
+
+. Add it!
+
++
+[source,bash]
+----
+$ git add CHEATING.pdf hello.c
+----
+
++
+As mentioned before, you will need to first add the files to your
+repository using the `git add <filenames>` command. You will
+be submitting these files into the `asgn0` directory.
+
+. Commit it!
+
++
+[source,bash]
+----
+$ git commit -m "Your commit message here"
+----
+
++
+Changes to these files will be committed to the repository with `git
+commit`. The command should also include a commit message describing what
+changes are included in the commit.
+
+. Push it!
+
++
+[source,bash]
+----
+$ git push
+----
+
++
+The committed changes are then sync'd up with the remote server
+using the `git push` command. You must be sure to push your
+changes to the remote server or else they will not be received by
+the graders.
+
+. Submit the commit ID on Canvas! You can find the most recent commit ID by
+  using `git log` or searching for it through the GitLab web interface.
+  [red]#Your assignment is turned in _only_ after you have pushed
+  and submitted the commit ID you want graded on Canvas. "I forgot to push"
+  and "I forgot to submit my commit ID" are not valid excuses. It is
+  _highly_ recommended to commit and push your changes _often_.#

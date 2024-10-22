@@ -1,0 +1,11 @@
+{
+  "server": "https://git.ucsc.edu",
+  "domain": "ucsc.edu",
+  "token": "ZUw7JCgH-1KYtcp2CZtW",
+  "role": "developer",
+  "repo": "https://git.ucsc.edu/euchou/cse13s-template.git",
+  "studentlist": "../students.txt",
+  "course": "cse13s",
+  "quarter": "spring",
+  "year": "2021"
+}

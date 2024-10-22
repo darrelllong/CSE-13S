@@ -1,0 +1,82 @@
+\section{Your Task}\label{sec:task}
+
+\noindent You will be writing a program called \texttt{identify} that
+identifies the top $k$ likely authors that authored an anonymous sample of text
+passed into \texttt{stdin}. Your program will need to handle the following
+command-line options:
+
+\begin{itemize}
+  \item \texttt{-d} : Specify path to database of authors and texts. The
+    default is \texttt{lib.db}.
+  \item \texttt{-n} : Specify path to file of noise words to filter out. The
+    default is \texttt{noise.txt}.
+  \item \texttt{-k} : Specify the number of matches. The default is 5.
+  \item \texttt{-l} : Specify the number of noise words to filter out. The
+    default is 100.
+  \item \texttt{-e} : Set the distance metric to use as the Euclidean distance.
+    This should be the default metric if no other distance metric is specified.
+  \item \texttt{-m} : Set the distance metric to use as the Manhattan distance.
+  \item \texttt{-c} : Set the distance metric to use as the cosine distance.
+  \item \texttt{-h} : Display program help and usage.
+\end{itemize}
+
+You will be provided with a file, \texttt{metric.h}, that enumerates each of the
+possible distance metrics and contains an array of strings, one for each
+distance metric. Your main program, implemented in \texttt{identify.c}, should
+do the following:
+
+\begin{itemize}
+  \item Create a new \texttt{Text} that contains words in the noise word file.
+    This will be the noise word \texttt{Text} that contains words to filter out.
+    Make sure that each word in the noise word \texttt{Text} is lowercased.
+  \item Create a new anonymous \texttt{Text} from text passed in to
+    \texttt{stdin}. This is the text that you want to identify. Remember to
+    filter out all the noise words in the noise word \texttt{Text} that you just
+    created.
+  \item Open up the database of authors and text files. This file, by default,
+    should be \texttt{lib.db}. The first line of this file indicates the number
+    of author/text pairs. We'll refer to this number as $n$.
+  \item Create a priority queue that can hold up to $n$ elements. This will be
+    used to efficiently find the top $k$ likely authors who authored the
+    anonymous text.
+  \item Process the rest of the lines in the database file in pairs. You will
+    need to do the following:
+    \begin{itemize}
+      \item Use \texttt{fgets()} to read in the name of an author, then use
+        \texttt{fgets()} again to read in the path to the file of text that
+        author authored. You will need to remove the newline character that
+        \texttt{fgets()} preserves.
+      \item Open up the author's file of text and use it to create a new
+        \texttt{Text} instance. If the file could not be opened, continue to the
+        next line of the database file. Remember to turn each parsed word to
+        lowercase before checking if the word should be added to the
+        \texttt{Text}.
+      \item Compute the distance between the author's \texttt{Text} and the
+        anonymous \texttt{Text}, filtering out words in the noise word
+        \texttt{Text}.
+      \item Enqueue the author's name and the computed distance into the
+        priority queue.
+    \end{itemize}
+  \item Get the top $k$ likely matches by dequeueing the priority queue. Note
+    that there may be less $k$ entries in the priority queue, depending on
+    whether or not a file could be processed.
+\end{itemize}
+
+Example program output is provided below. Note that the top $k$ matches your
+program finds should match the reference program exactly, but the displayed
+distance may differ slightly due to floating point rounding errors.
+
+\begin{shlisting}{}
+$ ./identify -k 10 < texts/william-shakespeare.txt
+Top 10, metric: Euclidean distance, noise limit: 100
+1) William Shakespeare [0.000000000000000]
+2) William D. McClintock [0.026516404305561]
+3) Dante Alighieri [0.026865145178097]
+4) Edgar Allan Poe [0.027829100437714]
+5) Johann Wolfgang von Goethe [0.027873601844574]
+6) Henry Timrod [0.028370953256889]
+7) Lew Wallace [0.028546232963706]
+8) Saxo Grammaticus [0.029282174356059]
+9) Rudyard Kipling [0.029385152618790]
+10) Various [0.029410943073263]
+\end{shlisting}

@@ -1,0 +1,185 @@
+\section{Specifics}
+
+The following subsections will cover the specifics for the encoder and
+the decoder, covering each step of the encoding and decoding algorithm.
+
+\subsection{Specifics for the Encoder}\label{encoder_specifics}
+
+For this section, the input file to compress will be referred to as
+\texttt{infile} and the compressed output file as \texttt{outfile}. Your
+encoder, after parsing command-line options with \texttt{getopt()}, must
+perform the following steps exactly to produce the correct Huffman
+encoding:
+
+\begin{enumerate}
+  \item Read through \texttt{infile} to construct a histogram. Your
+    histogram should be a simple array of 256 (\texttt{ALPHABET})
+    \texttt{uint64\_t}s.
+
+  \item Increment the count of element 0 and element 255 by one in the
+    histogram. This is so that at the very minimum, the histogram will
+    have two elements present. Do this regardless of what you read in.
+    While doing this may result in a slightly sub-optimal Huffman tree
+    later on, it is a quick and clean solution to handling the case when
+    a file has no bytes or contains only one unique symbol.
+
+  \item Construct the Huffman tree using a priority queue. This will
+    be done using \texttt{build\_tree()}.
+
+    \begin{enumerate}
+      \item Create a priority queue. For each symbol histogram where its
+        frequency is greater than $0$ (there should be at minimum two
+        elements because of step 2), create a corresponding
+        \texttt{Node} and insert it into the priority queue.
+
+      \item While there are two or more nodes in the priority queue,
+        dequeue two nodes. The first dequeued node will be the left
+        child node. The second dequeued node will be the right child
+        node. Join these nodes together using \texttt{node\_join()} and
+        enqueue the joined parent node. The frequency of the parent node
+        is the sum of its left child's frequency and its right child's
+        frequency.
+
+      \item Eventually, there will only be one node left in the priority
+        queue. This node is the \emph{root} of the constructed Huffman
+        tree.
+    \end{enumerate}
+
+  \item Construct a code table by traversing the Huffman tree. This will
+    be done using \texttt{build\_codes()}. The code table is a simple
+    array of 256 (\texttt{ALPHABET}) \texttt{Code}s.
+
+    \begin{enumerate}
+    \item Create a new \texttt{Code} \texttt{c} using \texttt{code\_init()}.
+        Starting at the root of the Huffman tree, perform a
+        \emph{post-order} traversal.
+      \item If the current node is a leaf, the current code \texttt{c}
+        represents the path to the node, and thus is the code for the
+        node's symbol. Save this code into code table.
+      \item Else, the current node must be an interior node. Push a 0 to
+        \texttt{c} and recurse down the left link.
+      \item After you return from the left link, pop a bit from
+        \texttt{c}, push a 1 to \texttt{c} and recurse down the right
+        link. Remember to pop a bit from \texttt{c} when you return from
+        the right link.
+      \end{enumerate}
+
+  \item Construct a \emph{header}. A header is defined by the following
+    \texttt{struct} definition, which will be supplied to you in
+    \texttt{header.h}:
+    \begin{clisting}{}
+typedef struct {
+    uint32_t magic;       // 32-bit magic number.
+    uint16_t permissions; // Input file permissions.
+    uint16_t tree_size;   // Emitted tree size in bytes.
+    uint64_t file_size;   // Input file size.
+} Header;
+    \end{clisting}
+
+    The header's magic number field, \texttt{magic}, should be set to
+    the macro \texttt{MAGIC}, as defined in \texttt{defines.h}. This
+    magic number identifies a file as one which has been compressed
+    using your encoder. It is crucial that you use this magic number and
+    nothing else.
+
+    The header's \texttt{permissions} field stores the original
+    permission bits of \texttt{infile}. You can get these permissions by
+    using \texttt{fstat()}. You should also set the permissions of
+    \texttt{outfile} to match the permissions of \texttt{infile} using
+    \texttt{fchmod()}.
+
+    The header's \texttt{tree\_size} field represents the number of
+    bytes that make up the Huffman tree dump. This size is calculated as
+    $(3 \times \text{unique symbols}) - 1$.
+
+    Finally, the header's \texttt{file\_size} field is the size in bytes
+    of the file to compress, \texttt{infile}. You obtain this size
+    through \texttt{fstat()} as well.
+
+  \item Write the constructed header to \texttt{outfile}.
+
+  \item Write the constructed Huffman tree to \texttt{outfile} using
+    \texttt{dump\_tree()}.
+
+  \item Starting at the beginning of \texttt{infile}, write the
+    corresponding code for each symbol to \texttt{outfile} with
+    \texttt{write\_code()}. When finished with all the symbols, make
+    sure to flush any remaining buffered codes with
+    \texttt{flush\_codes()}.
+
+  \item Close \texttt{infile} and \texttt{outfile}.
+\end{enumerate}
+
+\subsection{Specifics for the Decoder}\label{decoder_specifics}
+
+For this section, the input file to decompress will be referred to as
+\texttt{infile} and the compressed output file as \texttt{outfile}. Your
+decoder, after parsing command-line options with \texttt{getopt()}, must
+perform the following steps exactly to decode the file:
+
+\begin{enumerate}
+  \item Read in the header from \texttt{infile} and verify the magic
+    number. If the magic number does not match \texttt{0xBEEFBBAD}
+    (defined as \texttt{MAGIC} in \texttt{defines.h}), then an invalid
+    file was passed to your program. Display a helpful error message and
+    quit.
+
+  \item The \texttt{permissions} field in the header indicates the
+    permissions that \texttt{outfile} should be set to. Set the
+    permissions using \texttt{fchmod()}.
+
+  \item The size of the dumped tree is given by the \texttt{tree\_size}
+    field in the header. Read the dumped tree from \texttt{infile} into
+    an array that is \texttt{tree\_size} bytes long. Then, reconstruct
+    the Huffman tree using \texttt{rebuild\_tree()}.\label{rebuild}
+
+    \begin{enumerate}
+      \item The array containing the dumped tree will be referred to as
+        \texttt{tree\_dump}. The length of this array will be
+        \texttt{nbytes}. A stack of nodes will be needed to reconstruct
+        the tree.
+
+      \item Iterate over the contents \texttt{tree\_dump} from $0$ to
+        \texttt{nbytes}.
+
+      \item If the element of the array is an \texttt{`L'}, then the
+        next element will be the symbol for the leaf node. Use that
+        symbol to create a new node with \texttt{node\_create()}. Push
+        the created node onto the stack.
+
+      \item If the element of the array is an \texttt{`I'}, then you
+        have encountered an interior node. Pop the stack once to get the
+        \emph{right} child of the interior node, then pop again to get
+        the \emph{left} child of the interior node. Note: the pop order
+        \emph{is important}. Join the left and right nodes with
+        \texttt{node\_join()} and push the joined parent node on the
+        stack.
+
+      \item There will be one node left in the stack after you finish
+        iterating over the contents \texttt{tree\_dump}. This node is
+        the root of the Huffman tree.
+    \end{enumerate}
+
+  \item Read \texttt{infile} one bit at a time using
+    \texttt{read\_bit()}. You will be traversing down the tree one link
+    at a time for each bit that is read.
+
+    \begin{enumerate}
+      \item Begin at the root of the Huffman tree. If a bit of value 0
+        is read, then walk down to the left child of the current node.
+        Else, if a bit of value 1 is read, then walk down to the right
+        child of the current node.
+
+      \item If you find yourself at a leaf node, then write the leaf
+        node's symbol to \texttt{outfile}. Note: you may alternatively
+        buffer these symbols and write out the buffer whenever it is
+        filled (this will be more efficient). After writing the symbol,
+        reset the current node back to the root of the tree.
+
+      \item Repeat until the number of decoded symbols matches the
+        original file size, which is given by the \texttt{file\_size}
+        field in the header that was read from \texttt{infile}.
+    \end{enumerate}
+
+  \item Close \texttt{infile} and \texttt{outfile}.
+\end{enumerate}

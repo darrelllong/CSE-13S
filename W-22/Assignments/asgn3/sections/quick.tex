@@ -1,0 +1,57 @@
+\section{Quicksort}
+
+\epigraph{\emph{If debugging is the process of removing software bugs,
+then programming must be the process of putting them in.}}{---Edsger
+Dijkstra}
+
+\noindent
+Quicksort (sometimes called partition-exchange sort) was developed by
+British computer scientist C.A.R. ``Tony'' Hoare in 1959 and published
+in 1961. It is perhaps the most commonly used algorithm for sorting (by
+competent programmers).  When implemented well, it is the fastest known
+algorithm that sorts using \emph{comparisons}. It is usually two or
+three times faster than its main competitors, Merge Sort and Heapsort.
+It does, though, have a worst case performance of $O(n^2)$ while its
+competitors are strictly $O(n \log n)$ in their worst case.
+
+Quicksort is a divide-and-conquer algorithm. It partitions
+arrays into two sub-arrays by selecting an element from the array and
+designating it as a pivot. Elements in the array that are less than the
+pivot go to the left sub-array, and elements in the array that are
+greater than or equal to the pivot go to the right sub-array.
+
+Note that Quicksort is an \emph{in-place} algorithm, meaning it doesn't
+allocate additional memory for sub-arrays to hold partitioned elements.
+Instead, Quicksort utilizes a subroutine called \texttt{partition()}
+that places elements less than the pivot into the left side of the array
+and elements greater than or equal to the pivot into the right side and
+returns the index that indicates the division between the partitioned
+parts of the array. Quicksort is then applied recursively on the
+partitioned parts of the array, thereby sorting each array partition
+containing at least one element. Like with the Heapsort algorithm, the
+provided Quicksort pseudocode operates on 1-based indexing, subtracting
+one to account for 0-based indexing whenever array elements are
+accessed.
+
+\begin{pylisting}{Partition in Python}
+def partition(A: list, lo: int, hi: int):
+    i = lo - 1
+    for j in range(lo, hi):
+        if A[j - 1] < A[hi - 1]:
+            i += 1
+            A[i - 1], A[j - 1] = A[j - 1], A[i - 1]
+    A[i], A[hi - 1] = A[hi - 1], A[i]
+    return i + 1
+\end{pylisting}
+
+\begin{pylisting}{Recursive Quicksort in Python}
+# A recursive helper function for Quicksort.
+def quick_sorter(A: list, lo: int, hi: int):
+    if lo < hi:
+        p = partition(A, lo, hi)
+        quick_sorter(A, lo, p - 1)
+        quick_sorter(A, p + 1, hi)
+
+def quick_sort(A: list):
+    quick_sorter(A, 1, len(A))
+\end{pylisting}

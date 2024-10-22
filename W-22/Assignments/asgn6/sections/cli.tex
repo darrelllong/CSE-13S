@@ -1,0 +1,42 @@
+\section{Command-line Options}
+
+Your \texttt{encode} program must support the following \texttt{getopt()}
+options:
+
+\begin{itemize}
+    \item \texttt{-h} : Display program help and usage.
+    \item \texttt{-v} : Print compression statistics to \texttt{stderr}.
+    \item \texttt{-i <input>} : Specify input to compress (\texttt{stdin} by
+        default)
+    \item \texttt{-o <output>} : Specify output of compressed input
+        (\texttt{stdout} by default)
+\end{itemize}
+
+Your \texttt{decode} program must support the following \texttt{getopt()}
+options:
+
+\begin{itemize}
+    \item \texttt{-h} : Display program help and usage.
+    \item \texttt{-v} : Print decompression statistics to
+      \texttt{stderr}.
+    \item \texttt{-i <input>} : Specify input to decompress (\texttt{stdin} by
+        default)
+    \item \texttt{-o <output>} : Specify output of decompressed input
+        (\texttt{stdout} by default)
+\end{itemize}
+
+The verbose option enables a flag to print out informative statistics about the
+compression or decompression that is performed. These statistics include the
+compressed file size, the uncompressed file size, and \emph{space saving}. The
+formula for calculating space saving is:
+\[
+  100\times\left ( 1-\frac{\text{compressed size}} {\text{uncompressed size}} \right).
+\]
+The verbose output of both \texttt{encode} and \texttt{decode} must match the
+following:
+
+\begin{shlisting}{}
+Compressed file size: X bytes
+Uncompressed file size: X bytes
+Space saving: XX.XX%
+\end{shlisting}

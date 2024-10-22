@@ -1,0 +1,21 @@
+\section{Supplemental Readings}
+
+% \epigraph{\emph{The more that you read, the more things you will know. The
+% more that you learn, the more places you'll go.}}{---Dr.\ Seuss}\noindent
+
+\begin{itemize}
+  \item \textcolor{red}{\textit{Version Control with Git} by Loeliger \&
+    McCullough} $\leftarrow$ Read this! Now!
+    \begin{itemize}
+      \item Chapter 3 -- Getting Started (pg. 22--25)
+    \end{itemize}
+  \item \textit{The C Programming Language} by Kernighan \& Ritchie $\leftarrow$
+    It is a \emph{huge} mistake to not read this!
+    \begin{itemize}
+      \item Chapter 1 \S 1.1
+    \end{itemize}
+	\item \textit{vi and Vim Editors} by Robbins \& Lamb
+    \begin{itemize}
+      \item Chapter 1 \S 1.4 \& \S 1.5
+    \end{itemize}
+\end{itemize}

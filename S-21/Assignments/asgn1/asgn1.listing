@@ -1,0 +1,2 @@
+srandom(1);       // Sets the random seed as 1.
+int a = random(); // Set a as a pseudorandom number.

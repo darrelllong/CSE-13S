@@ -1,0 +1,1075 @@
+\documentclass[11pt]{article}
+
+\usepackage{fullpage}
+\usepackage{fourier}
+\usepackage{graphicx}
+\usepackage{xspace}
+\usepackage{epigraph}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{soul}
+\usepackage{multirow}
+\usepackage{clrscode3e}
+\usepackage{hyperref}
+\usepackage{wrapfig}
+\usepackage{amsmath}
+
+\hypersetup{
+    colorlinks=false
+}
+
+\input{../footer}
+\input{../lststyle}
+
+\title{Assignment 5 \\ Hamming Codes}
+\author{Prof. Darrell Long \\ CSE 13S -- Spring 2021}
+\date{
+  First \texttt{DESIGN.pdf} draft due: May 6$^\text{th}$ at 11:59\,pm PST \\
+  Assignment due: May 9$^\text{th}$ at 11:59\,pm PST
+}
+
+\begin{document}\maketitle
+
+\section{Introduction}
+
+As we know, the world is far from perfect. In the communications domain,
+this imperfection is called \emph{noise}. Noise (unwanted random
+disturbances) makes it difficult to have a reliable signal. Thus,
+transferring data through a noisy communication channel is prone to
+errors. Noisy channels are omnipresent. They are present in mobile
+phone networks and even the wires in a circuit. To counteract noisy
+interference, we add extra information to our data. This extra
+information allows us to perform error checking, and request that the
+sender retransmit any data that was incorrect. We can also add extra
+information to not only detect errors but also correct them. This
+technique is called \emph{forward error correction} (FEC). CDs, DVDs,
+and even hard drives use FEC to account for scratches or bad sectors. In
+fact, most of our digital world such as Netflix would not be possible
+without FEC.
+
+\section{Hamming Codes}
+
+\epigraphwidth=0.75\textwidth
+\epigraph{
+  Hamming: \emph{If you come to the Navy School, I will teach you how to be a great scientist.}\\
+  Long: \emph{And if I go to Santa Cruz, will you still teach me?}\\
+  Hamming: \emph{No.}
+}{Lunch with Richard Hamming}
+
+\begin{wrapfigure}{r}{0.15\textwidth}
+\includegraphics[width=0.15\textwidth]{images/hamming.jpeg}
+\centerline{\small Richard Hamming}
+\end{wrapfigure}
+
+Richard Wesley Hamming was an American applied mathematician whose work
+had profound impact on computer engineering and telecommunications. His
+contributions include the Hamming code (which makes use of a Hamming
+matrix), the Hamming window, Hamming numbers, sphere-packing (or Hamming
+bound), and the Hamming distance. Hamming served as president of the
+Association for Computing Machinery from 1958 to 1960.
+
+He used to joke that he was the \emph{anti-Huffman}: David Huffman, the
+inventor of Huffman codes and a professor here at Santa Cruz, was a
+friend. Hamming added redundancy for reliability, while Huffman focused
+on removing it for efficiency.
+
+In later life, Hamming became interested in teaching. From 1960 and
+1976, before he left Bell Laboratories, he held visiting positions at
+Stanford University, Stevens Institute of Technology, the City College
+of New York, the University of California at Irvine and Princeton
+University. After retiring from the Bell Laboratories in 1976, Hamming
+took a position at the Naval Postgraduate School in Monterey,
+California, where he worked as an adjunct professor and senior lecturer
+in computer science, and devoted himself to teaching and writing books.
+
+He spent significant effort in trying to recruit a young Dr.\xspace
+Long, telling him that ``If you come to the Navy School, I will teach
+you how to be a great scientist.'' Dr.\xspace Long replied, ``If I go to
+Santa Cruz, will you still teach me?'' To which Hamming replied, simply,
+``No.'' Sadly, it was an opportunity lost.
+
+\subsection{Bits, Nibbles, and Bytes}
+
+Around 1948, John Wilder Tukey, an American mathematician, coined the
+word \emph{bit} to replace the mouthful that was \emph{binary digit}. A
+bit is the basic unit of information for digital systems. It represents
+a logical state with only two possible values, either a 1 or 0, on or
+off, true or false. But one bit is rather limiting. As a result,
+multiple bits were packed together to make up a \emph{nibble} (4 bits
+with $2^4$ states) or a \emph{byte} (8 bits with $2^8$ states).
+
+\subsection{Overview}
+
+Hamming codes are a linear error-correcting code invented by Richard W.
+Hamming \footnote{R. W. Hamming, ``Error detecting and error correcting
+codes,'' \textit{The Bell System Technical Journal}, April 1950.} to
+correct errors caused by punched card readers.  But, we will be using
+them to correct errors caused by random bit-flips (noise). He introduced
+the Hamming(7,4) code that encodes 4 bits of data $D$ in 7 bits by
+adding 3 redundant or parity $P$ bits. An explanation of parity bits
+will be given through an example. This code can detect and correct
+\emph{one} error. With 7 possible errors, 3 parity bits can identify
+which bit is incorrect ($2^3 - 1 = 7$).
+
+The Hamming(7,4) code is shown in table \ref{ham7,4} where the Hamming
+code's \emph{least significant bit} (LSB) is at index $001_2$ and the
+\emph{most significant bit} (MSB) is in position $111_2$. While normally
+in practice we begin counting at 0, the importance of starting the count
+at 1 and in binary will be evident in the next paragraphs.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{ |c|c|c|c|c|c|c|c| }
+     \hline
+     Index & $111_2$ & $110_2$ & $101_2$ & $100_2$ & $011_2$ & $010_2$ & $001_2$ \\
+     \hline \hline
+     Hamming code & $D_3$ & $D_2$ & $D_1$ & $P_2$ & $D_0$ & $P_1$ & $P_0$ \\
+     \hline
+  \end{tabular}
+  \caption{Hamming(7,4) code with data bits $D$ and parity bits $P$.}
+  \label{ham7,4}
+\end{table}
+
+
+You might notice that each parity bit's index has only one bit set (a
+power of 2). $P_0$'s index ($001_2$) has the $0^\text{th}$ bit set, and you
+might notice that the index for $D_0$, $D_1$, and $D_3$ also have the
+$0^\text{th}$ bit set. Thus, $P_0$ is calculated over $D_0$, $D_1$, and
+$D_3$, \textit{i.e.}, $P_0$ is set if the data bits have an odd number
+of 1s. This is an \emph{even} parity scheme. With an odd parity scheme,
+the parity bit is set if by setting it there are an odd number of 1s. We
+could use an odd parity scheme, but for this assignment, we will be
+using an even parity.
+
+We can calculate $P_1$ and $P_2$ in the same way where $P_i$ is
+calculated over the data bits whose index has the $i^\text{th}$ bit set. The
+formulas for the three parity bits $P_i$ are shown below.
+\begin{equation*}
+  \begin{split}
+    P_0 &= D_0 \oplus D_1 \oplus D_3 \\
+    P_1 &= D_0 \oplus D_2 \oplus D_3 \\
+    P_2 &= D_1 \oplus D_2 \oplus D_3
+  \end{split}
+\end{equation*}
+
+\noindent As a result, each data bit has at least two parity bits that
+will help recover its value should an error occur. The overlap of parity
+bits also keeps them in check (parity bits can be erroneously flipped
+too). For example, the Hamming code for $0001_2$ is shown in table
+\ref{ham7,4-ex}.  From here on, the index will follow convention and
+start at 0 and in decimal.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{ |c|c|c|c|c|c|c|c| }
+    \hline
+    Index & 6 & 5 & 4 & 3 & 2 & 1 & 0 \\
+    \hline \hline
+    Label & $D_3$ & $D_2$ & $D_1$ & $P_2$ & $D_0$ & $P_1$ & $P_0$ \\
+    \hline
+    Hamming code & $0$ & $0$ & $0$ & $0$ & $1$ & $1$ & $1$ \\
+    \hline
+  \end{tabular}
+  \caption{Hamming(7,4) code for $0001_2$.}
+  \label{ham7,4-ex}
+\end{table}
+
+\noindent The values of parity bits $P_0$, $P_1$, and $P_2$ are
+calculated as follows:
+\begin{equation*}
+  \begin{split}
+    P_0 &= D_0 \oplus D_1 \oplus D_3 = 1 \oplus 0 \oplus 0 = 1 \\
+    P_1 &= D_0 \oplus D_2 \oplus D_3 = 1 \oplus 0 \oplus 0 = 1 \\
+    P_2 &= D_1 \oplus D_2 \oplus D_3 = 0 \oplus 0 \oplus 0 = 0
+  \end{split}
+\end{equation*}
+
+We currently have a \emph{non-systematic} code, a code where the parity
+bits are interspersed throughout the code. While this is fine for a
+hardware implementation, it is tedious to do in software.  Instead, we
+will be using a \emph{systematic} code, a code where the parity bits are
+placed after the data bits. We will also be extending the Hamming(7,4)
+code by adding one more parity bit to make this a Hamming(8,4) code. The
+extra parity bit, $P_3$, is calculated over $P_0$--$P_2$ and
+$D_0$--$D_3$. If $P_3$ for a received code is incorrect then we know an
+error has occurred. Either $P_3$ is incorrect or one of the the bits in
+the code is incorrect. This extension has two additional benefits.
+First, each code is a byte rather than seven bits. Second, we can now
+detect two errors but only correct one. The new Hamming code is shown
+below.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{ |c|c|c|c|c|c|c|c|c| }
+    \hline
+    Index & 7 & 6 & 5 & 4 & 3 & 2 & 1 & 0 \\
+    \hline
+    \hline
+    Hamming code & $P_3$ & $P_2$ & $P_1$ & $P_0$ & $D_3$ & $D_2$ & $D_1$ & $D_0$ \\
+    \hline
+  \end{tabular}
+  \caption{Hamming(8,4) systematic code, an extension of the Hamming(7,4) code.}
+  \label{ham8,4}
+\end{table}
+
+\noindent The values of parity bits $P_0$, $P_1$, $P_2$, and $P_3$ are
+calculated as follows:
+\begin{equation*}
+\begin{split}
+    P_0 &= D_1 \oplus D_2 \oplus D_3 \\
+    P_1 &= D_0 \oplus D_2 \oplus D_3 \\
+    P_2 &= D_0 \oplus D_1 \oplus D_3 \\
+    P_3 &= D_0 \oplus D_1 \oplus D_2 \oplus D_3 \oplus P_0 \oplus P_1
+    \oplus P_2 = D_0 \oplus D_1 \oplus D_2 \\
+\end{split}
+\end{equation*}
+
+\subsection{Encoding}
+
+One approach to generating a Hamming code for a message is to calculate
+the parity bits one-by-one and appending them to the end of the message.
+Instead, we can use a generator matrix, $\boldsymbol{G}$.  Given a
+message, $\Vec{m}$, of four bits (a nibble) we can generate its Hamming
+code, $\Vec{c}$, by vector-matrix multiplication $\Vec{c} =
+\Vec{m}\boldsymbol{G}$ where the resulting code is eight bits in size (a
+byte). $\boldsymbol{G}$ is defined as:
+
+\begin{equation*}
+  \boldsymbol{G} =
+  \begin{pmatrix}
+    1 & 0 & 0 & 0 & 0 & 1 & 1 & 1 \\
+    0 & 1 & 0 & 0 & 1 & 0 & 1 & 1 \\
+    0 & 0 & 1 & 0 & 1 & 1 & 0 & 1 \\
+    0 & 0 & 0 & 1 & 1 & 1 & 1 & 0 \\
+  \end{pmatrix}.
+\end{equation*}
+
+\noindent Vector-matrix multiplication for a vector $\Vec{y}$ of size
+$n$ and matrix $\boldsymbol{A}$ of size $n \times n$ where $\Vec{y} =
+\Vec{x}\boldsymbol{A}$ is defined as:
+\begin{equation*}
+  \begin{split}
+    y_{i} = \sum\limits_{k=1}^n x_k \cdot A_{i,k}
+  \end{split}.
+\end{equation*}
+
+Those of you with exposure to linear algebra (helpful but not required)
+will notice the left half of $\boldsymbol{G}$ is the identity matrix
+\textit{I} (1s along the diagonal). This ensures the first four bits of
+the Hamming code are the data bits while the right half is used to
+calculate the parity of message (notice the 0s along the diagonal).
+Generating the Hamming Code for $\Vec{m} = \begin{pmatrix} 0 & 0 & 1 & 1
+\end{pmatrix}$ ($1100_2$ in binary) is shown below.
+\textcolor{red}{Note: binary is read from right to left with the LSB in
+the rightmost position and the MSB in the leftmost position. Vectors
+(arrays) are read from left to right.}
+
+\begin{align*}
+    \Vec{c} &=
+      \bordermatrix{~ & 0 & 1 & 2 & 3 \cr
+        ~ & 0 & 0 & 1 & 1 \cr}
+    \begin{pmatrix}
+    1 & 0 & 0 & 0 & 0 & 1 & 1 & 1 \\
+    0 & 1 & 0 & 0 & 1 & 0 & 1 & 1 \\
+    0 & 0 & 1 & 0 & 1 & 1 & 0 & 1 \\
+    0 & 0 & 0 & 1 & 1 & 1 & 1 & 0
+  \end{pmatrix} \pmod{2} \\
+   &= \begin{pmatrix}0 & 0 & 1 & 1 & 2 & 2 & 1 & 1\end{pmatrix} \pmod{2} \\
+   &=\begin{pmatrix}0 & 0 & 1 & 1 & 0 & 0 & 1 & 1\end{pmatrix}
+\end{align*}
+
+\noindent In binary, $\Vec{c}$ is equivalent to $1100$ $1100_2$.
+
+\textcolor{red}{Note: Addition and multiplication is $\mathrm{mod}\ 2$ in
+binary.} You might remember from CSE 12 that $\bigoplus$ (exclusive-or)
+is the summing function and can be used in lieu of addition, and
+$\wedge$ (logical and) can substitute multiplication. These operations
+have the added benefit of operating in mod 2.
+
+\begin{equation*}
+    \begin{split}
+        a \oplus b &= a + b \pmod{2} \\
+        a \wedge b &= a \times b \pmod{2}
+    \end{split}
+\end{equation*}
+
+\subsection{Decoding}
+
+The process for decoding a Hamming code is similar to encoding a message
+as it uses a parity-checker matrix, $\boldsymbol{H}$, to identify any
+errors and recover the original message if an error occurred.  To decode
+a message, the code is multiplied by the transpose of the parity-checker
+matrix, $\Vec{e} = \Vec{c}\boldsymbol{H^\intercal}$ where $\Vec{e}$ is
+the \emph{error syndrome}, $\Vec{c}$ is the Hamming code, and
+$\boldsymbol{H}$ is defined as
+
+\begin{equation*}
+  \boldsymbol{H} =
+  \begin{pmatrix}
+    0 & 1 & 1 & 1 & 1 & 0 & 0 & 0 \\
+    1 & 0 & 1 & 1 & 0 & 1 & 0 & 0 \\
+    1 & 1 & 0 & 1 & 0 & 0 & 1 & 0 \\
+    1 & 1 & 1 & 0 & 0 & 0 & 0 & 1
+  \end{pmatrix}.
+\end{equation*}
+
+However, $\Vec{e} \neq \Vec{m}$.  Instead, $\Vec{e}$, the \emph{error
+syndrome}, is a pattern of bits that identifies the error if there is
+one. For example, if $\Vec{e} = [0, 1, 1, 1]$, matching
+$\boldsymbol{H}^\intercal$'s first row, then we know the error lies in
+the $0^\text{th}$ bit and flipping the $0^\text{th}$ bit in $\Vec{c}$
+will correct the error (remember the first four bits in the Hamming code
+are the data bits). If $\Vec{e} = \boldsymbol{0}$ then our message does
+not contain an error. But, if the error syndrome is non-zero and the
+vector is not one of $\boldsymbol{H}^\intercal$'s rows then we cannot
+correct the error since more than one bit has been flipped.
+
+For example, to decode $\Vec{c}$ calculated earlier, we can do the following:
+
+\begin{align*}
+  \Vec{e}&=\Vec{c}\boldsymbol{H^{\intercal}} =
+  \bordermatrix{
+    ~ & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7\cr
+    ~ & 0 & 0 & 1 & 1 & 0 & 0 & 1 & 1\cr
+  }
+  \begin{pmatrix}
+     0 & 1 & 1 & 1 \\
+     1 & 0 & 1 & 1 \\
+     1 & 1 & 0 & 1 \\
+     1 & 1 & 1 & 0 \\
+     1 & 0 & 0 & 0 \\
+     0 & 1 & 0 & 0 \\
+     0 & 0 & 1 & 0 \\
+     0 & 0 & 0 & 1
+  \end{pmatrix} \pmod{2} \\
+  &= \begin{pmatrix}0 & 0 & 0 & 0 \end{pmatrix}.
+\end{align*}
+
+\noindent Since $\Vec{e} = \begin{pmatrix}0 & 0 & 0 & 0 \end{pmatrix}$,
+we know our message arrived with no errors. Since this is a systematic
+code, $\Vec{m} = \begin{pmatrix}0 & 0 & 1 & 1 \end{pmatrix}$ (the first
+four elements in $\Vec{c}$).
+
+If the second bit had been flipped due to noise and we received $\Vec{c}
+= \begin{pmatrix}0 & 1 & 1 & 1 & 0 & 0 & 1 & 1\end{pmatrix}$ instead, we
+can calculate $\Vec{e}$ to identify the flipped bit.
+
+\begin{align*}
+    \Vec{e} &=\Vec{c}\boldsymbol{H^{\intercal}} =\begin{pmatrix}0 & 1 & 1 & 1 & 0 & 0 & 1 & 1\end{pmatrix}
+    \begin{pmatrix}
+         0 & 1 & 1 & 1 \\
+         1 & 0 & 1 & 1 \\
+         1 & 1 & 0 & 1 \\
+         1 & 1 & 1 & 0 \\
+         1 & 0 & 0 & 0 \\
+         0 & 1 & 0 & 0 \\
+         0 & 0 & 1 & 0 \\
+         0 & 0 & 0 & 1
+    \end{pmatrix} \pmod{2} \\
+    &= \begin{pmatrix}1 & 0 & 1 & 1 \end{pmatrix}.
+\end{align*}
+
+\noindent Since $\Vec{e} = \begin{pmatrix}1 & 0 & 1 & 1 \end{pmatrix}$,
+which is $\boldsymbol{H}^\intercal$'s second row, we know the second
+element in $\Vec{c}$ was erroneously flipped. Flipping the value of the
+second element gives us $\Vec{c} = \begin{pmatrix}0 & 0 & 1 & 1 & 0 & 0
+& 1 & 1\end{pmatrix}$.  As a result, $\Vec{m} = \begin{pmatrix}0 & 0 & 1
+& 1\end{pmatrix}$ or $1100_2$, the original message. One possible method
+to determine which bit to flip is to compare the error syndrome with
+each row in $\boldsymbol{H}^\intercal$, but section~\ref{ham_dec} will go over
+an optimal approach involving lookup tables.
+
+\section{Bit Vector}
+
+A \textit{\textbf{bit vector}} is an ADT that represents a one
+dimensional array of bits, the bits in which are used to denote if
+something is true or false (1 or 0). This is an efficient ADT since, in
+order to represent the truth or falsity of a bit vector of $n$ items, we
+can use $\lfloor{n / 8}\rfloor + 1$ \texttt{uint8\_t}s instead of $n$,
+and being able to access $8$ indices with a single integer access is
+extremely cost efficient. Since we cannot directly access a bit, we must
+use bitwise operations to get, set, and clear a bit within a byte.
+
+\begin{codelisting}{}
+struct BitVector {
+    uint32_t length; // Length in bits.
+    uint8_t *vector; // Array of bytes.
+};
+\end{codelisting}
+
+\subsection{\texttt{BitVector *bv\_create(uint32\_t length)}}
+
+The constructor for a bit vector. In the event that sufficient memory
+cannot be allocated, the function must return \texttt{NULL}. Else, it
+must return a \texttt{(BitVector *)}, or a pointer to an allocated
+\texttt{BitVector}. Each bit of the bit vector should be initialized to
+0.
+
+\subsection{\texttt{void bv\_delete(BitVector **v)}}
+
+The destructor for a bit vector. Remember to set the pointer to
+\texttt{NULL} after the memory associated with the bit vector is freed.
+
+\subsection{\texttt{uint32\_t bv\_length(BitVector *v)}}
+
+Returns the length of a bit vector.
+
+\subsection{\texttt{void bv\_set\_bit(BitVector *v, uint32\_t i)}}
+
+Sets the $i^\text{th}$ bit in a bit vector. To set a bit in a bit
+vector, it is necessary to first locate the byte in which the
+$i^\text{th}$ resides. The location of the byte is calculated as
+\texttt{i / 8}. The position of the bit in that byte is calculated as
+\texttt{i \% 8}. Setting a bit in a bit vector should not modify any of
+the other bits.
+
+\subsection{\texttt{void bv\_clr\_bit(BitVector *v, uint32\_t i)}}
+
+Clears the $i^\text{th}$ bit in the bit vector.
+
+\subsection{\texttt{uint8\_t bv\_get\_bit(BitVector *v, uint32\_t i)}}
+
+Returns the $i^\text{th}$ bit in the bit vector.
+
+\subsection{\texttt{void bv\_xor\_bit(BitVector *v, uint32\_t i, uint8\_t bit)}}
+
+\texttt{XOR}s the $i^\text{th}$ bit in the bit vector with the value of
+the specified \texttt{bit}.
+
+\subsection{\texttt{void bv\_print(BitVector *v)}}
+
+A debug function to print a bit vector. You will want to do this first
+in order to verify the correctness of your bit vector implementation.
+
+\section{Bit Matrix}
+
+In this assignment, we will define a bit matrix ADT, which will be an
+abstraction over a bit vector. That is, given an $m \times n$ bit matrix
+$M$, $0 \leq r < m$, and $0 \leq c < n$, then $M_{r, c}$ corresponds
+with index $\texttt{r * n + c}$ in the underlying bit vector. Using this
+bit matrix abstraction will help when performing matrix multiplication
+$\mathrm{mod}\ 2$ when encoding and decoding Hamming codes.
+
+\begin{codelisting}{}
+struct BitMatrix {
+    uint32_t rows;
+    uint32_t cols;
+    BitVector *vector;
+};
+\end{codelisting}
+
+\subsection{\texttt{BitMatrix *bm\_create(uint32\_t rows, uint32\_t cols)}}
+
+The constructor for a bit matrix. In the event that sufficient memory
+cannot be allocated, the function must return \texttt{NULL}. Else, it
+must return a \texttt{(BitMatrix *)}, or a pointer to an allocated
+\texttt{BitMatrix}. The number of bits in the bit matrix is calculated
+as \texttt{row} $\times$ \texttt{cols}. Each bit should be initialized
+to 0.
+
+\subsection{\texttt{void bm\_delete(BitMatrix **m)}}
+
+The destructor for a bit matrix. Remember to set the pointer to
+\texttt{NULL} after the memory associated with the bit matrix is freed.
+
+\subsection{\texttt{uint32\_t bm\_rows(BitMatrix *m)}}
+
+Returns the number of rows in the bit matrix.
+
+\subsection{\texttt{uint32\_t bm\_cols(BitMatrix *m)}}
+
+Returns the number of columns in the bit matrix.
+
+\subsection{\texttt{void bm\_set\_bit(BitMatrix *m, uint32\_t r, uint32\_t c)}}
+
+Sets the bit at row \texttt{r} and column \texttt{c} in the bit matrix.
+Remember, given an $m \times n$ bit matrix $M$, $0 \leq r < m$, and $0
+\leq c < n$, then $M_{r, c}$ corresponds with index \texttt{r * n + c}
+in the underlying bit vector. Setting a bit should not modify any of the
+other bits.
+
+\subsection{\texttt{void bm\_clr\_bit(BitMatrix *m, uint32\_t r,
+uint32\_t c)}}
+
+Clears the bit at row \texttt{r} and column \texttt{c}. Clearing a bit
+should not modify any of the other bits.
+
+\subsection{\texttt{uint8\_t bm\_get\_bit(BitMatrix *m, uint32\_t r, uint32\_t c)}}
+
+Gets the bit at row \texttt{r} and column \texttt{c}. Getting a bit
+should not modify any of the other bits.
+
+\subsection{\texttt{BitMatrix *bm\_from\_data(uint8\_t byte, uint32\_t length)}}
+
+We will occasionally need to transform the first \texttt{length} number
+of bits in a byte into a bit matrix. The returned bit matrix should have
+the dimensions $1 \times \texttt{length}$. The value of \texttt{length}
+should never be greater than 8, since we will only need to transform
+codes (8 bits) or nibbles of data (4 bits) into bit matrices.
+
+\subsection{\texttt{uint8\_t bm\_to\_data(BitMatrix *m)}}
+
+Extracts the first 8 bits of a bit matrix, returning those bits as a
+\texttt{uint8\_t}. Hint: since there are 8 bits in a byte, what would be
+the most efficient way of getting these bits?
+
+\subsection{\texttt{BitMatrix *bm\_multiply(BitMatrix *A, BitMatrix *B)}}
+
+Performs a true matrix multiply, multiplying bit matrix \texttt{A} and
+bit matrix \texttt{B} $\mathrm{mod}\ 2$. Returns a new bit matrix that
+holds the result of the multiplication. Remember, given an $m \times n$
+matrix $A$  and an $n \times p$ matrix $B$, the $m \times p$ matrix
+product $C$ is defined as follows for $1 \le i \le m$ and $1 \le j
+\le p$:
+
+\[
+  C_{i,j} = \sum_{k = 1}^{n} A_{i,k} \times B_{k,j}.
+\]
+
+\subsection{\texttt{void bm\_print(BitMatrix *m)}}
+
+A debug function to print a bit matrix. You will want to do this first
+in order to verify the correctness of your bit matrix implementation.
+
+\section{Hamming Code Module}
+
+This module will implement the Hamming(8,4) code described in \S 2.2.
+The API is defined in \texttt{hamming.h}. As with all provided header
+files, \textcolor{red}{you may not modify \texttt{hamming.h}}. The
+implementation of the module should be defined in \texttt{hamming.c}.
+
+\subsection{\texttt{HAM\_STATUS}}
+
+The module will contain enumerated status codes that reflect the
+different possible cases that can occur when decoding. \texttt{HAM\_OK}
+will indicate that no corrections were needed when decoding.
+\texttt{HAM\_CORRECT} will indicate that an error was detected and
+corrected when decoding. Lastly, \texttt{HAM\_ERR} will indicate that
+more than error was detected and a code could not be properly decoded.
+These status codes are provided in \texttt{hamming.h}.
+
+\begin{codelisting}{}
+typedef enum HAM_STATUS {
+    HAM_OK      = -3,  // No error detected.
+    HAM_ERR     = -2,  // Uncorrectable.
+    HAM_CORRECT = -1   // Detected error and corrected.
+} HAM_STATUS;
+\end{codelisting}
+
+%\subsubsection{\texttt{ham\_rc ham\_init(void)}}
+%This should be called before any function in the module as it creates and initializes
+%the $\boldsymbol{G}$ and $\boldsymbol{H}$ Bit Matrix ADTs. If creating either of them
+%fails, it must return \texttt{HAM\_ERR} or \texttt{HAM\_OK} otherwise.
+%
+%\subsubsection{\texttt{void ham\_rc ham\_destroy(void)}}
+%To prevent any memory leaks, the Hamming module must free any memory it allocated.
+%To check for memory leaks, you must use \texttt{valgrind}.
+%\textcolor{red}{Your program must pass valgrind cleanly.}
+
+\subsection{\texttt{uint8\_t ham\_encode(BitMatrix *G, uint8\_t msg)}}
+
+Generates a Hamming code given a nibble of data stored in the lower of
+nibble of \texttt{msg} and the generator matrix $\boldsymbol{G}$.
+Returns the generated Hamming code, which is stored as a byte, or a
+\texttt{uint8\_t}.
+
+\subsection{\texttt{HAM\_STATUS ham\_decode(BitMatrix *Ht, uint8\_t
+code, uint8\_t *msg)}} \label{ham_dec}
+
+Decodes the Hamming code using the transpose of the parity-checker
+matrix, $\boldsymbol{H}^\intercal$, and passes back the decoded data
+through the pointer \texttt{msg}. The decoded data bits should
+constitute the lower nibble. If no correction is needed when decoding
+\texttt{code}, return \texttt{HAM\_OK}. If one error is detected and
+corrected, return \texttt{HAM\_CORRECT}. In the event that more than one
+error is detected, return \texttt{HAM\_ERR} to indicate an uncorrectable
+error without modifying \texttt{msg}.
+
+To avoiding comparing the error syndrome with each row in
+$\boldsymbol{H}^\intercal$ until a match is found (or no match is found
+and the error cannot be corrected), we can refer to a lookup table. A
+lookup table is an array that contains precomputed information that is
+referred to often. By constructing a lookup table, we can avoid
+performing the same computation many times at the expense of storing the
+table in memory (in this case, storing $2^4$ or 16 bytes is
+\emph{negligible}). The index to the table will be the error syndrome
+and the value is the bit(start counting at 0) that needs to be flipped
+if the error can be corrected. Thus, if $\Vec{e} = \begin{pmatrix}1 & 0
+& 1 & 1 \end{pmatrix}$ or $1101_2$ ($13_{10}$), then
+$\texttt{table[13]} = 1$. If the error cannot be corrected then
+$\texttt{table[$\Vec{e}$]\;= HAM\_ERR}$.
+
+\medskip
+\begin{prelab}{Pre-lab Questions}
+    \begin{enumerate}
+        \item Complete the rest of the look-up table shown below.\\
+        \begin{tabular}{ c|c }
+            0 & 0 \\
+            1 & 4 \\
+            $\cdots$ & $\cdots$ \\
+            15 & HAM\_ERR
+        \end{tabular}
+        \item Decode the following codes. If it contains an error, show
+          and explain how to correct it. Remember, it is possible for a
+          code to be uncorrectable.
+        \begin{enumerate}
+            \item $1110$ $0011_2$
+            \item $1101$ $1000_2$
+        \end{enumerate}
+    \end{enumerate}
+\end{prelab}
+
+\section{Your Task}
+
+You will be creating two programs for this assignment: an \emph{encoder}
+and a \emph{decoder}. The encoder will generate Hamming codes given
+input data and the decoder will decode the generated Hamming codes. Both
+will operate with the Hamming(8, 4) systematic code. The generator
+matrix $\boldsymbol{G}$ and the transpose of the parity-checker matrix,
+$\boldsymbol{H}^\intercal$, will be represented with bit matrices.
+
+They must read from \texttt{stdin} by default or a file and write to
+\texttt{stdout} by default \emph{or a file}. Thus, they should support
+command-line arguments, \texttt{-i} and \texttt{-o}, to specify input
+and/or output files.  The decoder will also print statistics such as
+total bytes processed, uncorrected errors, corrected errors, and the
+error rate to \texttt{stderr}.
+
+\subsection{Encoder Command-line Options}
+
+Your encoder program, named \texttt{encode}, must support any
+combination of the following command-line options.
+
+\begin{itemize}
+  \item \textbf{\texttt{-h}}\,: Prints out a help message describing the purpose
+    of the program and the command-line options it accepts, exiting the
+    program afterwards. Refer to the reference program in the resources
+    repo for an idea of what to print.
+  \item \textbf{\texttt{-i infile}}\,: Specify the input file path
+    containing data to encode into Hamming codes. The default input
+    should be set as \texttt{stdin}.
+  \item \textbf{\texttt{-o outfile}}\,: Specify the output file path to
+    write the encoded data (the Hamming codes) to. If not specified, the
+    default output should be set as \texttt{stdout}.
+\end{itemize}
+
+\subsection{Decoder Command-line Options}
+
+Your decoder program, named \texttt{decode}, will need to support the
+same command-line options that your encoder does, plus an option to
+trigger the verbose printing of statistics.
+
+\begin{itemize}
+  \item \textbf{\texttt{-h}}\,: Prints out a help message describing the purpose
+    of the program and the command-line options it accepts, exiting the
+    program afterwards. Refer to the reference program in the resources
+    repo for an idea of what to print.
+  \item \textbf{\texttt{-i infile}}\,: Specify the input file path
+    containing Hamming codes to decode. The default input
+    should be set as \texttt{stdin}.
+  \item \textbf{\texttt{-o outfile}}\,: Specify the output file path to
+    write the decoded Hamming codes to. If not specified, the default
+    output should be set as \texttt{stdout}.
+  \item \textbf{\texttt{-v}}\,: Prints statistics of the decoding
+    process to \texttt{stderr}. The statistics to print are the total
+    bytes processed, uncorrected errors, corrected errors, and the error
+    rate. The error rate is defined as $(\text{uncorrected errors} /
+    \text{total bytes processed})$, the ratio of uncorrected errors to
+    total bytes processed.
+\end{itemize}
+
+\subsection{Example Program Output}
+
+\begin{figure}[ht]
+\begin{centering}
+  \begin{lstlisting}[style=bashstyle]
+ $ ./encode -i frankenstein.txt | ./decode | diff - frankenstein.txt
+ Total bytes processed: 902092
+ Uncorrected errors: 0
+ Corrected errors: 0
+ Error rate: 0.000000\end{lstlisting}
+  \caption{Example usage and decoder statistics. Here \texttt{diff} uses the dash
+  to represent \texttt{stdin}. }
+\end{centering}
+\end{figure}
+
+We will be providing source code for a program (\texttt{error.c}) that
+will inject errors (noise) into your Hamming codes. Note that not all
+errors will be correctable. The rate at which the program injects errors
+is a command-line argument and is specified by \texttt{-e rate} (default
+is 0.01 or 1\%) and must be between [0.0, 1.0]. The seed is specified
+with \texttt{-s seed} and it must be a positive integer.
+
+\begin{figure}[h]
+\begin{centering}
+  \begin{lstlisting}[style=bashstyle]
+ $ ./encode < frankenstein.txt | ./error -e 0.002 -s 2021 | ./decode > /dev/null
+ Total bytes processed: 902092
+ Uncorrected errors: 89
+ Corrected errors: 14267
+ Error rate: 0.000099\end{lstlisting}
+  \caption{Example usage with added noise.}
+\end{centering}
+\end{figure}
+
+\subsection{\texttt{FILE *}}
+
+There is a lot of complicated logic at the hardware level to read and
+write actual bits of information. This is out of scope for a person
+wanting to write a software program. To make things simpler, the
+\texttt{C} standard library provides functions that abstracts much of
+this complicated logic. All of these functions are defined in
+\texttt{stdio.h}, and utilize the \texttt{FILE} object. The
+\texttt{FILE} object contains all the information about the file such as
+its name, file position indicator, file access mode (read/write), and
+other details necessary for I/O operations. Some functions of note for
+this assignment are \texttt{fopen()}, \texttt{fclose()},
+\texttt{fgetc()}, and \texttt{fputc()}. Read the \texttt{man} pages for
+these functions to see what they do.
+
+\subsection{File I/O and Permissions}
+
+In the last assignment, graphs were read from either \texttt{stdin} or a
+file, and the final paths was printed to either \texttt{stdout} or a
+file. Thus, you should be familiar with file I/O. However, we must pay
+special attention to the input and output file's permissions when
+generating or decoding Hamming codes. For example, imagine you have a
+sensitive file on your \textsc{UNIX} machine that only you can read or
+write. Everyone else will receive an error if they attempt to read or
+write to it. The file containing the generated Hamming codes should also
+only be read or written by you, \textit{i.e.}, it should inherit the
+file permissions of the file for which it is generating Hamming codes.
+This will prevent another user with prying eyes to decode the file with
+Hamming codes and learn the contents of your sensitive file (if it is
+\emph{that} sensitive, it should be encrypted in the first place).
+
+\subsubsection{\textsc{UNIX} File Permissions}
+
+Every file in \textsc{UNIX} has a set of access modes for the owner,
+group, and everyone else. The \texttt{ls -l} command will lists all the
+files in a directory and also displays its permissions.  In figure
+\ref{batPerm}, the owner of the file, \texttt{bat-notes}, is batman, and
+the group is \texttt{dc}. Users in \textsc{UNIX} can be members of a
+group such as the \texttt{sudo} group. The \texttt{groups} command
+lists the groups the current user is in. Groups allow users to share
+files within their groups while controlling the extent of their access.
+
+\begin{figure}[h]
+\begin{centering}
+  \begin{lstlisting}[style=bashstyle]
+ $ ls -l
+   -rw-rw-r-- 1 batman dc 102 Jan 21 12:33 bat-notes\end{lstlisting}
+  \caption{Output of \texttt{ls -l}}
+  \label{batPerm}
+\end{centering}
+\end{figure}
+
+The file's permissions are presented in the same order from left to
+right after the first dash: owner, group, and others.  Read permission
+is represented by \texttt{r}, write permission, the ability to modify,
+create, or delete a file, is represented by \texttt{w}, and execute
+permission for programs and shell scripts are represented by \texttt{x}.
+Thus, in figure \ref{batPerm}, batman has the following permissions on
+his file, bat-notes: \texttt{rw-rw-r--}. The owner, \texttt{batman}, has
+read and write permissions but cannot execute the file. The group,
+\texttt{dc}, has read and write permissions but cannot execute the file.
+Everyone else can only read the file.
+
+File permissions are not set in stone and can be modified by
+\texttt{chmod} (both a command and a system call).  For example, if
+batman wants to remove read access to everyone else other than himself
+and members of the dc group, he can execute the command \texttt{chmod
+o-r bat-notes} to remove read permissions from others. If he changes his
+mind later, he can use the command \texttt{chmod o+r bat-notes} to add
+read permissions to others.
+
+\begin{figure}[h]
+\begin{centering}
+  \begin{lstlisting}[style=bashstyle]
+ $ chmod o-r,g-w bat-notes
+ $ ls -l
+   -rw-r---- 1 batman dc 102 Jan 21 12:33 bat-notes\end{lstlisting}
+  \caption{Removing other's read permission and the group's write permission}
+  \label{batPerm1}
+\end{centering}
+\end{figure}
+
+As mentioned earlier, \texttt{chmod} is also a system call and can be
+called from a \textbf{C} program.  For this assignment, all output files
+should inherit the file permissions of the input file. \texttt{fstat()}
+should be used to retrieve the input file's permissions and
+\texttt{fchmod()} to set the output file's permissions to match the
+input's. Refer to \texttt{man chmod, man fchmod, man fstat} for more
+information.  Note: both of these functions expect a \emph{file
+descriptor} that is returned by low-level IO (\texttt{open()}), so you
+will need to use \texttt{fileno()} to get the file descriptor of an open
+stream.
+
+\begin{codelisting}{Using \texttt{fstat()} and \texttt{fchmod()}}
+ // Opening files to read from and write to.
+ FILE *infile = fopen("bat-notes", "rb");
+ FILE *outfile = fopen("bat-notes-encoded", "wb");
+
+ // Getting and setting file permissions
+ struct stat statbuf;
+ fstat(fileno(infile), &statbuf);
+ fchmod(fileno(outfile), statbuf.st_mode);
+\end{codelisting}
+
+Another way to represent file permissions is with three \emph{octal}
+digits, one for owner, group, and others.  The octable table is shown in
+table \ref{octal}. In fact, those with a keen eye will notice that file
+permissions are in fact a set. Thus, if a file has its permissions set
+to $755_8$ then the owner has read, write, and execute permissions and
+the group and others only have read, execute permissions.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ |c|c|c| }
+ \hline
+  Ref. & Octal & Binary \\
+  \hline
+  \texttt{-{}-x} & 1 & 001 \\
+  \texttt{-w-} & 2 & 010 \\
+  \texttt{-wx} & 3 & 011 \\
+  \texttt{r-{}-} & 4 & 100 \\
+  \texttt{r-x} & 5 & 101 \\
+  \texttt{rw-} & 6 & 110 \\
+  \texttt{rwx} & 7 & 111 \\
+ \hline
+
+ \hline
+\end{tabular}
+\caption{Octal and binary representation of file permissions.}
+\label{octal}
+\end{table}
+
+\section{Packing and Unpacking Nibbles}
+
+Here are some functions to aid you in getting either the low or high
+nibble in a byte, as well as packing them together back into a byte.
+
+\begin{codelisting}{Helper functions}
+ // Returns the lower nibble of val
+ uint8_t lower_nibble(uint8_t val) {
+     return val & 0xF;
+ }
+
+ // Returns the upper nibble of val
+ uint8_t upper_nibble(uint8_t val) {
+     return val >> 4;
+ }
+
+ // Packs two nibbles into a byte
+ uint8_t pack_byte(uint8_t upper, uint8_t lower) {
+     return (upper << 4) | (lower & 0xF);
+ }
+\end{codelisting}
+
+\section{Encoder Program Specifics}
+
+In \texttt{main()} do the following:
+\begin{enumerate}
+    \item Parse the command-line options with \texttt{getopt()} and open
+      any input and/or output files using \texttt{fopen()} and correct
+      file permissions.
+
+    \item Initialize the generator matrix $\boldsymbol{G}$ using \texttt{bm\_create()}.
+
+    \item Read a byte from the specified file stream or \texttt{stdin}
+      with \texttt{fgetc()}. \label{gen1}
+
+    \item Generate the Hamming(8,4) codes for both the upper and lower
+      nibble with \texttt{ham\_encode()} and write to the specified
+      \label{gen2} file or \texttt{stdout} with \texttt{fputc()}. The
+      Hamming code for the lower nibble should be written first followed
+      by the code for the upper nibble. \textcolor{red}{Note: You'll
+      notice this operation becomes repetitive with larger files. If
+    only there was a lookup table of Hamming codes to refer to.}
+
+    \item Repeat steps \ref{gen1} -- \ref{gen2} until all data has been
+      read from the file or \texttt{stdout}.
+
+    \item Close both the input and output files with \texttt{fclose()}
+      and make sure that any memory allocated is freed.
+\end{enumerate}
+
+\section{Decoder Program Specifics}
+  \begin{enumerate}
+    \item Parse the command-line options with \texttt{getopt()} and open
+      any input and/or output files using \texttt{fopen()} and correct
+      file permissions.
+
+    \item Initialize the transpose of the parity-checker matrix,
+      $\boldsymbol{H}^\intercal$, using \texttt{bm\_create()}.
+
+    \item Read \emph{two} bytes from the specified file stream or
+      \texttt{stdin} with \texttt{fgetc()}. \label{dec1}
+      \textcolor{red}{Note: The first byte read is the Hamming code for
+      the lower nibble, and the second is the upper nibble.} \item For
+      each byte pair read, decode the Hamming(8,4) codes for both with
+      \texttt{ham\_decode()} to recover the original upper and lower
+      nibbles of the message. Then, reconstruct the original byte.
+      \textcolor{red}{Note: The return code from \texttt{ham\_decode()}
+        should be used for statistics. Your program should count the
+      number of bytes proccessed, Hamming codes that required
+    correction, and Hamming codes that could not be corrected.}
+
+    \item Write the reconstructed byte with \texttt{fputc()}.
+      \textcolor{red}{Note: You should still write the byte even for
+      Hamming codes that could not be corrected, leaving the data bits
+    in the byte as is.} \label{dec2}
+
+    \item Repeat steps \ref{dec1} -- \ref{dec2} until all data has been
+      read from the file or \texttt{stdout}.
+
+    \item Print the following statistics to \texttt{stderr} with \texttt{fprintf()}:
+
+    \begin{itemize}
+        \item Total bytes processed: The number of bytes read by the
+          decoder.
+        \item Uncorrected errors: The number of Hamming codes that could
+          not be corrected.
+        \item Corrected errors: The number of Hamming codes that
+          experienced an error that was recoverable.
+        \item Error rate: The rate of uncorrected errors for a given
+          input. Refer to \S 6.2 for the calculation.
+    \end{itemize}
+    \item Close both the input and output files with \texttt{fclose()}
+      and make sure that any memory allocated is freed.
+\end{enumerate}
+
+Remember: In \emph{both} the encoder and decoder, if an input and output
+file are specified, the output file should have the same file
+permissions as the input file. You can use \texttt{fstat()} to retrieve
+an open file's permissions, \texttt{fchmod()} to change the permissions
+of the output file to match the input's. Since both of these functions
+expect a \emph{file descriptor} that is returned by low-level IO
+(\texttt{open()}), you will need to use \texttt{fileno()} to get the
+file descriptor of an open stream.
+
+\section{Deliverables}
+
+\noindent You will need to turn in:
+\begin{enumerate}
+  \item \texttt{encode.c}: This file will contain your implementation of the
+    Hamming Code encoder.
+
+  \item \texttt{decode.c}: This file will contain your implementation of the
+    Hamming Code decoder.
+
+  \item \texttt{error.c}: This file will be provided in the resources
+    repo, but should be included in your repo as well.
+    \textcolor{red}{You \emph{must not} modify this file.}
+
+  \item \texttt{entropy.c}: This file will be provided in the resources
+    repo, but should be included in your repo as well.
+    \textcolor{red}{You \emph{must not} modify this file.}
+
+  \item \texttt{bv.h}: This fill will contain the bit vector ADT interface. This file
+  will be provided. \textcolor{red}{You \emph{may not} modify this file.}
+
+  \item \texttt{bv.c}: This file will contain your implementation of the bit vector ADT.
+    You \emph{must} define the bit vector \texttt{struct} in this file.
+
+  \item \texttt{bm.h}: This file will contain the bit matrix ADT interface. This file
+  will be provided. \textcolor{red}{You \emph{may not} modify this file.}
+
+  \item \texttt{bm.c}: This file will contain your implementation of the
+    bit matrix ADT. You \emph{must} define the bit matrix
+    \texttt{struct} in this file.
+
+  \item \texttt{hamming.h}: This file will contain the interface of the
+    Hamming Code module. This file will be provided. \textcolor{red}{You
+    \emph{may not} modify this file.}
+
+  \item \texttt{hamming.c}: This file will contain your implementation of the
+    Hamming Code module.
+
+  \item \texttt{Makefile}: This is a file that will allow the grader to
+    type \texttt{make} to compile your programs.
+
+    \begin{itemize}
+      \item \texttt{CC=clang} must be specified.
+      \item \texttt{CFLAGS=-Wall -Wextra -Werror -Wpedantic}
+        must be included.
+      \item \texttt{make} should build the encoder, the decoder, the
+        supplied error-injection program, \emph{and} the supplied
+        entropy-measure program, as should \texttt{make all}.
+      \item \texttt{make encode} should build \emph{just} the encoder.
+      \item \texttt{make decode} should build \emph{just} the decoder.
+      \item \texttt{make error} should build \emph{just} the supplied
+        error-injection program.
+      \item \texttt{make entropy} should build \emph{just} the supplied
+        entropy-measure program.
+      \item \texttt{make clean} must remove all files that are compiler
+        generated.
+      \item \texttt{make format} should format all your source code,
+        including the header files.
+    \end{itemize}
+
+  \item Your code must pass \texttt{scan-build} \emph{cleanly}. If there
+    are any bugs or errors that are false positives, document them and
+    explain why they are false positives in your \texttt{README.md}.
+
+  \item \texttt{README.md}: This must be in \emph{Markdown}. This must describe
+    how to build and run your program.
+
+  \item \texttt{DESIGN.pdf}: This \emph{must} be a PDF\@. The design document
+    should answer the pre-lab questions, describe the purpose of your program,
+    and communicate its overall design with enough detail such that a sufficiently
+    knowledgeable programmer would be able to replicate your implementation.
+    \textcolor{red}{This does not mean copying your entire program in verbatim.}
+    You should instead describe how your program works with supporting pseudocode.
+    \textcolor{red}{\textbf{C} code is \textbf{not} considered pseudocode.}
+
+  \item \texttt{WRITEUP.pdf}: This document \emph{must} be a PDF. You
+    will need to use the \texttt{entropy.c} program that will be
+    supplied to you. The program reads data from \texttt{stdin} and
+    prints out the amount of entropy in the read data. Entropy, as
+    defined by Claude Shannon, quantifies the amount of information that
+    is produced by some process. This will be discussed further in
+    lecture. Your writeup must include the following:
+    \begin{itemize}
+      \item Graphs showing the amount of entropy of data before and
+        after encoding it.
+      \item Analysis of the graphs you produce.
+    \end{itemize}
+\end{enumerate}
+
+
+\section{Submission}
+
+To submit your assignment through \texttt{git}, refer to the steps shown in
+\texttt{asgn0} Remember: \emph{add, commit,} and \emph{push}!
+\textcolor{red}{Your assignment is turned in \emph{only} after you have pushed
+and submitted the commit ID to Canvas. Your design document is turned in \emph{only}
+after you have pushed and submitted the commit ID to Canvas.
+If you forget to push, you have not turned in your assignment and you will get a
+\emph{zero}. ``I forgot to push'' is not a valid excuse. It is \emph{highly}
+recommended to commit and push your changes \emph{often}.}
+
+
+\section{Supplemental Readings}
+
+\epigraph{\emph{The more that you read, the more things you will know. The
+more that you learn, the more places you'll go.}}{---Dr.\ Seuss}
+
+\begin{itemize}
+  \item \textit{The C Programming Language} by Kernighan \& Ritchie
+  \begin{itemize}
+    \item Chapter 2 \S 2.9
+    \item Chapter 5 \S 5.7
+    \item Chapter 7
+  \end{itemize}
+\end{itemize}
+
+\begin{center}
+  \includegraphics[width=0.35\textwidth]{../../images/monkey-chainsaw.jpg} \\
+  \vspace{10pt}
+  % Vigenere cipher. Key: hamming
+  \texttt{Wrasznstizs qa I ps xusr mpvuzo n svnwqg n ioauzanc.}
+\end{center}
+
+\end{document}

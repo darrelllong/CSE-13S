@@ -1,0 +1,107 @@
+\section{Heapsort}
+
+\epigraph{\emph{Increasingly, people seem to misinterpret complexity as
+sophistication, which is baffling -- the incomprehensible should cause
+suspicion rather than admiration.}}{---Niklaus Wirth}
+
+\noindent Heapsort, along with the heap data structure, was invented in
+1964 by J. W. J. Williams. The heap data structure is typically
+implemented as a specialized binary tree. There are two kinds of heaps:
+\emph{max} heaps and \emph{min} heaps. In a max heap, any parent node
+\emph{must} have a value that is greater than or equal to the values of
+its children. For a min heap, any parent node \emph{must} have a value
+that is less than or equal to the values of its children. The heap is
+typically represented as an \emph{array}, in which for any index $k$,
+the index of its left child is $2k$ and the index of its right child is
+$2k + 1$. It's easy to see then that the parent index of any index $k$
+should be $\lfloor \frac{k}{2} \rfloor$.
+
+\begin{figure}[b]
+  \begin{center}
+    \begin{forest} for tree={circle,draw,inner sep=5pt,l=10pt,l sep=6pt,s sep=14pt}
+      [13
+        [5
+          [0]
+          [1]
+        ]
+        [8
+          [2]
+          [3]
+        ]
+      ]
+    \end{forest}
+  \end{center}
+  \begin{center}
+    \begin{tikzpicture}
+      \matrix (A) [matrix of nodes, nodes={draw, minimum size=8mm},
+          column sep=-\pgflinewidth]{
+          13 & 5 & 8 & 0 & 1 & 2 & 3\\};
+    \end{tikzpicture}
+  \end{center}
+  \caption{A max heap and its array representation.}
+\end{figure}
+
+Heapsort, as you may imagine, utilizes a heap to sort elements. Heapsort
+sorts its elements using two routines that 1) build a heap, 2) fix a
+heap.
+
+\begin{enumerate}
+  \item \textbf{Building a heap.} The first routine is taking the array
+    to sort and building a heap from it. This means ordering the array
+    elements such that they obey the constraints of a max or min heap.
+    For our purposes, the constructed heap will be a \emph{max heap}.
+    This means that the largest element, the root of the heap, is the
+    first element of the array from which the heap is built.
+  \item \textbf{Fixing a heap.} The second routine is needed as we sort
+    the array. The gist of Heapsort is that the largest array elements
+    are repeatedly removed from the top of the heap and placed at the
+    end of the sorted array, if the array is to be sorted in increasing
+    order. After removing the largest element from the heap, the heap
+    needs to be \emph{fixed} so that it once again obeys the constraints
+    of a heap.
+\end{enumerate}
+
+In the following Python code for Heapsort, you will notice a lot of
+indices are shifted down by 1. Why is this? Recall how indices of
+children are computed. The formula of the left child of $k$ being $2k$
+only works assuming 1-based indexing. We, in Computer Science,
+especially in \textbf{C}, use 0-based indexing. So, we will run the
+algorithm assuming 1-based indexing for the Heapsort algorithm itself,
+subtracting 1 on each array index access to account for 0-based
+indexing.
+
+\begin{pylisting}{Heap maintenance in Python}
+def max_child(A: list, first: int, last: int):
+    left = 2 * first
+    right = left + 1
+    if right <= last and A[right - 1] > A[left - 1]:
+        return right
+    return left
+
+def fix_heap(A: list, first: int, last: int):
+    found = False
+    mother = first
+    great = max_child(A, mother, last)
+
+    while mother <= last // 2 and not found:
+        if A[mother - 1] < A[great - 1]:
+            A[mother - 1], A[great - 1] = A[great - 1], A[mother - 1]
+            mother = great
+            great = max_child(A, mother, last)
+        else:
+            found = True
+\end{pylisting}
+
+\begin{pylisting}{Heapsort in Python}
+def build_heap(A: list, first: int, last: int):
+    for father in range(last // 2, first - 1, -1):
+        fix_heap(A, father, last)
+
+def heap_sort(A: list):
+    first = 1
+    last = len(A)
+    build_heap(A, first, last)
+    for leaf in range(last, first, -1):
+        A[first - 1], A[leaf - 1] = A[leaf - 1], A[first - 1]
+        fix_heap(A, first, leaf - 1)
+\end{pylisting}

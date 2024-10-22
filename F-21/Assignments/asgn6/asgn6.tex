@@ -1,0 +1,53 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsmath,amssymb}
+\usepackage{clrscode3e}
+\usepackage{color}
+\usepackage{epigraph}
+\usepackage{fourier}
+\usepackage{euler}
+\usepackage{fullpage}
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage[colorlinks=true,urlcolor=blue]{hyperref}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{xspace}
+\usepackage[shortlabels]{enumitem}
+
+\input{../footer.tex}
+\input{../functions.tex}
+\input{../lststyle.tex}
+\input{../monkey.tex}
+
+\title{Assignment 6 \\ Public Key Cryptography}
+\author{
+  Prof.\xspace Darrell D.\xspace E.\xspace Long \\
+  CSE 13S -- Fall 2021
+}
+\date{
+  First \texttt{DESIGN.pdf} draft due: November 11$^\text{th}$ at 11:59\,pm PST \\
+  Assignment due: November 21$^\text{st}$ at 11:59\,pm PST
+}
+
+\begin{document}
+
+\maketitle
+
+\input{sections/intro.tex}
+\input{sections/rsa_algorithm.tex}
+\input{sections/rsa_mathematics.tex}
+\input{sections/task.tex}
+\input{sections/gmp.tex}
+\input{sections/numtheory.tex}\label{numthm}
+\input{sections/rsa_library.tex}
+\input{sections/keygen.tex}
+\input{sections/encrypt.tex}
+\input{sections/decrypt.tex}
+\input{sections/deliverables.tex}
+\input{sections/submission.tex}
+\input{sections/readings.tex}
+
+\monkey{et ecce simia pallidus et qui nomen illi \textbf{\textit{C}}  et inferus sequebatur eum}
+
+\end{document}

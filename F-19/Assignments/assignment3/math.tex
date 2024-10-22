@@ -1,0 +1,480 @@
+\documentclass[11pt]{article}
+\usepackage{fullpage,fourier,euler,amsmath,graphicx,xspace}
+\usepackage{epigraph}
+
+\usepackage{listings,color,url,hyperref}
+
+\title{Assignment 3 \\ A Small Numerical Library}
+\author{Prof. Darrell Long \\
+CSE 13S -- Fall 2019}
+\date{Due: October 20$^\text{th}$ at 11:59\,pm}
+
+
+\input{../footer}
+\input{../lststyle}
+\lstset{language=C, style=c99}
+
+\begin{document}\maketitle
+
+\section{Introduction}
+\epigraphwidth=0.6\textwidth
+\epigraph{\emph{Just look at the graceful way that he lectures, one hand
+waves while the other conjectures.}}
+
+\noindent As we know, computers are simple machines that carry out a sequence
+of very simple steps, albeit very quickly.  Unless you have a
+special-purpose processor, a computer can only compute \emph{addition},
+\emph{subtraction}, \emph{multiplication}, and \emph{division}.  If you think about it,
+you will see that the functions that might interest you when dealing
+with real or complex numbers can be built up from those four operations.
+We use them for nearly every program that we write, so we ought
+to understand how they are created.
+
+If you recall from your calculus class, with some
+conditions a function $f(x)$ can be represented by its Taylor
+series expansion near some point $f(a)$:
+$$
+f(x) = f(a) + \sum_{k=1}^\infty \frac{(x-a)^k}{k!} f^{(k)}(a) .
+$$
+If you have forgotten (or never taken) calculus, do not despair. Go to a
+laboratory section for review: the concepts required here are just
+derivatives.
+
+Since we cannot compute an infinite series, we must be content to
+calculate a
+finite number of terms. In general, the more terms that we compute, the more
+accurate our approximation. For example, if we expand to $10$ terms
+we get:
+\begin{align*}
+f(x) =  f(a) & +(x-a) f'(a)+\frac{1}{2} (x-a)^2 f''(a)+\frac{1}{6} f^{(3)}(a) (x-a)^3 \\
+& + \frac{1}{24}
+   f^{(4)}(a) (x-a)^4+\frac{1}{120} f^{(5)}(a) (x-a)^5+\frac{1}{720} f^{(6)}(a)
+   (x-a)^6 \\
+& +\frac{f^{(7)}(a) (x-a)^7}{5040}+\frac{f^{(8)}(a)
+   (x-a)^8}{40320}+\frac{f^{(9)}(a) (x-a)^9}{362880}
+   +O\left((x-a)^{10}\right) .
+\end{align*}
+
+Taylor series, named after Brook Taylor, requires that we pick a point $a$ where we will center the approximation. In the case $a =0$, then it is called a \emph{Maclaurin series}).  Often we
+choose $0$, but the closer to the value of $x$ the better we will
+approximate the function. For example, let's consider $e^x$ centered
+around $0$:
+$$
+e^x = 1  +x+\frac{x^2}{2}+\frac{x^3}{6}+\frac{x^4}{24}+\frac{x^5}{120}+\frac{x^6}{720}+\frac{x^7}
+   {5040}+\frac{x^8}{40320}+\frac{x^9}{362880}+O\left(x^{10}\right
+   ) .
+$$
+This is one of the simplest series when centered at $0$, since $e^0 = 1$.
+Consider the general case:
+\begin{align*}
+e^x=e^a &+e^a (x-a)+\frac{1}{2} e^a (x-a)^2+\frac{1}{6} e^a (x-a)^3+\frac{1}{24} e^a
+   (x-a)^4+\frac{1}{120} e^a (x-a)^5+\frac{1}{720} e^a (x-a)^6 \\
+& +\frac{e^a
+   (x-a)^7}{5040}+\frac{e^a (x-a)^8}{40320}+\frac{e^a (x-a)^9}{362880}+\frac{e^a
+   (x-a)^{10}}{3628800}+O\left((x-a)^{11}\right) .
+\end{align*}
+Since $\frac{d}{dx}e^x=e^x$ the exponential function does not drop
+out as it does for $a=0$, leaving us with our original problem. If we
+knew $e^a$ for $a \approx x$ then we could use a small number of
+terms. However, we do \emph{not} know it so we must use $a=0$.
+
+What is the $O\left((x-a)^{11}\right)$ term? That is the \emph{error term}
+that is ``on the order of'' the value in parentheses. This is different from
+the \emph{big-O} that we will discuss with regard to  algorithm analysis.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Your Task}
+\epigraph{\emph{Programming is one of the most difficult branches of applied
+mathematics; the poorer mathematicians had better remain pure
+mathematicians.}}{---Edsger Dijkstra}
+
+\noindent For this assignment, you will be creating a small numerical library. Our goal is for you
+to have some idea of what must be done to implement functions that
+you use all of the time.
+
+You will be writing and implementing \texttt{sin},
+\texttt{cos}, \texttt{tan}, and \texttt{exp} using the Taylor series approximations for
+\texttt{exp} and Pad\'e approximants for \texttt{sin}, \texttt{cos}, and
+\texttt{tan}. You will then run these functions and compare them to the standard
+library \texttt{math.h} implementations and output the results into a table similar to what is shown in
+Figures \ref{sine} and \ref{cosine}.
+
+\begin{figure}[h]
+\begin{centering}
+  \begin{lstlisting}
+  x          Sin         Library     Difference
+  -          ---         -------     ----------
+  -6.2832	 0.00000000	 0.00000000	-0.0000000000
+  -6.0868	 0.19509032	 0.19509032	-0.0000000000\end{lstlisting}
+  \caption{Example of program output for sine.}\label{sine}
+\end{centering}
+\end{figure}
+
+\begin{figure}[h]
+\begin{centering}
+  \begin{lstlisting}
+  x        Cos         Library     Difference
+  -        ---         -------     ----------
+  -6.2832  1.00000000  1.00000000  0.0000000000
+  -6.0868  0.98078528  0.98078528  0.0000000000\end{lstlisting}
+  \caption{Example of program output for cosine.}\label{cosine}
+\end{centering}
+\end{figure}
+From left to right, the columns represent the input number, your program's
+cosine value from the input number, the actual math library's value from the
+input number and lastly, the difference between your value and the library's value.
+
+You will test sine and cosine from $-2\pi$ to $2\pi$ with steps of $\pi/16$.
+Tangent will be tested from $-(\pi/2 - 0.001)$ to $\pi/2 - 0.001$ with steps of
+$\pi/16$. For the exponential function, $e^x$ will be from $0$ to $10$ with steps of $0.1$.
+
+Each implementation will be a separate function. You must label the functions \texttt{Exp}, \texttt{Sin}, \texttt{Cos}, and \texttt{Tan}. Since the \texttt{math} library uses \texttt{exp}, \texttt{sin}, \texttt{cos}, and \texttt{tan}, you will not be able to use the same names. To use \texttt{math.h} in your program
+you must be sure to link the math library at compile time using the
+\texttt{-lm} flag.
+
+The following is an example function that implements Newton's method
+of computing square roots that doesn't conflict with \texttt{sqrt()}
+found in \texttt{math.h}. Note that the function is named
+\texttt{Sqrt(double x)}.
+
+\begin{lstlisting}[title=Computing $\sqrt{x}$ using Newton's method.]
+#define EPSILON 0.00001
+#define ABS(x)  (x < 0 ? -x : x)
+
+double Sqrt(double x) {
+  double y   = 1.0;
+  double old = 0.0;
+  while (ABS(y - old) > EPSILON) {
+    old = y;
+    y = 0.5 * (y + x / y);
+  }
+  return y;
+}
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Sine and Cosine}
+The \emph{domain} of $\sin$ and $cos$ is $[-2\pi, 2\pi]$, and so
+centering them around $0$ makes sense. Since the domain is restricted,
+you can reduce any parameter to $[-2\pi, 2\pi]$ (making your
+approximation better).  The Taylor series for $\sin(x)$ centered
+about $0$ is:
+$$ \sin(x) =
+x-\frac{x^3}{6}+\frac{x^5}{120}-\frac{x^7}{5040}+\frac{x^9}{362880}-\frac{x^{11}}{3991680
+   0}+\frac{x^{13}}{6227020800}-\frac{x^{15}}{1307674368000}+O\left(x^{16}\right)
+$$
+and the corresponding series for $\cos(x)$ is:
+$$
+\cos(x) = 1-\frac{x^2}{2}+\frac{x^4}{24}-\frac{x^6}{720}+\frac{x^8}{40320}-\frac{x^{10}}{3628800}+
+   \frac{x^{12}}{479001600}-\frac{x^{14}}{87178291200}+O\left(x^{16}\right) .
+$$
+
+We can use what is called a \emph{Pad\'e Approximant}. It's beyond the
+scope of this course to go into computing them, but essentially it is the ratio
+of two polynomials that conform to certain properties. It is often
+easier to compute and more accurate than a truncated series. The
+Pad\'e approximant for a $15$ term series for $\sin(x)$ centered
+around $0$ is:
+$$
+\sin(x)  \approx
+-\frac{72 x \left(62077121 x^6-7479608290 x^4+242757835320
+   x^2-1727021696400\right)}{1768969 x^8+366075360 x^6+43268148000 x^4+3245696213760
+   x^2+124345562140800}  .
+$$
+
+It is a lot easier to square a number than to raise it to a power,
+so we can simplify it by putting the formula into \emph{Horner normal
+form}, by factoring out $x$ as much as possible:
+$$
+\sin(x)  \approx
+\frac{x \left(\left(x^2 \left(538531796880-4469552712 x^2\right)-17478564143040\right)
+   x^2+124345562140800\right)}{\left(\left(\left(1768969 x^2+366075360\right)
+   x^2+43268148000\right) x^2+3245696213760\right) x^2+124345562140800}
+.
+$$
+If you want to be clever you can compute $x^2$ once, store it in a
+variable, using that result again and save a few instructions. Does
+this matter? A good compiler will recognize the common subexpression
+and do it for you behind the scenes, but numerical code tends to
+be heavily used so every little bit helps.
+
+Consider the corresponding approximant for $\cos(x)$ centered around 0 written in
+Horner normal form. Why Horner normal form? It has the fewest multiplications.
+% :
+% $$
+% \cos(x)  \approx
+% \frac{24694099 x^8-5773801680 x^6+344048221440 x^4-5595410620800
+   % x^2+11797350364800}{209794 x^8+37502280 x^6+4124237040 x^4+303264561600
+   % x^2+11797350364800}  .
+% $$
+$$
+\cos(x)  \approx
+\frac{\left(x^2 \left(\left(24694099 x^2-5773801680\right)
+   x^2+344048221440\right)-5595410620800\right)
+   x^2+11797350364800}{\left(\left(\left(209794 x^2+37502280\right) x^2+4124237040\right)
+   x^2+303264561600\right) x^2+11797350364800}.
+$$
+
+Restricting the domain is important. As we move away from the center of the series, our approximation gets worse. Consider Figure \ref{pade}, and you can see that when we get much beyond $[2\pi,2\pi]$ the graphs diverge not just a little, but wildly.
+
+\begin{figure}[hbt]
+\begin{centering}
+\includegraphics[width=0.75\textwidth]{Pade}
+\caption{Comparing $\sin(x)$ with an order $10$ Pad\'e approximant.}\label{pade}
+\end{centering}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Tangent}
+You will recall that $\tan(x) = {\sin(x)} / {\cos(x)}$ but
+that it is undefined when $\cos(x) = 0$, that is when $x$ is a
+multiple of ${\pi}/{2}$. You \emph{could} just do the division:
+\begin{lstlisting}
+double tan(double x) { return sin(x) / cos(x); }
+\end{lstlisting}
+
+While doing the division is correct in the \emph{real numbers},
+remember that we are working with approximations and so you will
+be more accurate with a formula for directly computing your approximation
+for $\tan(x)$.  A Pad\'e approximant for $\tan(x)$ is:
+$$
+\tan(x)\approx
+\frac{x \left(x^2 \left(\left(x^2 \left(25740-55 x^2\right)-2837835\right)
+   x^2+91891800\right)-654729075\right)}{x^2 \left(\left(x^2 \left(\left(x^2-1485\right)
+   x^2+315315\right)-18918900\right) x^2+310134825\right)-654729075}.
+	$$
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{\Large $e^x$}
+The other important function is $e^x$ called the \emph{exponential}
+function.  While you might hope for a Pad\'e approximant, you are
+bound for disappointment.  The domain of $e^x$ is unrestricted so
+we will \emph{not} be able to use any fixed formula.  As we get further
+away from where we center our series, the more terms that will need
+to get good results. Fortunately, the series for $e^x$ converges
+very quickly.
+
+Let's consider how well this works. In Figure \ref{exp}, we will
+use our expansion to $10$ terms and plot for $e^0 , \ldots  ,
+e^{10}$. After about $7$, the approximation starts to diverge
+significantly. What this tells us is that $10$ terms is not enough.
+
+\begin{figure}[hbt]
+\begin{centering}
+\includegraphics[width=0.75\textwidth]{Exp}
+\caption{Comparing $e^x$ with its Taylor approximation centered at zero.}\label{exp}
+\end{centering}
+\end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{figure}[hbt]
+\begin{centering}
+\includegraphics[width=0.75\textwidth]{Growth}
+\caption{Comparing ${x^n}/{n!}$ for $x=2,3,4,5$.}\label{growth}
+\end{centering}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+If we are na\"ive about computing the terms of the series we can
+quickly get into trouble --- the values of $k!$ get large very quickly.
+We can do better if we observe that:
+$$
+\frac{x^n}{n!} = \frac{x}{n} \times \frac{x^{n-1}}{(n-1)!} .
+$$
+
+At first, that looks like a recursive definition (and in fact, you
+could write it that way, but it would be wasteful). As we progress
+through the computation, assume that we know the previous result.
+We then just have to compute the next term and multiply it by the
+previous term.  At each step we just need to compute ${x} / {n}$,
+starting with $n= 0! = 1$ and multiply it by the previous value and
+add it into the total.  It turns into a simple \texttt{for} or
+\texttt{while} loop.
+
+We can use an $\epsilon$ (epsilon) to halt the computation since
+$|x^n| < n!$ for a sufficiently large $n$.  Consider Figure \ref{growth}:
+briefly, $x^n$ dominates but is quickly overwhelmed by $n!$ and so
+the ratio rapidly approaches zero.
+
+\subsection{Command-line Arguments}
+Your program will use command-line arguments to select which one of your
+implemented functions to run. You will use \texttt{getopt()} to parse
+command-line arguments, which is included under \texttt{getopt.h}. In most
+\textbf{C} programs, you will see two parameters in the \texttt{main()}
+function: \texttt{int argc} and \texttt{char **argv}. The parameter
+\texttt{argc} refers to the argument counter, or how many arguments were
+supplied on the command-line. Arguments are delimited by white space, which
+includes spaces and tabs.  The parameter \texttt{argv} refers to the argument values, and
+is interpreted as an array of strings, where \texttt{argv[0]} corresponds to the
+first argument on the command-line: the executable itself.
+
+Try this code, and make sure that you understand it:
+\begin{lstlisting}
+#include <stdio.h>
+
+int main(int argc, char **argv) {
+  for (int i = 0; i < argc; i += 1) {
+    printf("argv[%d] = %s\n", i, argv[i]);
+  }
+  return 0;
+}
+\end{lstlisting}
+
+Command-line options must be defined in order for \texttt{getopt()} to
+parse them. These options are defined in a string, where each character in the
+string corresponds to an option character that can be specified on the on the
+command-line. Upon running the executable,
+\texttt{getopt()} scans through the command-line arguments, checking for option
+characters.
+
+As an example, the following program supports two command-line options,
+`\texttt{p}' and `\texttt{i}'. Note that the option character `\texttt{i}' in the defined option string
+\texttt{OPTIONS} has a colon following it. The colon signifies that, when the
+`\texttt{i}' option is enabled on the command-line using `\texttt{-i}', \texttt{getopt()} is
+looking for an argument to be supplied following it. An error is thrown by
+\texttt{getopt()} if an argument for a flag requiring one is not supplied.
+
+\begin{lstlisting}
+#include <getopt.h>
+#include <stdio.h>
+#include <stdbool.h>
+
+#define OPTIONS "pi:"
+
+int main(int argc, char **argv) {
+  int c = 0;
+  bool print = false;
+  char *infile = NULL;
+
+  while ((c = getopt(argc, argv, OPTIONS)) != -1) {
+    switch (c) {
+    case 'p': // Print option.
+      print = true;
+      break;
+    case 'i': // Input file option.
+      infile = optarg;  // A pointer to the next element in argv.
+      break;
+    }
+  }
+
+  if (argc == 1) {
+    puts("Error: no arguments supplied!");
+    return -1;
+  }
+
+  if (!infile) {
+    puts("Error: input file required!");
+    return -1;
+  }
+
+  if (print) {
+    puts(infile);
+  }
+
+  return 0;
+}
+\end{lstlisting}
+
+What this program does is check for the `\texttt{p}' option to print and the
+`\texttt{i}' option to specify some input file name.
+The \texttt{getopt()} defined variable \texttt{optarg} points at the following
+\texttt{argv}-element, which in this case should be the input file name. The
+condition \texttt{argc == 1} checks if no other command-line arguments were
+supplied other than the executable itself and errors out if so. The program also
+errors out in the event that an input file name was not supplied. The supplied
+input file name is only printed if the print option was specified on the
+command-line.
+
+Example usage of program to specify input file and print its name (assume the
+executable name is \texttt{filename}):
+\begin{lstlisting}
+./filename -p -i <input file name>
+\end{lstlisting}
+
+Your program \emph{must} support the following command-line options:
+\begin{enumerate}
+    \item \texttt{-s} : runs \texttt{sin} tests
+    \item \texttt{-c} : runs \texttt{cos} tests
+    \item \texttt{-t} : runs \texttt{tan} tests
+    \item \texttt{-e} : runs \texttt{exp} tests
+    \item \texttt{-a} : runs \emph{all} tests
+\end{enumerate}
+
+These options are mutually exclusive; only one may be chosen at a time. Is a
+\texttt{bool} the best choice, or would an \texttt{enum} be better?
+% \subsection{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Deliverables}
+\epigraph{\emph{Thinking doesn't guarantee that we won't make mistakes. But
+not thinking guarantees that we will.}}{---Leslie Lamport}
+
+\noindent You will need to turn in:
+
+\begin{enumerate}
+  \item \texttt{math.c}: This is your main program that determines whether
+      \texttt{exp}, \texttt{sin}, \texttt{cos}, or \texttt{tan} will be run as
+      well as contain your implementations. \texttt{getopt()} must be used to
+      handle command-line arguments dictating which tests to run.
+        The \texttt{getopt()} options you must support are
+        `\texttt{-s}' to run \texttt{sin} tests, `\texttt{-c}' to run
+        \texttt{cos} tests, `\texttt{-t}' to run \texttt{tan} tests,
+        `\texttt{e}' to run \texttt{exp} tests, and `\texttt{-a}' to run
+        \emph{all} tests. Your output for each function must match the form
+        shown in Figures \ref{sine} and \ref{cosine}.
+        Your compiled program must be called \texttt{math}.
+
+  \item \texttt{Makefile}: This is a file that will allow the grader to type
+      \texttt{make} to compile your program. Typing \texttt{make} must build
+        your program and running \texttt{./math} alone as well as with option flags must run your program.
+  \begin{itemize}
+    \item \texttt{CFLAGS=-Wall -Wextra -Werror -Wpedantic} must be included.
+    \item \texttt{CC=clang} must be specified.
+    \item \texttt{make clean} must remove all files that are compiler generated.
+    \item \texttt{make infer} must run \texttt{infer} on your program.
+        Complaints generated by \texttt{infer} should either be fixed or
+        explained in your \texttt{README}.
+    \item \texttt{make} should build your program, as should \texttt{make all}.
+  \end{itemize}
+
+  \item \texttt{README.md}: This must be in \emph{markdown}. This
+      must describe how to use your program and \texttt{Makefile}. This is also
+      where you put any explanations for complaints generated by \texttt{infer}.
+
+  \item \texttt{DESIGN.pdf}: This \emph{must} be a PDF. The design document
+  should describe your design for your program with enough detail
+  that a sufficiently knowledgeable programmer would be able to
+  replicate your implementation. This does not mean copying your
+  entire program in verbatim. You should instead describe how your
+  program works with supporting pseudo-code. For this assignment pay extra attention to how you describe your representation
+        of a Taylor series approximation in \textbf{C}.
+
+  \item \texttt{WRITEUP.pdf}: This \emph{must} be a PDF. Your WRITEUP should be a discussion of the results for your
+  experiments. This means analyzing the differences in the output of
+  your implementations versus those in the \texttt{math.h} library.
+  Include possible reasons for the differences between your implementation
+  and the \texttt{math.h} version. Graphs can be especially useful
+  in showing the differences and backing up your arguments.
+
+\end{enumerate}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Submission}
+\epigraph{\emph{We in science are spoiled by the success of mathematics.
+Mathematics is the study of problems so simple that they have good
+solutions.}}{---Whitfield Diffie}
+
+To submit your assignment, refer back to \texttt{assignment0} for the steps on how to submit your assignment through \texttt{git}. Remember: \emph{add, commit,} and \emph{push}!
+
+\textcolor{red}{Your assignment is turned in \emph{only} after you have pushed.
+If you forget to push, you have not turned in your assignment and you will get
+a \emph{zero}. ``I forgot to push'' is not a valid excuse. It is \emph{highly} recommended to commit and push your changes \emph{often}.}
+
+
+\end{document}

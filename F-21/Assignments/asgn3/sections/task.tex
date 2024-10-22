@@ -1,0 +1,50 @@
+\section{Your Task}\label{task}
+
+\epigraph{\emph{Find out the reason that commands you to write; see whether it has spread its roots into the very depth of your heart; confess to yourself you would have to die if you were forbidden to write.}}{---Rainer Maria Rilke}
+
+\noindent Your task for this assignment is as follows:
+
+\begin{enumerate}
+  \item Implement Insertion Sort, Shell Sort, Heapsort, and recursive
+    Quicksort based on the provided Python pseudocode in \textbf{C}. The
+    interface for these sorts will be given as the header files
+    \texttt{insert.h}, \texttt{shell.h}, \texttt{heap.h}, and
+    \texttt{quick.h}. \textcolor{red}{You are not allowed to modify
+    these files for any reason.}
+  \item Implement a test harness for your implemented sorting
+    algorithms. In your test harness, you will creating an array of
+    pseudorandom elements and testing each of the sorts. Your test harness
+    \emph{must} be in the file \texttt{sorting.c}.
+  \item Gather statistics about each sort and its performance. The
+    statistics you will gather are the \emph{size} of the array, the
+    number of \emph{moves} required, and the number of
+    \emph{comparisons} required. \textcolor{red}{Note: a comparison is
+    counted only when two array elements are compared.}
+\end{enumerate}
+
+Your test harness must support any combination of the following
+command-line options:
+
+\begin{itemize}
+  \item \texttt{-a}\ : Employs \emph{all} sorting algorithms.
+  \item \texttt{-e}\ : Enables Heap Sort.
+  \item \texttt{-i}\ : Enables Insertion Sort.
+  \item \texttt{-s}\ : Enables Shell Sort.
+  \item \texttt{-q}\ : Enables Quicksort.
+  \item \texttt{-r seed}\ : Set the random seed to \texttt{seed}.
+    The \emph{default} seed should be 13371453.
+  \item \texttt{-n size}\ : Set the array size to \texttt{size}. The
+    \emph{default} size should be 100.
+  \item \texttt{-p elements}\ : Print out \texttt{elements} number of
+    elements from the array. The \emph{default} number of elements to
+    print out should be 100. \textcolor{red}{If the size of the array is
+      less than the specified number of elements to print, print out the
+    entire array and nothing more.}
+  \item \texttt{-h}\ : Prints out program usage. See reference program
+    for example of what to print.
+\end{itemize}
+
+It is important to read this \emph{carefully}. None of these options are
+\emph{exclusive} of any other (you may specify any number of them,
+including \emph{zero}). The most natural data structure for this
+problem is a \emph{set}.

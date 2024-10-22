@@ -1,0 +1,56 @@
+\documentclass[11pt,multicol]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{multicol}
+\usepackage{booktabs}
+\usepackage{color}
+\usepackage{epigraph}
+\usepackage{float}
+\usepackage{fourier}
+\usepackage{fullpage}
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{subcaption}
+\usepackage{url}
+\usepackage{wrapfig}
+\usepackage{xspace}
+\usepackage[colorlinks=true,urlcolor=blue]{hyperref}
+
+\input{../footer.tex}
+\input{../lststyle.tex}
+\input{../functions.tex}
+\input{../monkey.tex}
+
+\newcommand{\taylorterm}[1]{\frac{f^{(#1)} (a)}{#1!}{(x-a)}^{#1}}
+\newcommand{\mlterm}[1]{\frac{x^{#1}}{#1!}}
+\newcommand{\eterm}[1]{\frac{e^a}{#1!}{(x-a)}^{#1}}
+
+\title{Assignment 2 \\ Numerical Integration}
+\author{
+  Prof.\xspace Darrell D.\xspace E.\xspace Long \\
+  CSE 13S -- Winter 2022
+}
+\date{Due: January $19^\text{th}$  at 11:59\,pm}
+
+\begin{document}\maketitle
+
+\input{sections/introduction.tex}
+\input{sections/integration.tex}
+\input{sections/taylor.tex}
+\input{sections/exp.tex}
+\input{sections/sincos.tex}
+\input{sections/sqrtlog.tex}
+\input{sections/task.tex}
+\input{sections/program.tex}
+\input{sections/deliverables.tex}
+\input{sections/submission.tex}
+\input{sections/readings.tex}
+\vfill\begin{center}
+\includegraphics[height=1.75in]{images/marty-igor.png}
+%\vspace{2\baselineskip}
+\emph{In retrospect, come to think of it, isn't everything seen in retrospect?}
+---Marty Feldman
+\end{center}
+\end{document}

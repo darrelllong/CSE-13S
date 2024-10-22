@@ -1,0 +1,14 @@
+#!/bin/bash
+file="./students.txt"
+TMPDIR=/tmp/cse13s
+rm -rf $TMPDIR
+mkdir $TMPDIR
+chmod 700 $TMPDIR
+sed 's/@ucsc.edu//' < $file | while IFS= read student
+do
+(
+  pushd $TMPDIR
+  git clone git@git.ucsc.edu:cse13s/winter2021/$student.git
+  popd
+)
+done

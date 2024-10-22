@@ -1,0 +1,45 @@
+\section{\Unix{} and the Shell}\label{section:unix}
+
+\noindent To understand why a \emph{shell} is used to interact with
+\Unix{}, we need to first delve into why \Unix{} was developed the
+way it was. The development of \Unix{} started by
+Ken Thompson and Dennis Ritchie, with contributions by many others, for use at Bell
+Laboratories (Bell Labs). The development continued throughout most of the 70s, eventually leading
+to the licensing of \Unix{} to other parties, especially universities in the late 70s.
+
+Along with \Unix{} came the \Unix{} philosophy. This philosophy is
+based on the belief that a tool should have a limited, yet specific
+function. All the tools on the original \Unix{} system shipped with this
+philosophy. Examples include \texttt{head}, which prints out the first $n$ lines
+of a file, \texttt{ls}, which lists out files in a directory, and \texttt{diff},
+which reports differences between two files. The idea is that the output of one
+tool, or \emph{command}, can become the input of another command.
+
+Commands are the main way that users are intended to interact with
+\Unix{}. Each command follows the pattern of \texttt{command
+[arguments]} (here the square brackets mean the arguments are
+optional). Each command can be executed an optional number of
+arguments. Consider the following command:
+
+\begin{shlisting}{}
+$ wc -l roster.csv
+\end{shlisting}
+
+This particular command uses the \texttt{wc} command, which is a program that
+counts the number of words, lines, and characters in a file. The argument
+\texttt{-l} tells \texttt{wc} to only consider the line count. The final
+argument, \texttt{roster.csv}, is the file to get the line count from. Note the
+\texttt{\$} prefixing the command. The \texttt{\$} it not itself part of the
+command, but is commonly used to indicate that the command is run in a
+\emph{shell} and acts as a \emph{shell prompt}.
+
+A shell is a program (just like any other) that runs in an infinite loop, parsing and executing
+commands. In other words, it acts as a \emph{command line interpreter}. Examples
+of popular shells include \Bash{} and \Zsh{}. Both these shells have two modes of
+operation: interactive and batch. Using a shell in interactive mode means
+issuing commands one at a time, with the result of the command appearing
+immediately after the command is executed. Using a shell in batch mode means
+giving the shell a \emph{series} of commands to run in sequence. Typically this
+means placing all the commands in a file. Files that contain a series of
+commands to run are typically called \emph{shell scripts}. You will be writing a
+shell script for this assignment.

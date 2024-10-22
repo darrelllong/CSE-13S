@@ -1,0 +1,163 @@
+\section{Paths}
+
+\epigraphwidth=0.65\textwidth \epigraph{\emph{We find after years of
+struggle that we do not take a trip; a trip takes us.} }{---John
+Steinbeck, \emph{Travels with Charley: In Search of Amerca}}
+
+\noindent
+Given that vertices are added to and removed from the traveled path in a
+stack-like manner, we decide to abstract a path as follows:
+
+\begin{clisting}{}
+struct Path {
+    Stack *vertices; // The vertices comprising the path.
+    uint32_t length; // The total length of the path.
+};
+\end{clisting}
+
+The following functions define the interface for the path ADT.
+
+\begin{funcdoc}{Path *path\_create(void)}
+  The constructor for a path. Set \texttt{vertices} as a freshly created
+  stack that can hold up to \texttt{VERTICES} number of vertices.
+  Initialize \texttt{length} to be 0. The \texttt{length} field will
+  track the length of the path. In other words, it holds the sum of the
+  edge weights between consecutive vertices in the \texttt{vertices}
+  stack.
+\end{funcdoc}
+
+\begin{funcdoc}{void path\_delete(Path **p)}
+  The destructor for a path. Remember to set the pointer \texttt{p} to
+  \texttt{NULL}.
+\end{funcdoc}
+
+\begin{funcdoc}{bool path\_push\_vertex(Path *p, uint32\_t v, Graph
+*G)}
+Pushes vertex \texttt{v} onto path \texttt{p}. The \texttt{length} of the
+path is \emph{increased} by the edge weight connecting the vertex at the top of
+the stack and \texttt{v}. Return \texttt{true} if the vertex was
+successfully pushed and \texttt{false} otherwise.
+\end{funcdoc}
+
+\begin{funcdoc}{bool path\_pop\_vertex(Path *p, uint32\_t *v, Graph
+*G)}
+  Pops the \texttt{vertices} stack, passing the popped vertex back through
+  the pointer \texttt{v}. The \texttt{length} of the path is
+  \emph{decreased} by the edge weight connecting the vertex at the top of
+  the stack and the popped vertex. Return \texttt{true} if the vertex was
+  successfully popped and \texttt{false} otherwise.
+\end{funcdoc}
+
+\begin{funcdoc}{uint32\_t path\_vertices(Path *p)}
+  Returns the number of vertices in the path.
+\end{funcdoc}
+
+\begin{funcdoc}{uint32\_t path\_length(Path *p)}
+  Returns the length of the path.
+\end{funcdoc}
+
+\begin{funcdoc}{void path\_copy(Path *dst, Path *src)}
+  Assuming that the destination path \texttt{dst} is properly initialized,
+  makes \texttt{dst} a copy of the source path \texttt{src}. This will
+  require making a copy of the \texttt{vertices} stack as well as the
+  \texttt{length} of the source path.
+\end{funcdoc}
+
+\begin{funcdoc}{void path\_print(Path *p, FILE *outfile, char
+*cities[])}
+  Prints out a path to \texttt{outfile} using \texttt{fprintf()}. Requires
+  a call to \texttt{stack\_print()}, as defined in \S 7.10, in order to
+  print out the contents of the \texttt{vertices} stack.
+\end{funcdoc}
+
+% \section{Stacks, Revisited}
+
+% \epigraphwidth=0.55\textwidth \epigraph{\emph{I believe that what we become depends on
+% what our fathers teach us at odd moments, when they aren't trying to teach us.
+% We are formed by little scraps of wisdom.}}{---Umberto Eco, \emph{Foucault's Pendulum}}
+
+% \noindent
+% You will use the stack that you implemented for assignment 3 with slight
+% modifications. If there were any problems with your stack for that
+% assignment, make sure to fix them for this assignment. Here is the
+% modified stack interface for this assignment.
+
+% \begin{clisting}{}
+% struct Stack {
+%     uint32_t top;
+%     uint32_t capacity;
+%     uint32_t *items;
+% };
+% \end{clisting}
+
+% \subsection{\texttt{Stack *stack\_create(uint32\_t capacity)}}
+
+% The constructor function for a \texttt{Stack}. The \texttt{top} of a
+% stack should be initialized to 0. The capacity of a stack is set to the
+% specified capacity. The specified capacity also indicates the number of
+% items to allocate memory for, the items in which are held in the
+% dynamically allocated array \texttt{items}.
+
+% \subsection{\texttt{void stack\_delete(Stack **s)}}
+
+% The destructor function for a stack. Remember to set the pointer
+% \texttt{s} to \texttt{NULL}.
+
+% \subsection{\texttt{bool stack\_empty(Stack *s)}}
+
+% Return \texttt{true} if the stack is empty and \texttt{false} otherwise.
+
+% \subsection{\texttt{bool stack\_full(Stack *s)}}
+
+% Return \texttt{true} if the stack is full and \texttt{false} otherwise.
+
+% \subsection{\texttt{uint32\_t stack\_size(Stack *s)}}
+
+% Return the number of items in the stack.
+
+% \subsection{\texttt{bool stack\_push(Stack *s, uint32\_t x)}}
+
+% If the stack is full prior to pushing the item \texttt{x}, return
+% \texttt{false} to indicate failure.  Otherwise, push the item and return
+% \texttt{true} to indicate success.
+
+% \subsection{\texttt{bool stack\_peek(Stack *s, uint32\_t *x)}}
+
+% Peeking into a stack is synonymous with querying a stack about the
+% element at the top of the stack.  If the stack is empty prior to peeking
+% into it, return \texttt{false} to indicate failure.
+
+% \subsection{\texttt{bool stack\_pop(Stack *s, uint32\_t *x)}}
+
+% If the stack is empty prior to popping it, return \texttt{false} to
+% indicate failure. Otherwise, pop the item, set the value in the memory
+% \texttt{x} is pointing to as the popped item, and return \texttt{true}
+% to indicate success.
+
+% \subsection{\texttt{void stack\_copy(Stack *dst, Stack *src)}}
+
+% Assuming that the destination stack \texttt{dst} is properly initialized,
+% make \texttt{dst} a copy of the source stack \texttt{src}. This means
+% making the \emph{contents} of \texttt{dst->items} the same as
+% \texttt{src->items}. The top of \texttt{dst} should also match the top
+% of \texttt{src}.
+
+% \subsection{\texttt{void stack\_print(Stack *s, FILE *outfile, char
+% *cities[])}}
+
+% Prints out the contents of the stack to \texttt{outfile} using
+% \texttt{fprintf()}. Working through each vertex in the stack starting
+% from the \emph{bottom}, print out the name of the city each vertex
+% corresponds to. This function will be given to aid you.
+
+% \begin{clisting}{}
+% void stack_print(Stack *s, FILE *outfile, char *cities[]) {
+%     for (uint32_t i = 0; i < s->top; i += 1) {
+%         fprintf(outfile, "%s", cities[s->items[i]]);
+%         if (i + 1 != s->top) {
+%             fprintf(outfile, " -> ");
+%         }
+%     }
+%     fprintf(outfile, "\n");
+% }
+% \end{clisting}

@@ -1,0 +1,68 @@
+\section{Command-line Options}
+\epigraphwidth=0.6\textwidth
+\epigraph{\emph{A few dud universes can really clutter up your basement.}}%
+{---Neal Stephenson, \emph{In the Beginning\ldots Was the Command Line}}
+
+\noindent
+Your test harness will determine which of your implemented functions to
+run through the use of \emph{command-line option}. In most \textbf{C}
+programs, the \texttt{main()} function has two parameters: \texttt{int
+argc} and \texttt{char **argv}. A command, such as \texttt{./exec arg1
+arg2}, is split into an array of strings referred as arguments. The
+parameter \texttt{argv} is this array of strings. The parameter
+\texttt{argc} serves as the argument counter, which is the number of
+arguments that were supplied. Try the following code, and make sure that
+you understand it.
+
+\begin{clisting}{Printing out supplied command-line arguments.}
+#include <stdio.h>
+
+int main(int argc, char **argv) {
+    for (int i = 0; i < argc; i += 1) {
+        printf("argv[%d] = %s\n", i, argv[i]);
+    }
+    return 0;
+}
+\end{clisting}
+
+A command-line option is an argument, usually prefixed with a hyphen,
+that modifies the behavior of a command or program. They are typically
+parsed using the \texttt{getopt()} function. \textcolor{red}{Do not
+attempt to parse the command-line arguments yourself.} Instead, use the
+\texttt{getopt()} function. Command-line options must be defined in
+order for \texttt{getopt()} to parse them. These options are defined in
+a string, where each character in the string corresponds to an option
+character that can be specified on the command-line. Upon running the
+executable, \texttt{getopt()} should be used to scan through the
+command-line arguments, checking for option characters in a loop.
+
+\begin{clisting}{Parsing options using \texttt{getopt()}.}
+#include <stdio.h>
+#include <unistd.h>
+
+#define OPTIONS "pi:"
+
+int main(int argc, char **argv) {
+    int opt = 0;
+    while ((opt = getopt(argc, argv, OPTIONS)) != -1) {
+        switch (opt) {
+        case 'p':
+            printf("-p option.\n");
+            break;
+        case 'i':
+            printf("-i option: %s is parameter.\n", optarg);
+            break;
+        }
+    }
+    return 0;
+}
+\end{clisting}
+
+This example program supports two command-line options, \texttt{-p} and
+\texttt{-i}. Note that the option character \texttt{`i'} in the defined
+option string \texttt{OPTIONS} has a trailing colon. The colon
+signifies, when the \texttt{-i} option is enabled on the command-line,
+that \texttt{getopt()} should search for a option argument following it.
+An error is thrown by \texttt{getopt()} if an argument for a option, or
+\emph{flag}, requiring one is not supplied.
+

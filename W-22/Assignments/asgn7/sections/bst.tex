@@ -1,0 +1,71 @@
+\section{Binary Search Trees}
+\epigraph{\emph{The tree of liberty must be refreshed from time to time with the blood of patriots and tyrants.}}{---Thomas Jefferson}
+
+\noindent
+The definition of a binary search tree is a recursive one, as presented
+in lecture. It is either \texttt{NULL}, or a node that points to up to
+two subtrees. For any non-\texttt{NULL} node, the left subtree contains
+keys that are less than it in value, and the right subtree contains keys
+that are greater than it in value. Since our nodes will contain
+oldspeak, each node's left subtree contains oldspeak that is
+lexicographically less than it, and each node's right subtree contains
+oldspeak that is lexicographically greater than it. You will want to
+make use of the \texttt{strcmp()} function. The diagram below showcases
+an example binary search tree that might appear for this assignment.
+
+\begin{center}
+  \begin{forest} for tree={draw,inner sep=5pt,l=10pt,l sep=6pt,s sep=14pt}
+    [\texttt{window} $\rightarrow$ \texttt{okno}
+      [\texttt{arm} $\rightarrow$ \texttt{rook}
+        [\texttt{annoy} $\rightarrow$ \texttt{razdraz}]
+        [\texttt{bad} $\rightarrow$ \texttt{baddiwad}]
+      ]
+      [\texttt{wipe} $\rightarrow$ \texttt{osoosh}
+        [,phantom]
+        [\texttt{zounds} $\rightarrow$ \texttt{NULL}]
+      ]
+    ]
+  \end{forest}
+\end{center}
+
+The interface for the binary search tree ADT is provided in
+\texttt{bst.h} and explained in the following sections.
+\textcolor{red}{You may not modify this header file.}
+
+\begin{funcdoc}{Node *bst\_create(void)}
+  Constructor for a binary search tree that constructs an \emph{empty}
+  tree. That means that the tree is \texttt{NULL}.
+\end{funcdoc}
+
+\begin{funcdoc}{void bst\_delete(Node **root)}
+  Destructor for a binary search tree rooted at \texttt{root}. This
+  should walk the tree using a \emph{postorder} traversal and delete
+  each node of the tree.
+\end{funcdoc}
+
+\begin{funcdoc}{uint32\_t bst\_height(Node *root)}\label{bstheight}
+  Returns the height of the binary search tree rooted at \texttt{root}.
+\end{funcdoc}
+
+\begin{funcdoc}{uint32\_t bst\_size(Node *root)}\label{bstsize}
+  Returns the size of the binary search tree rooted at \texttt{root}.
+  The size of a tree is equivalent to the number of nodes in the tree.
+\end{funcdoc}
+
+\begin{funcdoc}{Node *bst\_find(Node *root, char *oldspeak)}
+  Searches for a node containing \texttt{oldspeak} in the binary search
+  tree rooted at \texttt{root}. If a node is found, the pointer to the
+  node is returned. Else, a \texttt{NULL} pointer is returned.
+\end{funcdoc}
+
+\begin{funcdoc}{Node *bst\_insert(Node *root, char *oldspeak, char *newspeak)}
+  Inserts a new node containing the specified \texttt{oldspeak} and
+  \texttt{newspeak} into the binary search tree rooted at \texttt{root}.
+  Duplicates \emph{should not} be inserted.
+\end{funcdoc}
+
+\begin{funcdoc}{void bst\_print(Node *root)}
+  Prints out each node in the binary search tree through an
+  \emph{inorder} traversal. This will require the use of
+  \texttt{node\_print()}.
+\end{funcdoc}

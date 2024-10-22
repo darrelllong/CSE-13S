@@ -1,0 +1,42 @@
+.TH checkout 1 "" "" gitlab-canvas-utils
+
+.SH NAME
+checkout - Checkout cloned student GitLab repos
+
+.SH SYNOPSIS
+.B checkout [OPTIONS]
+
+.SH DESCRIPTION
+Checks out cloned student repos to commit IDs submitted to a Canvas assignment.
+The repos are assumed to have been cloned using the \fBcloner\fP script.
+Unless otherwise specified, the repos are assumed to be cloned under
+\fB/tmp/repos/\fP.
+Reads \fBstdin\fP for a CSV with rows formatted as \fB[name, CanvasID, CruzID,
+repo]\fP.
+Outputs CSV rows of students whose repos were checked out to \fBstdout\fP.
+
+.SH OPTIONS
+.TP
+.BR -h ", " --help
+show program help and exit
+
+.TP
+.BR -a " " ASGN ", " --asgn=ASGN " " (required " " argument)
+the number of the assignment to checkout repos for
+
+.TP
+.BR -r " " REPODIR ", " --repodir=REPODIR
+the directory that contains the cloned repos (default: \fB/tmp/repos\fP)
+
+.TP
+.BR -l " " LEVEL ", " --logging-level=LEVEL " " (default: " " info)
+set logging level for logs to \fBstderr\fP (choices: \fBdebug\fP, \fBinfo\fP,
+\fBwarning\fP, \fBerror\fP, \fBcritical\fP, \fBoff\fP)
+
+.SH SEE ALSO
+addtorepos(1),
+clone(1),
+createrepos(1),
+pushfiles(1),
+rmfiles(1),
+roster(1)

@@ -1,0 +1,98 @@
+\section{Fundamental Constants}
+
+\epigraph{\emph{Transcendental numbers, they transcend the power of algebraic methods.}}{---Leonhard Euler}
+
+\noindent
+We live in a world (especially if you are Platonist) that is described
+by and perhaps governed by mathematics and mathematical objects. Our
+world is populated by numbers---fundamental constants---that we know to
+exist, but which we cannot write exactly using our decimal (or any
+positional) number system. We are thus presented with a pleasant
+conundrum: How do we calculate these numbers that need in order to
+pursue science?
+
+There are many little things that remind us of the wonders of the
+physical world in which we live. One of the most beautiful things in
+mathematics, which Richard Feynman called ``our jewel,'' is
+\emph{Euler's identity}:
+$$
+e^{i \pi} + 1 = 0
+$$
+which unites the most fundamental numbers in a single formula. A simple
+informal proof will show you why this is so.
+
+The tool we will use for our proof is the \emph{Taylor series} (Brook
+Taylor, 1685--1731). Taylor showed that you can write most functions as
+an infinite sum (there are some restrictions). This allows us to
+evaluate a function $f(x)$ near a point $a$ by writing it like this:
+$$
+f(x) = \sum_{k=0}^\infty \frac{f^{(k)}(a)}{k!}(x-a)^k = f(a) +
+\frac{f'(a)}{1!}(x-a) + \frac{f''(a)}{2!}(x-a)^2 +
+\frac{f^{(3)}(a)}{3!}(x-a)^3 + \cdots
+$$
+where $f'$ is the \emph{first derivative}, $f''$ is the second,
+$f^{(3)}$ is the third, and so forth. For example,
+$$
+\sin x = x - \frac{x^3}{3!} + \frac{x^5}{5!} - \frac{x^7}{7!} +
+\frac{x^9}{9!} + \cdots
+$$
+and similarly,
+$$
+\cos x = 1 - \frac{x^2}{2!} + \frac{x^4}{4!} - \frac{x^6}{6!} +
+\frac{x^8}{8!} + \cdots
+$$
+Now, notice that \emph{sine} has the odd powers of $x$, while
+\emph{cosine} has the even powers of $x$. The reason for this is simple,
+it is that we are using $a = 0$, and since the $\sin ' x = \cos x$ and
+$\cos ' x = - \sin x$ and since $\sin 0 = 0$ and $\cos 0 = 1$ all the
+trigonometric functions drop out and just leave us with powers of $x$.
+We also need to look at the exponential function,
+$$
+e^x = \sum_{k=0}^\infty \frac{x^k}{k!} = 1 + x + \frac{x^2}{2!} +
+\frac{x^3}{3!} + \frac{x^4}{4!} + \cdots
+$$
+If you look carefully at the Taylor series expansion of the exponential
+function, you will see that it has both the even and odd powers of $x$,
+but the signs are all positive, while for \emph{sine} and \emph{cosine}
+half of the terms are negative.
+
+The imaginary number $i = \sqrt{-1}$ solves the problem for us,
+$$
+e^{i x} = 1+i x-\frac{x^2}{2!}-\frac{i x^3}{3!}+\frac{x^4}{4!}+\frac{i
+x^5}{5!}-\frac{x^6}{6!}-\frac{i x^7}{7!}+\frac{x^8}{8!}+\frac{i
+x^9}{9!}-\frac{x^{10}}{10!}+\cdots
+$$
+and look closely at the even numbered terms. You will see that they are
+the same as $\cos x$, and if you look at the odd numbered terms, you
+will see that they are the same as $i \sin x$ (you simply have to factor
+out the $i$). Consequently, we see that
+$$
+e^{i x} = \cos x + i \sin x.
+$$
+If you let $x = \pi$, then
+$$
+e^{i \pi} = \cos \pi + i \sin \pi = -1 + i \times 0 = -1.
+$$
+Thus, if $e^{i \pi} = -1$ then $e^{i \pi} + 1 = 0$. If you are like most
+scientists, you are left with a feeling of awe.
+
+Can we make use of this jewel to calculate a value of $\pi$? We will
+start with
+        $e^{i \pi} + 1  = 0$ and subtract $1$ from both sides, and we get
+        $e^{i \pi}  = -1$.
+        We take the square root of both sides:
+        $$\sqrt{e^{i \pi}}  = \sqrt{-1}$$ and we get
+        $e^\frac{i \pi}{2}  = i$.
+        We take the $i^\text{th}$ root of both sides:
+        $$\sqrt[i]{e^\frac{i \pi}{2}} = \sqrt[i]{i}$$ which simplifies to
+        $e^\frac{\pi}{2} = \sqrt[i]{i}$.
+        We are almost finished once we take the natural logarithm of both sides:
+        $\log(e^\frac{\pi}{2}) = \log(\sqrt[i]{i})$ yielding
+        $\frac{\pi}{2} = \log(\sqrt[i]{i})$ which simplifies to
+        $\pi = 2 \log(\sqrt[i]{i})= 2\log(i^{-i})$.
+So ultimately we find that $\pi$ is the logarithm of the $i^{\text{th}}$
+root of an imaginary number. We may want to contemplate the words of
+Benjamin Peirce (1809--1880), a professor of mathematics at Harvard, who
+said ``Gentlemen, that is surely true, it is absolutely paradoxical; we
+cannot understand it, and we don’t know what it means. But we have
+proved it, and therefore we know it is the truth.''

@@ -1,0 +1,63 @@
+\section{Nodes}
+\epigraph{\emph{Tyrants have always some slight shade of virtue; they support the laws before destroying them.}}{---Voltaire}
+
+\noindent
+As mentioned in \S\ref{hashtable}, binary search trees will be used to
+resolve hash collisions. As discussed in lecture, binary search trees,
+and trees in general, are made up of nodes. For this assignment, each
+node contains \emph{oldspeak} and its \emph{newspeak} translation if it
+exists. The \emph{key} to search with in a binary search tree is
+\emph{oldspeak}. Each node, in typical binary search tree fashion, will
+contain pointers to its left and right children. The node
+\texttt{struct} is defined for you in \texttt{node.h} as follows:
+
+\begin{clisting}{}
+struct Node {
+    char *oldspeak;
+    char *newspeak;
+    Node *left;
+    Node *right;
+};
+\end{clisting}
+
+If the \texttt{newspeak} field is \texttt{NULL}, then the oldspeak
+contained in this node is badspeak, since there is no newspeak
+translation. The rest of the interface for the node ADT is provided in
+\texttt{node.h}. The node ADT is made transparent in order to simplify
+the implementation of the binary search tree ADT.
+
+\begin{funcdoc}{\texttt{Node *node\_create(char *oldspeak, char *newspeak)}}
+  The constructor for a node. You will want to make a \emph{copy} of the
+  \texttt{oldspeak} and its \texttt{newspeak} translation that are passed
+  in. What this means is \emph{allocating memory} and copying over the
+  characters for both \texttt{oldspeak} and \texttt{newspeak}. You may
+  find \texttt{strdup()} useful.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void node\_delete(Node **n)}}
+  The destructor for a node. Only the node \texttt{n} is freed. The
+  previous and next nodes that \texttt{n} points to \emph{are not}
+  deleted. Since you have allocated memory for \texttt{oldspeak} and
+  \texttt{newspeak}, remember to free the memory allocated to both of
+  those as well. The pointer to the node should be set to \texttt{NULL}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void node\_print(Node *n)}}
+  While helpful as debug function, you will use this function to produce
+  correct program output. Thus, it is imperative that you print out the
+  contents of a node in the following manner:
+
+  \begin{itemize}
+    \item If the node \texttt{n} contains oldspeak \emph{and} newspeak,
+      print out the node with this print statement:
+      \begin{clisting}{}
+printf("%s -> %s\n", n->oldspeak, n->newspeak);
+      \end{clisting}
+    \item If the node \texttt{n} contains \emph{only} oldspeak, meaning
+      that newspeak is null, then print out the node with this print
+      statement:
+      \begin{clisting}{}
+printf("%s\n", n->oldspeak);
+      \end{clisting}
+  \end{itemize}
+\end{funcdoc}

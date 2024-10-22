@@ -1,0 +1,53 @@
+\section{Submission}
+
+\epigraph{\emph{The cost of freedom is always high, but Americans have always
+paid it. And one path we shall never choose, and that is the path of
+surrender, or submission.}}{---John F.\ Kennedy}\noindent
+
+\noindent Now that you have learned about some useful \texttt{git} commands,
+it's time to put them to use. The steps to submitting assignments will not
+change throughout the course. If you ever forget the steps, refer back to this
+PDF. Remember: \emph{add, commit,} and \emph{push}! In the case you do mess
+something up, \emph{don't panic.} Take a step back and think things throughly.
+The Internet, TAs and tutors are here as resources.
+
+\begin{enumerate}
+  \item Add it!
+
+\begin{shlisting}{}
+$ git add CHEATING.pdf hello.c
+\end{shlisting}
+
+    As mentioned before, you will need to first add the files to your
+    repository using the \texttt{git add <filenames>} command. You will
+    be submitting these files into the \texttt{asgn0} directory.
+
+  \item Commit it!
+
+\begin{shlisting}{}
+$ git commit -m "Your commit message here"
+\end{shlisting}
+
+  Changes to these files will be committed to the repository with \texttt{git
+  commit}. The command should also include a commit message describing what
+  changes are included in the commit.
+
+  \item Push it!
+
+\begin{shlisting}{}
+$ git push
+\end{shlisting}
+
+  The committed changes are then sync'd up with the remote server
+  using the \texttt{git push} command. You must be sure to push your
+  changes to the remote server or else they will not be received by
+  the graders.
+
+\item Submit the commit ID on Canvas! You can find the most recent
+  commit ID by using \texttt{git log} or searching for it through the
+  GitLab web interface. \textcolor{red}{Your assignment is turned in
+    \emph{only} after you have pushed and submitted the commit ID you
+    want graded on Canvas. ``I forgot to push'' and ``I forgot to submit
+    my commit ID'' are not valid excuses. It is \emph{highly}
+  recommended to commit and push your changes \emph{often}.}
+\end{enumerate}

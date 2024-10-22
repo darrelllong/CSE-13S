@@ -1,0 +1,494 @@
+\documentclass[11pt]{article}
+\usepackage{fullpage,fourier,amsmath,amssymb}
+\usepackage{listings,color,url,hyperref}
+\usepackage{mdframed}
+\usepackage{epigraph}
+\usepackage[x11names]{xcolor}
+\usepackage{tcolorbox}
+\usepackage{gensymb}
+
+\title{Assignment 5 \\ Sorting: Putting your affairs in order}
+\author{Prof. Darrell Long \\
+CSE 13S -- Winter 2020}
+\date{Due: February 16$^\text{th}$ at 11:59\,pm}
+
+\input{../footer}
+\input{../lststyle}
+%\lstset{language=C, style=c99}
+
+\newtcolorbox{prelab}[1]{colback=red!5!white, colframe=red!75!black, title=#1}
+\lstset{language=C, style=c99}
+\lstdefinestyle{stylePython}{
+language = Python,
+}
+
+\begin{document}\maketitle
+\epigraphwidth=0.65\textwidth
+\epigraph{\emph{Any inaccuracies in this index may be explained by the fact
+that it has been sorted with the help of a computer.}}{---Donald Knuth, Vol.
+III, \emph{Sorting and Searching}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+Putting items into a sorted order is one of the most common tasks in Computer
+Science. As a result, there are a myriad of library routines that will do
+this task for you, but that does not absolve you of the obligation of
+understanding how it is done. In fact it behooves you to understand the
+various algorithms in order to make wise choices.
+
+The best execution time that can be accomplished, also referred to as the
+\emph{lower bound}, for sorting using \emph{comparisons} is $\Omega(n \log n)$,
+where $n$ is the number is elements to be sorted. If the universe of elements to
+be sorted is small, then we can do better using a \emph{Count Sort} or a
+\emph{Radix Sort} both of which have a time complexity of $O(n)$. The idea of
+\emph{Count Sort} is to count the number of occurrences of each element in an
+array. For \emph{Radix Sort}, a digit by digit sort is done by starting from the
+least significant digit to the most significant digit. It may also use
+\emph{Count Sort} as a subroutine.
+
+What is this $O$ and $\Omega$ stuff? It's how we talk about the execution time
+(or space used) by a program. We will discuss it in class, and you will see it
+again in your Data Structures and Algorithms class.
+
+The sorting algorithms that you are expected to implement are Bubble Sort, Shell
+Sort, Quick Sort and Binary Insertion Sort. The purpose of this assignment is to
+get you fully familiarized with each sorting algorithm. \textcolor{red}{They are
+    well-known sorts. You can use the Python pseudocode provided to you as
+    guidelines. Do not get the code for the sorts from the Internet or you will
+be referred to for cheating.}
+
+\subsection{Bubble Sort}
+\epigraph{\emph{\textbf{C} is peculiar in a lot of ways, but it, like many other
+successful things, has a certain unity of approach that stems from development
+in a small group.}}{---Dennis Ritchie}
+
+\noindent Bubble sort works by examining adjacent pairs of items. If the second
+item is smaller than the first, swap them. As a result, the largest element
+falls to the bottom of the array in a single pass. Since it is in fact the
+largest, we do not need to consider it again. So in the next pass, we only need
+to consider $n-1$ pairs of items. The first pass requires $n$ pairs to be
+examined; the second pass, $n-1$ pairs; the third pass $n-2$ pairs, and so
+forth. If you can pass over the entire array and no pairs are out of order, then
+the array is sorted.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\medskip 
+\begin{prelab}{Pre-lab Part 1}
+  \begin{enumerate} 
+    \item How many rounds of swapping do you think you will need to
+	  sort the numbers ${8, 22, 7, 9, 31, 5, 13}$ in ascending order
+          using Bubble Sort? 
+    \item How many comparisons can we expect to see in the worse case scenario 
+	  for Bubble Sort? Hint: make a list of numbers and attempt to sort them
+	  using Bubble Sort.
+  \end{enumerate} 
+\end{prelab}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+In 1784, when Carl Friedrich Gauss was only 7 years old, he was reported to have
+amazed his elementary school teacher by how quickly he summed up the integers
+from $1$ to $100$.  The precocious little Gauss produced the correct answer
+immediately after he quickly observed that the sum was actually 50 pairs of
+numbers, with each pair summing to 101 totaling to 5,050. We can then see that:
+$$
+n+(n-1)+(n-2) + \ldots + 1 = \frac{n(n+1)}{2},
+$$
+So the \emph{worst case} time complexity is $O(n^2)$. However, it could be much
+better if the list is already sorted. If you haven't seen the inductive proof
+for this yet, you will in the applied discrete math class.
+
+\lstset{language={python}}
+\begin{lstlisting}[title=Bubble Sort (pseudocode)]
+def Bubble_Sort(arr):
+  for i in range(len(arr) - 1):
+    j = len(arr) - 1
+    while j > i:
+      if arr[j] < arr[j - 1]:
+        arr[j], arr[j - 1] = arr[j - 1], arr[j]
+      j -= 1
+  return
+\end{lstlisting}
+
+\subsection{Shell Sort} \epigraph{\emph{There are two ways of constructing a
+        software design. One way is to make it so simple that there are
+        obviously no deficiencies, and the other way is to make it so
+        complicated that there are no obvious deficiencies. The first method is
+        far more difficult.  }}{---C.A.R. Hoare}
+
+Shell Sort is a variation of insertion sort, which sorts pairs of elements which
+are far apart from each other. The interval (or \textit{gap}) between the
+compared items being sorted is continuously reduced. Shell Sort starts with
+distant elements and moves out-of-place elements into position faster than a
+simple nearest neighbor exchange. In the following code, an array of intervals
+is created  by using \texttt{gap(n)} for an unsorted list of \textit{n}
+elements. For example, for \textit{n} = 20 unsorted elements, the set of gaps is
+$\{9, 4, 1\}$.
+
+What is the expected time complexity of Shell Sort? All this depends upon the
+gap sequence. The number of elements in the gap sequence and their respective
+size scales with the number of elements $n$ being sorted. The first loop is
+executed \texttt{len(s)-step} times and that number decreases as the gap size
+decreases.
+
+The following is the pseudocode for Shell Sort. Given the length of array $n$,
+the function $gap(n)$ produces an array of gaps. The rules is that if $n \leq
+2$, $n = 1$, else $n = 5*n//11$, in which $//$ dumps the digits after the
+decimal. The array will be ranked from large to small. In the $Shell\_Sort(n)$,
+for each step in the array of gaps, it compares all the pairs that are away from
+each other by $step$ in index and switches the elements in the pair if they are
+not sorted.
+
+\lstset{language={python}}
+\begin{lstlisting}[title=gap (pseudocode)]
+def gap(n):
+  while n > 1:
+    n = 1 if n <= 2 else 5 * n // 11
+    yield n
+\end{lstlisting}
+
+\lstset{language={python}}
+\begin{lstlisting}[title=Shell Sort (pseudocode)]
+def Shell_Sort(arr):
+  for step in gap(len(arr)):
+    for i in range(step, len(arr)):
+      for j in range(i, step - 1, -step):
+        if arr[j] < arr[j - step]:
+          arr[j], arr[j - step] = arr[j - step], arr[j]
+  return
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\medskip
+\begin{prelab}{Pre-lab Part 2}
+    \begin{enumerate}
+	\item The worst time complexity for Shell sort depends on the size
+	      of the gap. Investigate why this is the case. How can you
+	      improve the time complexity of this sort by changing the gap
+	      size? Cite any sources you used.
+	\item How would you improve the runtime of this sort without changing
+	      the gapp size?
+    \end{enumerate}
+\end{prelab}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Quicksort}
+\epigraph{\emph{If debugging is the process of removing software bugs, then
+programming must be the process of putting them in.}}{---Edsger Dijkstra}
+
+%\noindent In politics, the strategy of divide and conquer is dividing the large powers into small pieces such that each piece has less power than the one implementing the strategy. Such strategy can be used to empower the sovereign to rule subjects, populations, or factions of different interests. In computer science we don't need to rule anybody, but the same methodology can be used to design sorting algorithm.
+
+%In such analogy, the large power is the sorting problem with numerous elements. Now we need to find a method to divide the problem into smaller power, i.e., sorting problems with less elements. What's the problems that are small enough for us to solve it directly? Obviously the problems with zero or one element are simple enough because no sorting is needed. The only question is how to divide it into pieces?
+
+\noindent Quicksort is a divide-and-conquer algorithm. It partitions arrays
+into two subarrays by selecting an element from the array and designating it as
+a pivot.  Elements in the array that are less than the pivot go to the left
+subarray, and elements in the array that are greater than or equal to the pivot
+go to the right subarray. Note that Quicksort is an \emph{in-place} algorithm,
+meaning it doesn't allocate additional memory for subarrays to hold partitioned
+elements. Instead, Quicksort utilizes a subroutine called \texttt{Partition()}
+that places elements less than the pivot into the left side of the array and
+elements greater than or equal to the pivot into the right side and returns the
+index that indicates the division between the partitioned parts of the array.
+Quicksort is then run recursively on the partitioned parts of the array, thereby
+sorting each array partition containing at least one element.
+
+\lstset{language={python}}
+\begin{lstlisting}[title=Quicksort (pseudocode)]
+def Partition(arr, left, right):
+  pivot = arr[left]
+  lo = left + 1
+  hi = right
+
+  while True:
+    while lo <= hi and arr[hi] >= pivot:
+      hi -= 1
+
+    while lo <= hi and arr[lo] <= pivot:
+      lo += 1
+
+    if lo <= hi:
+      arr[lo], arr[hi] = arr[hi], arr[lo]
+    else:
+      break
+
+  arr[left], arr[hi] = arr[hi], arr[left]
+  return hi
+
+def Quick_Sort(arr, left, right):
+  if left < right:
+    index = Partition(arr, left, right)
+    Quick_Sort(arr, left, index - 1)
+    Quick_Sort(arr, index + 1, right)
+  return
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\medskip
+\begin{prelab}{Pre-lab Part 3}
+    \begin{enumerate}
+    \item Quicksort, with a worse case time complexity of $O(n^2)$, doesn't seem
+        to live up to its name. Investigate and explain why Quicksort isn't
+        doomed by its worst case scenario.  Make sure to cite any sources you
+        use.
+    \end{enumerate}
+\end{prelab}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Binary Insertion Sort}
+\epigraph{\emph{Increasingly, people seem to misinterpret complexity as
+sophistication, which is baffling -- the incomprehensible should cause
+suspicion rather than admiration.}}{---Niklaus Wirth}
+
+
+\noindent Binary Insertion Sort is a special type of insertion sort which uses
+the binary search algorithm to find the correct position of an inserted element
+in an array. Insertion sort works by finding the correct position of the element
+in the array and then inserting it into its correct position. Searching for an
+element using binary search is much like searching for a book on a shelf that is
+sorted alphabetically. First, identify the book sitting approximately at the
+midpoint between either end of the shelf. If it's the book you're looking for,
+then great! If the book you're looking for has a name that precedes the current
+book alphabetically, you only need to consider the left half of the shelf. Else,
+you only need to consider the right half of the shelf.  Thus, it's clear that we
+are \emph{halving} the search space each time we do a comparison, hence the
+name, binary search. Binary Insertion Sort uses binary search in order to
+determine where each element should go, reducing the number of comparisons
+between array elements we would ordinarily need for Insertion sort.  For each
+element in the array, simply run a binary search through the elements to the
+left of the current element in order to find the index in which it should go.
+
+\lstset{language={python}}
+\begin{lstlisting}[title=Binary Insertion Sort (pseudocode)]
+def Binary_Insertion_Sort(arr):
+  for i in range(1, len(arr)):
+    value = arr[i]
+    left = 0
+    right = i
+
+    while left < right:
+      mid = left + ((right - left) // 2)
+
+      if value >= arr[mid]:
+        left = mid + 1
+      else:
+        right = mid
+
+    for j in range(i, left, -1):
+      arr[j - 1], arr[j] = arr[j], arr[j - 1]
+
+  return
+\end{lstlisting}
+
+Each round in insertion sort involves picking a single element from the input
+array and finding a location in the sorted array where it can be placed. In the
+Binary Insertion Sort algorithm, this location is found using the binary search
+algorithm.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\medskip
+\begin{prelab}{Pre-lab Part 4}
+    \begin{enumerate}
+  \item Can you figure out what effect the binary search algorithm has on the
+      complexity when it is combined with the insertion sort algorithm?
+    \end{enumerate}
+\end{prelab}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Your Task}
+\epigraph{\emph{Die Narrheit hat ein gro\ss{}es Zelt;
+Es lagert bei ihr alle Welt,
+Zumal wer Macht hat und viel Geld.}}{---Sebastian Brant, \emph{Das Narrenschiff}}
+
+For this assignment you have 3 tasks:
+\begin{itemize}
+\item \textbf{Task 1:} Implement a testing harness for sorting algorithms. You will do this using \texttt{getopt}.
+\item \textbf{Task 2:} Implement the four sorting algorithms Bubble Sort, Shell Sort, Quicksort and Binary Insertion Sort, whose pseudocode have been provided in the above section.
+\item \textbf{Task 3:} Gather statistics about each sort and its performance such as the \emph{size} of the array, the number of moves required, and the number of \emph{comparisons} required (comparisons for \emph{elements}, not for the logic).
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Specifics}
+\epigraph{\emph{Vielleicht sind alle Drachen unseres Lebens Prinzessinnen, die
+nur darauf warten uns einmal sch\"on und mutig zu sehen. Vielleicht ist alles
+Schreckliche im Grunde das Hilflose, das von uns Hilfe will.}}{---Rainer Maria
+Rilke}
+
+You must use \texttt{getopt} to parse the command line arguments. To get you
+started, here is a hint.
+\begin{lstlisting}
+  while ((c = getopt(argc, argv, "Absqip:r:n:")) != -1)
+\end{lstlisting}
+\begin{itemize}
+  \item \texttt{-A} means employ \emph{all} sorting algorithms.
+  \item \texttt{-b} means enable \texttt{Bubble Sort}.
+  \item \texttt{-s} means enable \texttt{Shell Sort}.
+  \item \texttt{-q} means enable \texttt{QuickSort}.
+  \item \texttt{-i} means enable \texttt{Binary Insertion Sort}.
+  \item \texttt{-p n} means print the first \texttt{n} elements of the array. However if the \texttt{-p n} flag is not specified, your program should print the first 100 elements.
+  The \emph{default} \texttt{n} value is \texttt{100}.
+  \item \texttt{-r s} means set the random seed to \texttt{s}. The
+  \emph{default} \texttt{s} value is \texttt{8222022}.
+  \item \texttt{-n c} means set the array size to \texttt{c}.
+  The \emph{default} \texttt{c} value is \texttt{100}.
+\end{itemize}
+It is important to read this \emph{carefully}. None of these options are
+\emph{exclusive} of any other (you may specify any number of them,
+including \emph{zero}). The most natural data structure for this
+problem is a \emph{set}.
+
+\begin{itemize}
+  \item Your random numbers should be \emph{30 bits}, no larger ($2^{30}-1 =
+  1\,073\,741\,823$). (\emph{Hint}: bit masking will help you here.)
+  \item You must use \texttt{rand()} and \texttt{srand()}, not because they are
+  good (they are not), but because they are what is specified by the
+  \textbf{C}99 standard.
+  \item Your program \emph{must} be able to sort any number of random integers
+  \emph{up to the memory limit of the computer}. That means that you will need
+  to dynamically allocate the array using \texttt{calloc()}.
+  \item Your program should have no \emph{memory leaks}. Make sure you free before exiting. Valgrind should build without any errors.
+  \item Your program must pass \texttt{infer} cleanly. Fix or explain any complaints by \texttt{infer} in your \texttt{README}.
+  \item The executable file produced by the compiler \emph{must be called}
+  \texttt{sorting}.
+  \item Your algorithms \emph{must} correctly sort. If it does not sort, then for that sort you receive a \emph{zero}.
+\end{itemize}
+
+A large part of this assignment is understanding and comparing the performance
+of various sorting algorithms. You essentially conducting an experiment. Consequently, you \emph{must} collect some simple
+statistics on each algorithm. In particular,
+\begin{itemize}
+\item The \emph{size} of the array,
+\item The number of \emph{moves} required (each time you transfer an element
+in the array, that counts), and
+\item The number of \emph{comparisons} required (comparisons \emph{only} count
+	for \emph{elements}, not for logic).
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\medskip
+\begin{prelab}{Pre-lab Part 5}
+    \begin{enumerate}
+        \item Explain how you plan on keeping track of the number of moves and comparisons since
+	      each sort will reside within its own file.
+    \end{enumerate}
+\end{prelab}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Deliverables}
+\epigraph{\emph{Dr.\ Long, put down the Rilke and step away from the
+computer.}}{---Michael Olson}
+
+You will need to turn in:
+
+\begin{enumerate}
+\item Your program \emph{must} have the followingsource and header files:
+\begin{itemize}
+\item Each sorting method will have its own pair of header file and source file.
+\begin{itemize}
+\item \texttt{bubble.h} specifies the interface to \texttt{bubble.c}.
+\item \texttt{bubble.c} implements Bubble Sort.
+\item \texttt{shell.h} specifies the interface to \texttt{shell.c}.
+\item \texttt{shell.c} implements Shell Sort.
+\item \texttt{quick.h} specifies the interface to \texttt{quick.c}.
+\item \texttt{quick.c} implements Quicksort.
+\item \texttt{binary.h} specifies the interface to \texttt{binary.c}.
+\item \texttt{binary.c} implements Binary Insertion Sort.
+\end{itemize}
+
+\item \texttt{sorting.c} contains \texttt{main()} and \emph{may} contain any other functions necessary to complete the assignment.
+\end{itemize}
+You will have other source and header files, but \emph{do not try to be overly clever}.
+
+\item \texttt{Makefile}: This is a file that will allow the grader
+to type \texttt{make} to compile your program. Typing \texttt{make} must build your program and \texttt{./sorting} alone as well as flags must run your program.
+  \begin{itemize}
+  \item \texttt{CFLAGS=-Wall -Wextra -Werror -Wpedantic -std=c99} must be included.
+  \item \texttt{CC=clang} must be specified.
+  \item \texttt{make clean} must remove all files that are compiler generated.
+  \item \texttt{make valgrind} must build your program to check for memory mismanagement errors.
+  \item \texttt{make infer} must build and run \texttt{infer} on your program, passing without errors. Again, any errors that you cannot fix should be documented in your \texttt{README}.
+  \item \texttt{make} should build your program, as should \texttt{make all}.
+  \item Your program executable \emph{must} be named \texttt{sorting}.
+
+  \end{itemize}
+
+\item \texttt{README.md}: This \emph{must} be in \emph{markdown}.
+This must describe how to use your program and \texttt{Makefile}.
+
+\item \texttt{DESIGN.pdf}: This \emph{must} be a PDF. The design document
+should contain answers to the pre-lab questions at the beginning and  describe
+your design for your program with enough detail that a sufficiently knowledgeable
+programmer would be able to replicate your implementation. This does not mean
+copying your entire program in verbatim. You should instead describe how your
+program works with supporting pseudo-code.
+
+\textcolor{red}{You \emph{must} push the \texttt{DESIGN.pdf} before you push
+\emph{any} code.}
+
+\item \texttt{WRITEUP.pdf}: This document \emph{must} be a PDF. The writeup must
+    include the following:
+\begin{itemize}
+  \item Identify the respective time complexity for each sort and include what
+      you have to say about the constant.
+  \item What you learned from the different sorting algorithms.
+  \item How you experimented with the sorts.
+
+\end{itemize}
+\end{enumerate}
+
+\noindent Points will be assigned according to the difficulty of the sort
+involved.
+\begin{itemize}
+    \item 10\% -- Bubble sort
+    \item 15\% -- Shell Sort
+    \item 20\% -- Quick Sort
+    \item 20\% -- Binary Insertion Sort
+\end{itemize}
+
+A sort is not considered to be implemented if it does not sort \emph{correctly
+every time}. If it does not sort correctly then that sort receives a zero.
+Additional criteria are:
+\begin{itemize}
+    \item 10\% -- Code quality: this includes passing \texttt{infer} and
+        consistent style.
+    \item 10\% -- Completeness: which includes things like the
+        \texttt{Makefile}.
+    \item 15\% -- Supporting Documents: This includes your \texttt{WRITEUP.pdf},
+        \texttt{DESIGN.pdf}, and \texttt{README.md}.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Submission}
+\epigraph{\emph{Da\ss{} Gott ohn Arbeit Lohn verspricht, Verla\ss{} dich darauf
+und backe nicht Und wart, bis dir 'ne Taube gebraten Vom Himmel k\"onnt in den
+Mund geraten!}}{---Sebastian Brant, \emph{Das Narrenschiff}}
+
+To submit your assignment, refer back to \texttt{assignment0} for the steps on
+how to submit your assignment through \texttt{git}.  Remember: \emph{add,
+commit,} and \emph{push}!
+
+\textcolor{red}{Your assignment is turned in \emph{only} after you have pushed
+    \emph{and} submitted the commit ID on Canvas. If you forget to push, you
+    have not turned in your assignment and you will get a \emph{zero}. ``I
+    forgot to push'' is not a valid excuse. It is \emph{highly} recommended to
+commit and push your changes \emph{often}.}
+
+\section{Supplemental Readings}
+\epigraph{\emph{The more you read, the more things you will know. The
+more that you learn, the more places you'll go.}}{---Dr.\ Seuss}\noindent
+
+\begin{itemize}
+    \item \textit{The C Programming Language} by Kernighan \& Ritchie
+    \begin{itemize}
+	\item Chapter 1 \S 1.10
+        \item Chapter 4 \S 4.10--4.11
+        \item Chapter 5 \S 5.1--5.3
+    \end{itemize}
+\end{itemize}
+
+\end{document}

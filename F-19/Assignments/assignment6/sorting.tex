@@ -1,0 +1,542 @@
+\documentclass{article}
+\usepackage{fullpage,fourier,amsmath,amssymb}
+\usepackage{listings,color,url,hyperref}
+\usepackage{epigraph}
+\usepackage[x11names]{xcolor}
+
+\title{Assignment 6 \\ Sorting: Putting your affairs in order}
+\author{Prof. Darrell Long \\
+CSE 13S -- Fall 2019}
+\date{Due: November 10$^\text{th}$ at 11:59\,pm}
+
+\input{../footer}
+\input{../lststyle}
+\lstset{language=C, style=c99}
+
+\begin{document}\maketitle
+\epigraphwidth=0.65\textwidth
+\epigraph{\emph{Any inaccuracies in this index may be explained by the fact
+that it has been sorted with the help of a computer.}}{---Donald Knuth, Vol.
+III, \emph{Sorting and Searching}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+Putting items into a sorted order is one of the most common tasks in Computer
+Science. As a result, there are a myriad of library routines that will do
+this task for you, but that does not absolve you of the obligation of
+understanding how it is done. In fact it behooves you to understand the
+various algorithms in order to make wise choices.
+
+The best time that can be accomplished, also referred to as the \emph{lower bound}, for sorting using
+\emph{comparisons} is $\Omega(n \log n)$ where $n$ is the number is elements
+to be sorted. If the universe of elements to be sorted is small,
+then we can do better using a \emph{Count Sort} or a \emph{Radix Sort} both of which have a time complexity of $O(n)$. The idea of \emph{Count Sort} is to count the number of occurrences of each element in an array. For \emph{Radix Sort}, a digit by digit sort is done by starting from the least significant digit to the most significant digit. It also uses \emph{Count Sort} as a subroutine.
+
+What is this $O$ and $\Omega$ stuff? It's how we talk about the execution time
+(or space used) of a program. We will discuss it in class, and you will see it again
+in CSE 101.
+
+You will notice that the sorts for you to implement are referred
+to as Sort A, Sort B, Sort C and Sort D. This is to get you fully
+familiarized with each sorting algorithm. \textcolor{red}{They are
+well-known sorts. You must translate them from pseudocode. Do not
+get the code for them from the Internet or you will be referred to
+for cheating.} We will go over the implemented sorts in lecture
+after this assignment is due.
+
+\subsection{Sort A} %Min Sort
+\epigraph{\emph{\textbf{C} is peculiar in a lot of ways, but it, like many other
+successful things, has a certain unity of approach that stems from development
+in a small group.}}{---Dennis Ritchie}
+
+\noindent Perhaps the simplest sorting method is to look for the smallest element
+(the minimum) and move it to the front. One way to do this is to
+make a copy of that element, shift everything down by one, and then
+place the copy in the top slot. But it would be inefficient and
+time consuming to move all of the elements. Instead, we can simply
+\emph{swap} the top element with the smallest element.
+
+As of now, we know that the smallest element is at the front. Since
+that element is in the correct place, does not need to move, and
+will not change (we call this an \emph{invariant}), we can move on
+to sorting the next element. Let's look for the next smallest element and move it to
+the second slot.
+
+Let's consider what we now know. We know the first slot holds the
+smallest element and the second slot holds the next smallest element
+(or the it could be the same number if we have duplicates). We have
+ourselves a sorting algorithm: locate the smallest element, swap
+it with the front, repeat. After repeating this for each element
+in the array in succession, up to but not including the last element,
+we have a sorted array. With \emph{induction}, we can show that the
+array is in fact sorted.
+
+Why do we not need to concern ourselves with the last element? The
+answer is that if it were not the smaller element when we were at
+the previous step that it was exchanged with the penultimate element,
+and thus must necessarily be the largest (and consequently, last)
+element in the array.
+
+To get you started, below is the code for
+\texttt{Sort A}. Notice that it is composed of two functions:
+\texttt{min\_index()} which finds the \emph{location} of the element of least
+value, and \texttt{sort\_A()} which actually performs the sorting.
+
+\begin{lstlisting}[title=Sort A (in \textbf{C})]
+//
+// Finds the index of the element of least value in a bounded array.
+//
+// a:          The array to search in.
+// first:      The index of the first element to search from.
+// last:       The index of the last element to search to.
+//
+uint32_t min_index(uint32_t a[], uint32_t first, uint32_t last) {
+  uint32_t smallest = first; // Assume the first is the least
+  for (uint32_t i = first; i < last; i += 1) {
+    smallest = a[i] < a[smallest] ? i : smallest;
+  }
+  return smallest;
+}
+
+//
+// Sorts by repeatedly finding the element of least value.
+//
+// a:      The array to sort.
+// length: The length of the array.
+//
+void sort_A(uint32_t a[], uint32_t length) {
+  for (uint32_t i = 0; i < length - 1; i += 1) {
+    uint32_t smallest = min_index(a, i, length);
+    if (smallest != i) {
+      // It's silly to swap with yourself!
+      SWAP(a[smallest], a[i]);
+    }
+  }
+  return;
+}
+\end{lstlisting}
+
+How do we determine the time complexity of \texttt{Sort A}? The key
+is to look at the \texttt{for} loop, and see that the loop is
+executed \texttt{length} times. This would seem to indicate that
+the sort is $O(n)$, but we need to look further. In the \texttt{for}
+loop, we also see that a call is made to \texttt{min\_index()} contains another \texttt{for} loop. This loop is executed \texttt{(last
+- first)} times, which is based on \texttt{length}.  So we call
+\texttt{min\_index()} approximately \texttt{length} times, each time
+requiring approximately \texttt{length} operations, thus the time
+complexity of \texttt{Sort A} is $O(n^2)$.
+
+It is often useful to define a macro when a task is done repetitively,
+and when we also may want to hide the details. One could write a
+function, but you will recall that functions in \textbf{C} always
+pass their arguments \emph{by value} which is inconvenient for the
+\emph{swap} operation. A clever person might take advantage of the
+macro to do some instrumentation.
+
+\begin{lstlisting}[title=SWAP macro]
+#ifdef __INSTRUMENTED__
+#define SWAP(x,y) { uint32_t t = x; x = y; y = t; moveCount += 3; }
+#else
+#define SWAP(x,y) { uint32_t t = x; x = y; y = t; }
+#endif
+\end{lstlisting}
+
+\subsection{Sort B} %Bubble Sort
+\epigraph{\emph{There are two ways of constructing a software design. One way is to make it so simple that there are obviously no deficiencies, and the other way is to make it so complicated that there are no obvious deficiencies. The first method is far more difficult.
+}}{---C.A.R. Hoare}
+
+\noindent This sort works by examining adjacent pairs of items. If the second item is
+smaller than the first, exchange them. If you can pass over the entire array
+and no pairs are out of order, then the array is sorted. As a result, the largest element falls to the bottom of the array in a single pass. Since it is in fact the largest, we do not need to consider it again. So in the next pass, we only need to consider $n-1$ pairs of items.
+
+What is the expected time complexity of Sort B? The first pass
+requires $n$ pairs to be examined; the second pass, $n-1$ pairs; the third
+pass $n-2$ pairs, and so forth.
+
+In 1784, when Carl Friedrich Gauss was only 7 years old, he was reported to have amazed his elementary school teacher by how quickly he summed up the integers frim $1$ to $100$.
+The precocious little Gauss produced the correct answer immediately after he quickly observed that the sum was actually 50 pairs of
+numbers, with each pair summing to 101 totaling to 5,050. We can then see that:
+$$
+n+(n-1)+(n-2) + \ldots + 1 = \frac{n(n+1)}{2},
+$$
+So the \emph{worst case} time complexity is $O(n^2)$. However, it could be much
+better if the list is already sorted. If you haven't seen the inductive
+proof for this yet, you will in CSE 16.
+
+\lstset{language={pascal}}
+\begin{lstlisting}[title=Sort B (pseudocode)]
+procedure SortB( A : list of sortable items )
+  n = length(A)
+  repeat
+    swapped = false
+    for i = 1 to n-1 inclusive do
+      if A[i-1] > A[i] then
+        swap(A[i-1], A[i])
+        swapped = true
+      end if
+    end for
+    n = n - 1
+  until not swapped
+end procedure
+\end{lstlisting}
+
+This is written in pseudo-code. You should be able to understand it well enough
+to translate it into C.
+
+\subsection{Sort C} %Insertion Sort
+\epigraph{\emph{If debugging is the process of removing software bugs, then
+programming must be the process of putting them in.}}{---Edsger Dijkstra}
+
+\noindent This is another in-place sort. It functions by taking an
+item and then inserting it into its correct position in the array.
+It consumes one input element each repetition, and growing the
+sorted portion of the list. Each iteration, this sort removes
+one element from the input unsorted portion and
+finds its correct location in the sorted portion of the list.
+
+\lstset{language={pascal}}
+\begin{lstlisting}[title=Sort C (pseudocode)]
+procedure SortC( A : list of sortable items )
+  for i = 1 to length(A)
+    tmp = A[i]
+    j = i - 1
+    while j >= 0 and A[j] > tmp
+      A[j + 1] = A[j]
+      j = j - 1
+    end while
+    A[j + 1] = tmp
+  end for
+end procedure
+\end{lstlisting}
+
+What is the expected time complexity of Sort C? We see
+that
+there are two nested loops, each operating on approximately the length of the array. It grows shorter at each iteration, but as we learned from young Gauss,
+$\sum_{i=1}^n=n(n+1)/2$. Nested loops usually mean that we \emph{multiply} the
+execution times, and so it is also $O(n^2)$.
+
+\subsection{Sort D}
+\epigraph{\emph{Increasingly, people seem to misinterpret complexity as
+sophistication, which is baffling -- the incomprehensible should cause
+suspicion rather than admiration.}}{---Niklaus Wirth}
+
+\noindent Sort D is a form of insertion sort that works
+by sorting pairs of elements far apart from each other, then progressively
+reducing the gap between elements to be compared. Starting with distant
+elements, it moves out-of-place elements into position faster than a
+simple nearest neighbor exchange (as in Sort B) or moving a single
+element to its correct position (as in Sort C).
+
+Sort D is incredibly difficult to analyze, and the time complexity of its
+execution is highly dependent on the gap sequence that is chosen. Many famous
+Computer Scientists have spent a lot of time studying it.
+For example, Vaughn Pratt found gap sequences that resulted in execution
+times of
+$O(n^\frac{3}{2})$ and $O(n \log^2 n)$.
+You will need to translate the following pseudocode into correct \textbf{C}.
+
+\lstset{language={C}}
+\begin{lstlisting}[title=Sort D (pseudocode)]
+// Sort an array a[0, ..., n - 1].
+gaps = [701, 301, 132, 57, 23, 10, 4, 1]
+
+// Start with the largest gap and work down to a gap of 1
+for each (gap in gaps)
+{
+  // Do a gapped Sort C for this gap size.
+  // The first gap elements a[0, ..., gap - 1] are already in
+  // gapped order keep adding one more element until the entire
+  // array is gap sorted
+  for (i = gap; i < n; i += 1) {
+    // Add a[i] to the elements that have been gap sorted by
+    // saving a[i] in temp and make a hole at position i
+    temp = a[i]
+    // Shift earlier gap-sorted elements up until the correct
+    // location for a[i] is found
+    for (j = i; j >= gap and a[j - gap] > temp; j -= gap) {
+      a[j] = a[j - gap]
+    }
+    // Put temp (the original a[i]) in its correct location
+    a[j] = temp
+  }
+}
+\end{lstlisting}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Your Task}
+\epigraph{\emph{Die Narrheit hat ein gro\ss{}es Zelt;
+Es lagert bei ihr alle Welt,
+Zumal wer Macht hat und viel Geld.}}{---Sebastian Brant, \emph{Das Narrenschiff}}
+
+You task is to:
+\begin{itemize}
+\item
+Implement a testing harness for sorting algorithms. You will do this using
+\texttt{getopt}.
+
+\item Implement the \emph{four} sorting algorithms: \texttt{Sort A}, \texttt{Sort B}, \texttt{Sort C}, \texttt{Sort D}.
+\item Gather statistics about each sort and their performance such as the \emph{size} of the array, the number of \emph{moves} required, and the number of \emph{comparisons} required (comparisons for \emph{elements}, not for logic).
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Specifics}
+\epigraph{\emph{Vielleicht sind alle Drachen unseres Lebens Prinzessinnen, die
+nur darauf warten uns einmal sch\"on und mutig zu sehen. Vielleicht ist alles
+Schreckliche im Grunde das Hilflose, das von uns Hilfe will.}}{---Rainer Maria
+Rilke}
+
+You must use \texttt{getopt} to parse the command line arguments. To get you
+started, here is a hint.
+\begin{lstlisting}
+  while ((c = getopt(argc, argv, "Aabcdp:r:n:")) != -1)
+\end{lstlisting}
+\begin{itemize}
+  \item \texttt{-A} means employ all sorting algorithms.
+  \item \texttt{-a} means enable \texttt{Sort A}.
+  \item \texttt{-b} means enable \texttt{Sort B}.
+  \item \texttt{-c} means enable \texttt{Sort C}.
+  \item \texttt{-d} means enable \texttt{Sort D}.
+  \item \texttt{-p n} means print the first \texttt{n} elements of the array. However if the \texttt{-p n} flag is not specified, your program should print the first 100 elements.
+  The \emph{default} \texttt{n} value is \texttt{100}.
+  \item \texttt{-r s} means set the random seed to \texttt{s}. The
+  \emph{default} \texttt{s} value is \texttt{8222022}.
+  \item \texttt{-n c} means set the array size to \texttt{c}.
+  The \emph{default} \texttt{c} value is \texttt{100}.
+\end{itemize}
+It is important to read this carefully. None of these options are
+\emph{exclusive} of any other (you may specify any number of them,
+including \emph{zero}). The most natural data structure for this
+problem is a \emph{set}.
+
+\begin{itemize}
+  \item Your random numbers should be \emph{24 bits}, no larger ($2^{24}-1 =
+  16\,777\,215$). (\emph{Hint}: bit masking will help you here.)
+  \item You must use \texttt{rand()} and \texttt{srand()}, not because they are
+  good (they are not), but because they are what is specified by the
+  \textbf{C}99 standard.
+  \item Your program \emph{must} be able to sort any number of random integers
+  \emph{up to the memory limit of the computer}. That means that you will need
+  to dynamically allocate the array using \texttt{calloc()}.
+  \item Your program should have no \emph{memory leaks}. Make sure you free before exiting.
+  \item Your program must pass \texttt{infer} cleanly. Fix or explain any complaints by \texttt{infer} in your \texttt{README}.
+  \item The executable file produced by the compiler \emph{must be called}
+  \texttt{sorting}.
+  \item Your algorithms \emph{must} correctly sort. If it does not sort, then that sort receives a \emph{zero}.
+\end{itemize}
+
+A large part of this assignment is understanding and comparing the performance
+of various sorting algorithms. You essentially conducting an experiment. Consequently, you \emph{must} collect some simple
+statistics on each algorithm. In particular,
+\begin{itemize}
+\item The \emph{size} of the array,
+\item The number of \emph{moves} required (each time you transfer an element
+in the array, that counts), and
+\item The number of \emph{comparisons} required (comparisons \emph{only} count
+	for \emph{elements}, not for logic).
+\end{itemize}
+\noindent When printing the statistics, make sure it matches the examples provided below.
+
+\begin{lstlisting}
+Hilbert:sorting darrell$ make
+clang -Wall -Werror -Wextra -pedantic -O3 -DMASK=0x00ffffff -c sorting.c
+clang -Wall -Werror -Wextra -pedantic -O3 -c sortA.c
+clang -Wall -Werror -Wextra -pedantic -O3 -c sortB.c
+clang -Wall -Werror -Wextra -pedantic -O3 -c sortC.c
+clang -Wall -Werror -Wextra -pedantic -O3 -c sortD.c
+clang -o sorting sorting.o sortA.o sortB.o sortC.o sortD.o
+\end{lstlisting}
+
+
+\begin{lstlisting}
+Hilbert:sorting darrell$ ./sorting
+Hilbert:sorting darrell$
+\end{lstlisting}
+
+\begin{lstlisting}
+Hilbert:sorting darrell$ ./sorting -n 10 -r 1234 -c
+Sort C
+10 elements
+34 moves
+25 compares
+    667041    694558   3789884   3962622   6238630  10272683  10916661
+  11017812  11838633  13274474
+\end{lstlisting}
+
+\begin{lstlisting}
+Hilbert:sorting darrell$ ./sorting -b -n 100000 -p 21
+Sort B
+100000 elements
+7489129170 moves
+2496376390 compares
+       176       685       805      1174      1217      1618      1643
+      1861      1897      2192      2381      2437      2465      3023
+      3058      3225      3285      3348      3425      3909      3928
+\end{lstlisting}
+
+\begin{lstlisting}
+Hilbert:sorting darrell$ ./sorting -A
+Sort A
+100 elements
+288 moves
+5049 compares
+     47320    272862    813325    931036   1300149   1451478   1482116
+   1599339   1886666   1926530   1999678   2177992   2338129   2381540
+   2504306   2752788   2996335   2998169   3171889   3590861   3829897
+   3967508   4022167   4231676   4422014   4702258   4742819   4841493
+   4915648   5160950   5607401   5792480   5812062   5967954   5968964
+   6053032   6195346   6301066   6375315   6389795   6781764   6797856
+   7260963   7261776   7443963   7614058   7685040   7685284   7739256
+   7989314   8075396   8085360   8249909   8352629   8737396   9017069
+   9214736   9256511   9320602   9414691   9489446   9526978   9657331
+  10177720  10578757  10623131  10856398  10978990  11215204  11268563
+  11339313  11464349  11556747  11680696  11697687  11774380  11989481
+  12291309  12547422  12617960  12814415  12844019  12899314  12912456
+  13059818  13226807  13494413  13782527  14314674  14404909  14506627
+  14956880  15232419  15509585  15563419  15846433  15950040  16608657
+  16703976  16712977
+Sort B
+100 elements
+7074 moves
+2358 compares
+     47320    272862    813325    931036   1300149   1451478   1482116
+   1599339   1886666   1926530   1999678   2177992   2338129   2381540
+   2504306   2752788   2996335   2998169   3171889   3590861   3829897
+   3967508   4022167   4231676   4422014   4702258   4742819   4841493
+   4915648   5160950   5607401   5792480   5812062   5967954   5968964
+   6053032   6195346   6301066   6375315   6389795   6781764   6797856
+   7260963   7261776   7443963   7614058   7685040   7685284   7739256
+   7989314   8075396   8085360   8249909   8352629   8737396   9017069
+   9214736   9256511   9320602   9414691   9489446   9526978   9657331
+  10177720  10578757  10623131  10856398  10978990  11215204  11268563
+  11339313  11464349  11556747  11680696  11697687  11774380  11989481
+  12291309  12547422  12617960  12814415  12844019  12899314  12912456
+  13059818  13226807  13494413  13782527  14314674  14404909  14506627
+  14956880  15232419  15509585  15563419  15846433  15950040  16608657
+  16703976  16712977
+Sort C
+100 elements
+2457 moves
+2358 compares
+     47320    272862    813325    931036   1300149   1451478   1482116
+   1599339   1886666   1926530   1999678   2177992   2338129   2381540
+   2504306   2752788   2996335   2998169   3171889   3590861   3829897
+   3967508   4022167   4231676   4422014   4702258   4742819   4841493
+   4915648   5160950   5607401   5792480   5812062   5967954   5968964
+   6053032   6195346   6301066   6375315   6389795   6781764   6797856
+   7260963   7261776   7443963   7614058   7685040   7685284   7739256
+   7989314   8075396   8085360   8249909   8352629   8737396   9017069
+   9214736   9256511   9320602   9414691   9489446   9526978   9657331
+  10177720  10578757  10623131  10856398  10978990  11215204  11268563
+  11339313  11464349  11556747  11680696  11697687  11774380  11989481
+  12291309  12547422  12617960  12814415  12844019  12899314  12912456
+  13059818  13226807  13494413  13782527  14314674  14404909  14506627
+  14956880  15232419  15509585  15563419  15846433  15950040  16608657
+  16703976  16712977
+Sort D
+100 elements
+3016 moves
+242 compares
+     47320    272862    813325    931036   1300149   1451478   1482116
+   1599339   1886666   1926530   1999678   2177992   2338129   2381540
+   2504306   2752788   2996335   2998169   3171889   3590861   3829897
+   3967508   4022167   4231676   4422014   4702258   4742819   4841493
+   4915648   5160950   5607401   5792480   5812062   5967954   5968964
+   6053032   6195346   6301066   6375315   6389795   6781764   6797856
+   7260963   7261776   7443963   7614058   7685040   7685284   7739256
+   7989314   8075396   8085360   8249909   8352629   8737396   9017069
+   9214736   9256511   9320602   9414691   9489446   9526978   9657331
+  10177720  10578757  10623131  10856398  10978990  11215204  11268563
+  11339313  11464349  11556747  11680696  11697687  11774380  11989481
+  12291309  12547422  12617960  12814415  12844019  12899314  12912456
+  13059818  13226807  13494413  13782527  14314674  14404909  14506627
+  14956880  15232419  15509585  15563419  15846433  15950040  16608657
+  16703976  16712977
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Deliverables}
+\epigraph{\emph{Dr.\ Long, put down the Rilke and step away from the
+computer.}}{---Michael Olson}
+
+You will need to turn in:
+
+\begin{enumerate}
+\item Your program \emph{must} have the source and header files:
+\begin{itemize}
+\item \texttt{sortA.h} specifies the interface to \texttt{sortA.c}.
+\item \texttt{sortA.c} implements Sort A.
+\item Each sorting method will have its own pair of header file and source
+file.
+\item \texttt{sortA.c} contains \texttt{main()} and \emph{may} contain any other functions necessary to complete the assignment.
+\end{itemize}
+You may have other source and header files, but \emph{do not try to be overly clever}.
+
+\item \texttt{Makefile}: This is a file that will allow the grader
+to type \texttt{make} to compile your program. Typing \texttt{make} must build your program and \texttt{./sorting} alone as well as flags must run your program.
+  \begin{itemize}
+  \item \texttt{CFLAGS=-Wall -Wextra -Werror -Wpedantic} must be included.
+  \item \texttt{CC=clang} must be specified.
+  \item \texttt{make clean} must remove all files that are compiler generated.
+  \item \texttt{make} should build your program, as should \texttt{make all}.
+  \item Your program executable \emph{must} be named \texttt{sorting}.
+
+  \end{itemize}
+
+\item \texttt{README.md}: This \emph{must} be in \emph{markdown}.
+This must describe how to use your program and \texttt{Makefile}.
+
+\item \texttt{DESIGN.pdf}: This \emph{must} be a PDF. The design document
+should describe your design for your program with enough detail
+that a sufficiently knowledgeable programmer would be able to
+replicate your implementation. This does not mean copying your
+entire program in verbatim. You should instead describe how your
+program works with supporting pseudo-code.
+
+\item \texttt{WRITEUP.pdf}: This document \emph{must} be a PDF. The writeup must include the following:
+\begin{itemize}
+  \item Identify the sorts. For example, identify what Sort A is commonly known as.
+  \item Identify the respective time complexity for each sort and include what you have to say about the constant.
+  \item What you learned from the different sorting algorithms.
+  \item How you experiemented with the sorts.
+
+\end{itemize}
+\end{enumerate}
+
+\noindent Points will be assigned according to the difficulty of the sort involved.
+\begin{itemize}
+\item 10\% -- Sort A%min-Sort
+\item 15\% -- Sort B%Bubble Sort
+\item 20\% -- Sort C%Insertion Sort
+\item 20\% -- Sort D%Shell Sort
+\end{itemize}
+
+A sort is not considered to be implemented if it does not sort \emph{correctly
+every time}. If it does not sort correctly then that sort receives a zero. Additional criteria are:
+\begin{itemize}
+\item 10\% -- Code quality: this includes passing \texttt{infer} and consistent style.
+\item 10\% -- Completeness: which includes things like the \texttt{Makefile}.
+\item 15\% -- Supporting Documents: This includes your \texttt{WRITEUP.PDF}, \texttt{DESIGN.PDF}, and \texttt{README.MD}.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Submission}
+\epigraph{\emph{Da\ss{} Gott ohn Arbeit Lohn verspricht,
+Verla\ss{} dich darauf und backe nicht
+Und wart, bis dir 'ne Taube gebraten
+Vom Himmel k\"onnt in den Mund geraten!}}{---Sebastian Brant, \emph{Das Narrenschiff}}
+
+To submit your assignment, refer back to \texttt{assignment0} for
+the steps on how to submit your assignment through \texttt{git}.
+Remember: \emph{add, commit,} and \emph{push}!
+
+\textcolor{red}{Your assignment is turned in \emph{only} after you have pushed.
+If you forget to push, you have not turned in your assignment and you will get
+a \emph{zero}. ``I forgot to push'' is not a valid excuse. It is \emph{highly} recommended to commit and push your changes \emph{often}.}
+
+\end{document}

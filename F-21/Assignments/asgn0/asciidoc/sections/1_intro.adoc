@@ -1,0 +1,14 @@
+== Introduction
+
+"It's nice if people can finally loosen up a little bit and just go out and
+laugh at silliness. I mean, people take themselves way too seriously sometimes.
+Git'er done!"
+-- Larry the Cable Guy
+
+The aim of this first assignment will be for you to set up your GitLab
+repositories and gain an understanding of how `git` works. We will review
+several `git` commands that you will help you in the long run. This document
+will be helpful for troubleshooting `git` issues in the future and also includes
+the submission policy. You will find this quite helpful in the future if you
+ever have any issues with `git` or submitting. _Ideally_, this assignment should
+be completed during your discussion section.

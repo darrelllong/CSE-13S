@@ -1,0 +1,78 @@
+\section{Specifics}
+
+\epigraphwidth=0.5\textwidth
+\epigraph{\emph{The gladdest moment in
+human life, methinks, is a departure into unknown lands.}}{---Sir
+Richard Burton}
+
+\noindent
+Here are the specifics for your program implementation.
+
+\begin{enumerate}
+  \item Parse command-line options with looped calls to
+    \texttt{getopt()}. This should be familiar from assignments 2 and 3.
+  \item Scan in the first line from the input. This will be the
+    number of vertices, or cities, that will be in the graph. Print an
+    error if the number specified is greater than \texttt{VERTICES}, the
+    macro defined in \texttt{vertices.h}.
+  \item Assuming the number of specified vertices is $n$, read the next
+    $n$ lines from the input using \texttt{fgets()}. Each line is the
+    name of a city. Save the name of each city to an array. You will
+    want to either make use of \texttt{strdup()} from
+    \texttt{<string.h>} or implement your own \texttt{strdup()}
+    function. If the line is malformed, print an error
+    and exit the program. Note: using \texttt{fgets()} will leave in the
+    newline character at the end, so you will manually have to change it
+    to the null character to remove it.
+  \item Create a new graph $G$, making it undirected if specified.
+  \item Scan the input line by line using \texttt{fscanf()} until the
+    end-of-file is reached.  Add each edge to $G$. If the line is
+    malformed, print an error and exit the program.
+  \item Create two paths. One will be for tracking the current traveled path and
+    the other for tracking the shortest found path.
+  \item Starting from the origin vertex, defined by the macro
+    \texttt{START\_VERTEX} in \texttt{vertices.h}, perform a depth-first
+    search on $G$ to find the shortest Hamiltonian path. Here is an
+    example function prototype that you may use as the recursive
+    depth-first function:
+
+\begin{clisting}{}
+void dfs(Graph *G, uint32_t v, Path *curr, Path *shortest, char *cities[], FILE *outfile);
+\end{clisting}
+
+    The parameter \texttt{v} is the vertex that you are currently on.
+    The currently traversed path is maintained with \texttt{curr}. The
+    shortest found path is tracked with \texttt{shortest}. The array of
+    city names is \texttt{cities}. Finally, \texttt{outfile} is the
+    output to print to.
+
+  \item After the search, print out the length of the shortest path
+    found, the path itself (remember to return back to the origin), and
+    the number of calls to \texttt{dfs()}.
+
+\begin{shlisting}{}
+$ ./tsp < mythical.graph
+Path length: 21
+Path: Asgard -> Shangri-La -> Olympus -> Elysium -> Asgard
+Total recursive calls: 4
+\end{shlisting}
+
+    If the verbose command-line option was enabled, print out \emph{all}
+    the Hamiltonian paths that were found as well. It is recommended
+    that you print out the paths as you find them.
+
+\begin{shlisting}{}
+$ ./tsp -v < ucsc.graph
+Path length: 7
+Path: Cowell -> Stevenson -> Merrill -> Cowell
+Path length: 6
+Path: Cowell -> Merrill -> Stevenson -> Cowell
+Path length: 6
+Path: Cowell -> Merrill -> Stevenson -> Cowell
+Total recursive calls: 5
+\end{shlisting}
+\end{enumerate}
+
+\textcolor{red}{The output of your program must match the output of the
+reference program when given a properly formatted graph exactly to
+receive full credit.}

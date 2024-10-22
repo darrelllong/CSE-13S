@@ -1,0 +1,29 @@
+#!env bash
+TMPDIR=/tmp/cse13s
+chmod 700 $TMPDIR
+pushd $TMPDIR
+rm -rf $TMPDIR/scan-build*
+for i in *
+do
+(
+  if [ "$1" != "" ] 
+  then
+     pushd $i/$1 ;
+  else
+     pushd $i ;
+  fi
+  if [ -e Makefile ] || [ -e makefile ]
+  then
+    make clean
+  fi
+  git pull
+  if [ -e Makefile ] || [ -e makefile ]
+  then
+    #make clean
+    scan-build --use-cc=clang make
+    make
+  fi
+  popd
+)
+echo $i
+done

@@ -1,0 +1,114 @@
+\section{Codes}
+
+After constructing a Huffman tree, you will need to maintain a stack of
+bits while traversing the tree in order to create a code for each
+symbol. We will create a new ADT, a \texttt{Code}, that represents a
+stack of bits. The interface for a \texttt{Code} is very much like the
+interface for an ADT you will implement later on in the quarter: the
+\emph{bit vector}. The logic for setting a bit, clearing a bit, and
+getting a bit implemented here will be used later on for your bit
+vectors, so make sure to nail down the implementation here to save
+yourself trouble in the future.
+
+\begin{clisting}{}
+typedef struct {
+    uint32_t top;
+    uint8_t bits[MAX_CODE_SIZE];
+} Code;
+\end{clisting}
+
+The \texttt{struct} definition of a \texttt{Code} will be made
+transparent. \textcolor{red}{This is done for the sole purpose of being
+able to pass a \texttt{struct} by value.} The macro
+\texttt{MAX\_CODE\_SIZE} reflects the maximum number of bytes needed to
+store any valid code. The definition of this macro --- and other macros
+--- will be given in \texttt{defines.h}. You will need to combine your
+knowledge of bit vectors and stacks in order to implement this ADT. The
+interface, given in \texttt{code.h}, is defined in the the following
+subsections.
+
+\begin{clisting}{Macros defined in \texttt{defines.h}}
+// 4KB blocks.
+#define BLOCK 4096
+
+// ASCII + Extended ASCII.
+#define ALPHABET 256
+
+// 32-bit magic number.
+#define MAGIC 0xBEEFD00D
+
+// Bytes for a maximum, 256-bit code.
+#define MAX_CODE_SIZE (ALPHABET / 8)
+
+// Maximum Huffman tree dump size.
+#define MAX_TREE_SIZE (3 * ALPHABET - 1)
+\end{clisting}
+
+\begin{funcdoc}{\texttt{Code code\_init(void)}}
+  You will immediately notice that this ``constructor'' function is
+  unlike any of the other constructor functions you have implemented in
+  the past. You may also have noticed, if you glanced slightly ahead,
+  that there is no corresponding destructor function. This is an
+  engineering decision that was made when considering the constraints of
+  the Huffman coding algorithm.
+
+  This function \emph{will not} require any dynamic memory allocation.
+  You will simply create a new \texttt{Code} on the stack, setting
+  \texttt{top} to 0, and zeroing out the array of bits, \texttt{bits}.
+  The initialized \texttt{Code} is then returned.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{uint32\_t code\_size(Code *c)}}
+  Returns the size of the \texttt{Code}, which is exactly the number of
+  bits pushed onto the \texttt{Code}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool code\_empty(Code *c)}}
+  Returns \texttt{true} if the \texttt{Code} is empty and \texttt{false}
+  otherwise.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool code\_full(Code *c)}}
+  Returns \texttt{true} if the \texttt{Code} is empty and \texttt{false}
+  otherwise. The maximum length of a code in bits is 256, which we have
+  defined using the macro \texttt{ALPHABET}. Why 256? Because there are
+  exactly 256 ASCII characters (including the extended ASCII).
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool code\_set\_bit(Code *c, uint32\_t i)}}
+  Sets the bit at index \texttt{i} in the \texttt{Code}, setting it to
+  1. If \texttt{i} is out of range, return \texttt{false}. Otherwise,
+  return \texttt{true} to indicate success.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool code\_clr\_bit(Code *c, uint32\_t i)}}
+  Clears the bit at index \texttt{i} in the \texttt{Code}, clearing it
+  to 0. If \texttt{i} is out of range, return \texttt{false}. Otherwise,
+  return \texttt{true} to indicate success.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool code\_get\_bit(Code *c, uint32\_t i)}}
+  Gets the bit at index \texttt{i} in the \texttt{Code}. If \texttt{i}
+  is out of range, or if bit \texttt{i} is equal to 0, return
+  \texttt{false}. Return \texttt{true} if and only if bit \texttt{i} is
+  equal to 1.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool code\_push\_bit(Code *c, uint8\_t bit)}}
+  Pushes a bit onto the \texttt{Code}. The value of the bit to push is
+  given by \texttt{bit}. Returns \texttt{false} if the \texttt{Code} is
+  full prior to pushing a bit and \texttt{true} otherwise to indicate
+  the successful pushing of a bit.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool code\_pop\_bit(Code *c, uint8\_t *bit)}}
+  Pops a bit off the \texttt{Code}. The value of the popped bit is
+  passed back with the pointer \texttt{bit}. Returns \texttt{false} if
+  the \texttt{Code} is empty prior to popping a bit and \texttt{true}
+  otherwise to indicate the successful popping of a bit.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void code\_print(Code *c)}}
+  A debug function to help you verify whether or not bits are pushed
+  onto and popped off a \texttt{Code} correctly.
+\end{funcdoc}

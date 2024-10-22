@@ -1,0 +1,81 @@
+Assignment 0: git'n Started
+
+==================================================================
+
+FILES (15 points max)
+
+  All required files present:
+   - hello.c
+   - CHEATING.pdf
+
+files score: #/15
+
+files comments:
+<<>>
+
+<<>>
+
+END FILES CRITERION
+
+==================================================================
+
+CLANG-FORMAT (3 points max)
+
+  Code has been formatted with clang-format using course-supplied
+  format file.
+
+clang-format score: #/3
+
+clang-format comments:
+<<>>
+
+<<>>
+
+END CLANG-FORMAT CRITERION
+
+==================================================================
+
+README (2 points max)
+
+  README is:
+   - in Markdown
+   - briefly describes program
+   - describes how to build program
+   - describes how to run program
+
+readme score: #/2
+
+readme comments:
+<<>>
+
+<<>>
+
+END README CRITERION
+
+==================================================================
+
+FUNCTIONALITY (5 points max)
+
+  Program properly prints out "Hello World!\n".
+
+functionality score: #/5
+
+functionality comments:
+<<>>
+
+<<>>
+
+END FUNCTIONALITY CRITERION
+
+==================================================================
+
+ASSIGNMENT COMMENTS (optional)
+
+  General assignment comments for the student.
+
+assignment comments:
+<<>>
+
+<<>>
+
+END ASSIGNMENT COMMENTS CRITERION

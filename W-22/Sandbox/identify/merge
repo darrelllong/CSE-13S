@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+
+import os, sys, logging, argparse
+
+def mergedirs(dir1, dir2):
+    """
+    Merges files in dir2 into dir1.
+    """
+    authorfiles = {}
+
+    # Create dictionary of dir1 entries.
+    for dirent in os.scandir(dir1):
+        if dirent.is_file():
+            authorfiles[dirent.name] = dirent.path
+
+    # For each dir2 entry, either:
+    #  1) Append it to an existing dir1 file.
+    #  2) Copy the entry to dir1.
+    for dirent in os.scandir(dir2):
+        if dirent.is_file():
+            if dirent.name in authorfiles:
+                logging.info(f"append {authorfiles[dirent.name]} with {dirent.path}")
+                os.system(f"cat {dirent.path} >> {authorfiles[dirent.name]}")
+            else:
+                logging.info(f"copy {dirent.path} to {dir1}/{dirent.name}")
+                os.system(f"cp {dirent.path} {dir1}/{dirent.name}")
+
+def mergedbs(db1, db2, textdir="texts"):
+    # Map of all authors and respective text paths.
+    entries = {}
+
+    # Add all the author/text pairs in database 1.
+    with open(db1, "r") as db:
+        line = db.readline()
+        pairs = int(line, 10)
+        for i in range(0, pairs):
+            author = db.readline().strip(" \n")
+            path = db.readline().strip(" \n")
+            entries[author] = path
+
+    # Add only database 2 pairs that haven't been seen.
+    with open(db2, "r") as db:
+        line = db.readline()
+        pairs = int(line, 10)
+        for i in range(0, pairs):
+            author = db.readline().strip(" \n")
+            path = db.readline().strip(" \n")
+            name = path.split("/")[1]
+            newpath = f"{textdir}/{name}"
+            if author not in entries:
+                entries[author] = newpath
+
+    # Create the new database.
+    with open(db1, "w") as db:
+        print(len(entries), file=db)
+        for author, path in entries.items():
+            print(author, file=db)
+            print(path, file=db)
+
+def main():
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter,
+        description=(
+            "Merges directories of texts from Project Gutenberg.\n"
+        )
+    )
+    parser.add_argument(
+        "-a", "--dir1", required=True,
+        help="set Project Gutenberg index to scrape texts from"
+    )
+    parser.add_argument(
+        "-b", "--dir2", required=True,
+        help="set Project Gutenberg index to scrape texts from"
+    )
+    parser.add_argument(
+        "-x", "--db1", required=True,
+        help="set Project Gutenberg index to scrape texts from"
+    )
+    parser.add_argument(
+        "-y", "--db2", required=True,
+        help="set Project Gutenberg index to scrape texts from"
+    )
+    parser.add_argument(
+        "-l", "--logging-level", default="INFO",
+        choices=['debug', 'info', 'warning', 'error', 'critical', 'off'],
+        help="set logging level for logs to stderr (default: info)"
+    )
+    args = parser.parse_args()
+
+    # Format the logger.
+    if args.logging_level == "off":
+        logging.disable(logging.CRITICAL)
+    else:
+        logging.basicConfig(
+            stream=sys.stderr, level=args.logging_level.upper(),
+            format='[%(levelname)s] %(message)s'
+        )
+
+    mergedirs(args.dir1, args.dir2)
+    mergedbs(args.db1, args.db2)
+
+if __name__ == "__main__":
+    main()

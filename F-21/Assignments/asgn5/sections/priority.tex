@@ -1,0 +1,75 @@
+\section{Priority Queues}
+\epigraphwidth=0.6\textwidth
+\epigraph{\emph{Our noblest hopes grow teeth and pursue us like tigers.}}
+{---John Champlin Gardner, \emph{In the Suicide Mountains}}
+
+As stated in the encoding algorithm, the encoder will make use of a
+\emph{priority queue} of nodes. A priority queue functions like a
+regular queue, but assigns each of its elements a \emph{priority}, such
+that elements with a high priority are dequeued before elements with a
+low priority. Assuming that elements are enqueued at the tail and
+dequeued from the head, this implies that the \texttt{enqueue()}
+operation does not simply add the element at the tail. Of course, the
+\texttt{dequeue()} operation could \emph{search} for the highest
+priority element each time, but that is a \emph{bad idea}.
+
+How you implement your priority queue \emph{is up to you}. There are a
+couple choices: 1) mimicking an \emph{insertion sort} when enqueuing a
+node, finding the correct position for the node and shifting everything
+back, or 2) using a \emph{min heap} to serve as the priority queue. Why
+a min heap? Because we want nodes with \emph{lower} frequencies to be
+dequeued first. The lower the frequency of a node, the higher its
+priority. Your priority queue, no matter the implementation, \emph{must}
+fulfill the interface that will be supplied to you in \texttt{pq.h}.
+\textcolor{red}{Hint: You may find your Heapsort implementation from
+assignment 3 useful.}
+
+\begin{funcdoc}{\texttt{PriorityQueue *pq\_create(uint32\_t capacity)}}
+  The constructor for a priority queue. The priority queue's maximum
+  capacity is specified by \texttt{capacity}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void pq\_delete(PriorityQueue **q)}}
+  The destructor for a priority queue. Make sure to set the pointer to
+  \texttt{NULL} after freeing the memory for a priority queue.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool pq\_empty(PriorityQueue *q)}}
+  Returns \texttt{true} if the priority queue is empty and \texttt{false}
+  otherwise.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool pq\_full(PriorityQueue *q)}}
+  Returns \texttt{true} if the priority queue is full and \texttt{false}
+  otherwise.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{uint32\_t pq\_size(PriorityQueue *q)}}
+  Returns the number of items currently in the priority queue.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool enqueue(PriorityQueue *q, Node *n)}}
+  Enqueues a node into the priority queue. Returns \texttt{false} if the
+  priority queue is full prior to enqueuing the node and \texttt{true}
+  otherwise to indicate the successful enqueuing of the node.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{bool dequeue(PriorityQueue *q, Node **n)}}
+  Dequeues a node from the priority queue, passing it back through the
+  double pointer \texttt{n}. The node dequeued should have the
+  \emph{highest} priority over all the nodes in the priority queue.
+  Returns \texttt{false} if the priority queue is empty prior to
+  dequeuing a node and \texttt{true} otherwise to indicate the
+  successful dequeuing of a node.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void pq\_print(PriorityQueue *q)}}
+  A debug function to print a priority queue. This function will be
+  significantly easier to implement if your \texttt{enqueue()} function
+  always ensures a \emph{total ordering} over all nodes in the priority
+  queue. Enqueuing nodes in a insertion-sort-like fashion will provide
+  such an ordering. Implementing your priority queue as a heap, however,
+  will only provide a \emph{partial ordering}, and thus will require
+  more work in printing to assure you that your priority queue functions
+  as expected (you will be displaying a \emph{tree}).
+\end{funcdoc}

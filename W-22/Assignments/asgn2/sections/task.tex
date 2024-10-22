@@ -1,0 +1,99 @@
+\section{Your Task}\label{section:task}
+
+Your first task for this assignment is to implement a small library of
+mathematical functions, mimicking those found in \texttt{<math.h>}. The
+interface for your math library is given in \texttt{mathlib.h}. The
+implementation of the library should go in \texttt{mathlib.c}.
+\textcolor{red}{You are \emph{strictly forbidden}} to use any functions from
+\texttt{<math.h>} in your own math library. You are also forbidden to write a
+factorial function. Each of the functions you will write must halt computation
+using an $\epsilon = 10^{-14}$, which was discussed in \S\ref{section:exp}.
+
+The functions you are expected to implement are as follows:
+
+\begin{funcdoc}{double Exp(double x)}
+  Returns the approximated value of $e^x$. Refer to \S\ref{section:exp}
+  for specifics.
+\end{funcdoc}
+
+\begin{funcdoc}{double Sin(double x)}
+  Returns the approximated value of $\sin(x)$. Refer to
+  \S\ref{section:sincos} for specifics.
+\end{funcdoc}
+
+\begin{funcdoc}{double Cos(double x)}
+  Returns the approximated value of $\cos(x)$. Refer to
+  \S\ref{section:sincos} for specifics.
+\end{funcdoc}
+
+\begin{funcdoc}{double Sqrt(double x)}
+  Returns the approximated value of $\sqrt{x}$. Refer to
+  \S\ref{section:sqrtlog} for specifics.
+\end{funcdoc}
+
+\begin{funcdoc}{double Log(double x)}
+  Returns the approximated value of $\log(x)$. Refer to
+  \S\ref{section:sqrtlog} for specifics.
+\end{funcdoc}
+
+\vspace{0.5em}
+Your second task for this assignment is to write a dedicated program,
+\texttt{integrate}, that links with your implemented math library and computes
+numerical integrations of various functions using the \emph{composite Simpson's
+1/3 rule}.
+
+\begin{funcdoc}{double integrate(double (*f)(double), double a, double
+  b, uint32\_t n)}
+  Computes the numerical integration of some function \texttt{f} over the
+  interval [\texttt{a}, \texttt{b}]. This should be done with composite
+  Simpson's 1/3 rule using \texttt{n} partitions. Note the special syntax for
+  the parameter \texttt{f}. This syntax in \textbf{C} denotes that \texttt{f} is
+  a pointer to a function -- a \emph{function pointer} -- that takes a single
+  \texttt{double} as its sole argument and returns a \texttt{double}. Using a
+  function pointer allows us to use this \texttt{integrate()} function with
+  \emph{any} function that matches the function signature specified by
+  \texttt{f}. Refer to \S\ref{section:compositesimpson} for the formula for the
+  composite Simpson's 1/3 rule.
+\end{funcdoc}
+
+\subsection{Testing}
+You will want to test each of your functions to make sure that they
+are producing correct values. In this case, you \emph{can} and
+\emph{should} compare the values that you compute with the ones
+from \texttt{<math.h>}.
+
+You are strongly encouraged to do this by writing small test programs for each
+function. For some mysterious reason, students are reluctant to write such short
+programs and prefer to add \texttt{printf()} to their code, or sit in
+deep befuddlement when their final numbers are incorrect.
+
+It is important to \emph{independently verify} each important
+component. In the case of this program, those components are the
+replacements for functions from \texttt{<math.h>}.
+We include an example below.
+
+\begin{clisting}{Comparing our sine against the C library}
+#include <math.h>
+#include <stdio.h>
+
+#define EPSILON 1e-14
+
+static inline double Abs(double x) { return x < 0 ? -x : x; }
+
+double Sin(double x) {
+    double sgn = 1, val = x, trm = x;
+    for (int k = 3; abs(trm) > epsilon; k += 2) {
+        trm = trm * (x * x) / ((k - 1) * k);
+        sgn = -sgn;
+        val += sgn * trm;
+    }
+    return val;
+}
+
+int main(void) {
+    for (double x = -2.0 * M_PI; x < 2 * M_PI; x += 0.1) {
+        printf("sin(%3.2lf) = %+lf (%+20.19lf)\n", x, Sin(x), sin(x) - Sin(x));
+    }
+    return 0;
+}
+\end{clisting}

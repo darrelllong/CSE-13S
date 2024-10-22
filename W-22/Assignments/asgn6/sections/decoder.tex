@@ -1,0 +1,51 @@
+\section{The Decoder}
+\epigraphwidth=0.5\textwidth
+\epigraph{\emph{The way I see it, there are just two ways to go, livin' fast or dyin' slow! Which way you gonna go?}}{---Robert Earl Keen}
+
+\noindent
+The second task for this assignment is to implement a Huffman decoder.
+This decoder will read in a compressed input file and decompress it,
+expanding it back to its original, uncompressed size. Your decoder
+program, named \texttt{decode}, must support any combination of the
+following command-line options.
+
+\begin{itemize}
+  \item \textbf{\texttt{-h}}\,: Prints out a help message describing the purpose
+    of the program and the command-line options it accepts, exiting the
+    program afterwards. Refer to the reference program in the resources
+    repo for an idea of what to print.
+
+  \item \textbf{\texttt{-i infile}}\,: Specifies the input file to
+    decode using Huffman coding. The default input should be set as
+    \texttt{stdin}.
+
+  \item \textbf{\texttt{-o outfile}}\,: Specifies the output file to
+    write the decompressed input to. The default output should be set as
+    \texttt{stdout}.
+
+  \item \textbf{\texttt{-v}}\,: Prints decompression statistics to
+    \texttt{stderr}. These statistics include the compressed file size,
+    the decompressed file size, and \emph{space saving}. The formula for
+    calculating space saving is:
+    \[
+      100 \times (1 - (\text{compressed size} / \text{decompressed
+      size})).
+    \]
+
+    Refer to the reference program in the resources repository for the
+    exact output.
+\end{itemize}
+
+\noindent The algorithm to decode a file, or to decompress it, is as follows:
+
+\begin{enumerate}
+  \item Read the emitted (\emph{dumped}) tree from the input file. A
+    \emph{stack of nodes} is needed in order to reconstruct the Huffman
+    tree.
+
+  \item Read in the rest of the input file bit-by-bit, traversing down
+    the Huffman tree one link at a time. Reading a 0 means walking down
+    the left link, and reading a 1 means walking down the right link.
+    Whenever a leaf node is reached, its symbol is emitted and you start
+    traversing again from the root.
+\end{enumerate}

@@ -1,0 +1,938 @@
+\documentclass[11pt]{article}
+
+\usepackage{fullpage,fourier,amsmath,amssymb}
+\usepackage{listings,color,url,hyperref}
+\usepackage{mdframed}
+\usepackage{epigraph}
+\usepackage[x11names]{xcolor}
+\usepackage{gensymb}
+\usepackage{forest}
+\usepackage{tikz}
+\usepackage{xeCJK}
+\usetikzlibrary{positioning,matrix}
+\setmainfont{heuristica}[Scale=0.9]
+
+\title{Assignment 3 \\ Sorting: Putting your affairs in order}
+\author{Prof. Darrell Long \\ CSE 13S -- Spring 2021}
+\date{Due: April 25$^\text{th}$ at 11:59\,pm}
+
+\input{../footer}
+\input{../lststyle}
+
+\begin{document}\maketitle
+
+\epigraphwidth=0.65\textwidth
+\epigraph{\emph{Any inaccuracies in this index may be explained by the
+fact that it has been sorted with the help of a computer.}}{---Donald
+Knuth, Vol.  III, \emph{Sorting and Searching}}
+
+
+\section{Introduction}
+
+Putting items into a sorted order is one of the most common tasks in
+Computer Science. As a result, there are a myriad of library routines
+that will do this task for you, but that does not absolve you of the
+obligation of understanding how it is done. In fact it behooves you to
+understand the various algorithms in order to make wise choices.
+
+The best execution time that can be accomplished, also referred to as
+the \emph{lower bound}, for sorting using \emph{comparisons} is
+$\Omega(n \log n)$, where $n$ is the number is elements to be sorted. If
+the universe of elements to be sorted is small, then we can do better
+using a \emph{Count Sort} or a \emph{Radix Sort} both of which have a
+time complexity of $O(n)$. The idea of \emph{Count Sort} is to count the
+number of occurrences of each element in an array. For \emph{Radix
+Sort}, a digit by digit sort is done by starting from the least
+significant digit to the most significant digit. It may also use
+\emph{Count Sort} as a subroutine.
+
+What is this $O$ and $\Omega$ stuff? It's how we talk about the
+execution time (or space used) by a program. We will discuss it in
+lecture and in sections, and you will see it again in your Data
+Structures and Algorithms class, now named CSE 101.
+
+The sorting algorithms that you are expected to implement are Bubble
+Sort, Shell Sort, and two Quicksorts. The purpose of this assignment is
+to get you fully familiarized with each sorting algorithm.
+\textcolor{red}{They are well-known sorts (save for the latter
+  Quicksort). You can use the Python pseudocode provided to you as
+  guidelines. Do not get the code for the sorts from the Internet or you
+  will be referred to for cheating. We will be running plagiarism
+checkers.}
+
+
+\section{Bubble Sort}
+
+\epigraph{\emph{\textbf{C} is peculiar in a lot of ways, but it, like
+many other successful things, has a certain unity of approach that stems
+from development in a small group.}}{---Dennis Ritchie}
+
+\noindent Bubble Sort works by examining adjacent pairs of items, call
+them $i$ and $j$. If item $j$ is smaller than item $i$, swap them. As a
+result, the largest element \emph{bubbles} up to the top of the array in
+a single pass. Since it is in fact the largest, we do not need to
+consider it again. So in the next pass, we only need to consider $n-1$
+pairs of items. The first pass requires $n$ pairs to be examined; the
+second pass, $n-1$ pairs; the third pass $n-2$ pairs, and so forth. If
+you can pass over the entire array and no pairs are out of order, then
+the array is sorted.
+
+\medskip
+\begin{prelab}{Pre-lab Part 1}
+  \begin{enumerate}
+    \item How many rounds of swapping will need to sort the numbers ${8,
+      22, 7, 9, 31, 5, 13}$ in ascending order using Bubble Sort?
+    \item How many comparisons can we expect to see in the worse case
+      scenario for Bubble Sort? Hint: make a list of numbers and attempt
+      to sort them using Bubble Sort.
+  \end{enumerate}
+\end{prelab}
+
+In 1784, when Carl Friedrich Gau{\ss} was only 7 years old, he was
+reported to have amazed his elementary school teacher by how quickly he
+summed up the integers from $1$ to $100$. The precocious little
+Gau{\ss} produced the correct answer immediately after he quickly
+observed that the sum was actually 50 pairs of numbers, with each pair
+summing to 101 totaling to 5,050. We can then see that:
+
+\[
+  n+(n-1)+(n-2) + \ldots + 1 = \frac{n(n+1)}{2}
+\]
+
+\noindent so the \emph{worst case} time complexity is $O(n^2)$. However, it could
+be much better if the list is already sorted. If you haven't seen the
+inductive proof for this yet, you will in the discrete
+mathematics class, CSE 16.
+
+\begin{pythonlisting}{Bubble Sort in Python}
+def bubble_sort(arr):
+    n = len(arr)
+    swapped = True
+    while swapped:
+        swapped = False
+        for i in range(1, n):
+            if arr[i] < arr[i - 1]:
+                arr[i], arr[i - 1] = arr[i - 1], arr[i]
+                swapped = True
+        n -= 1
+\end{pythonlisting}
+
+
+\section{Shell Sort}
+
+\epigraph{\emph{There are two ways of constructing a software design.
+    One way is to make it so simple that there are obviously no
+    deficiencies, and the other way is to make it so complicated that
+    there are no obvious deficiencies. The first method is far more
+difficult.}}{---C.A.R. Hoare}
+
+\noindent
+Donald L. Shell (March 1, 1924--November 2, 2015) was an American
+computer scientist who designed the Shell sort sorting algorithm.
+He earned his Ph.D. in Mathematics from the University of Cincinnati
+in 1959, and published the Shell Sort algorithm in the Communications
+of the ACM in July that same year.
+
+Shell Sort is a variation of insertion sort, which sorts pairs of
+elements which are far apart from each other. The \emph{gap} between the
+compared items being sorted is continuously reduced. Shell Sort starts
+with distant elements and moves out-of-place elements into position
+faster than a simple nearest neighbor exchange. What is the expected
+time complexity of Shell Sort? It depends entirely upon the gap
+sequence.
+
+The following is the pseudocode for Shell Sort. The gap sequence is
+represented by the array \texttt{gaps}. You will be given a gap
+sequence, the Pratt sequence ($2^p 3^q$ also called $3$-smooth), in the
+header file \texttt{gaps.h}.  For each \texttt{gap} in the gap sequence,
+the function compares all the pairs in \texttt{arr} that are
+\texttt{gap} indices away from each other. Pairs are swapped if they are
+in the wrong order.
+
+\begin{pythonlisting}{Shell Sort in Python}
+def shell_sort(arr):
+    for gap in gaps:
+        for i in range(gap, len(arr)):
+            j = i
+            temp = arr[i]
+            while j >= gap and temp < arr[j - gap]:
+                arr[j] = arr[j - gap]
+                j -= gap
+            arr[j] = temp
+\end{pythonlisting}
+
+\medskip
+\begin{prelab}{Pre-lab Part 2}
+  \begin{enumerate}
+    \item The worst time complexity for Shell Sort depends on the
+      sequence of gaps. Investigate why this is the case. How can you
+      improve the time complexity of this sort by changing the gap size?
+      Cite any sources you used.
+  \end{enumerate}
+\end{prelab}
+
+
+\section{Quicksort}
+
+\epigraph{\emph{If debugging is the process of removing software bugs,
+then programming must be the process of putting them in.}}{---Edsger
+Dijkstra}
+
+\noindent
+Quicksort (sometimes called partition-exchange sort) was developed by
+British computer scientist C.A.R. ``Tony'' Hoare in 1959 and published
+in 1961. It is perhaps the most commonly used algorithm for sorting (by
+competent programmers).  When implemented well, it is the fastest known
+algorithm that sorts using \emph{comparisons}. It is usually two or
+three times faster than its main competitors, Merge Sort and Heapsort.
+It does, though, have a worst case performance of $O(n^2)$ while its
+competitors are strictly $O(n \log n)$ in their worst case.
+
+Quicksort is a divide-and-conquer algorithm. It partitions
+arrays into two sub-arrays by selecting an element from the array and
+designating it as a pivot. Elements in the array that are less than the
+pivot go to the left sub-array, and elements in the array that are
+greater than or equal to the pivot go to the right sub-array.
+
+Note that Quicksort is an \emph{in-place} algorithm, meaning it doesn't
+allocate additional memory for sub-arrays to hold partitioned elements.
+Instead, Quicksort utilizes a subroutine called \texttt{partition()}
+that places elements less than the pivot into the left side of the array
+and elements greater than or equal to the pivot into the right side and
+returns the index that indicates the division between the partitioned
+parts of the array. In a recursive implementation, Quicksort is then
+applied recursively on the partitioned parts of the array, thereby
+sorting each array partition containing at least one element.
+
+Instead of a recursive Quicksort, you will be writing an
+two \emph{iterative} Quicksorts: one that utilizes a \emph{stack} and
+one that utilizes a \emph{queue}. In the implementation using a stack,
+two indices are pushed into the stack at a time. The first and second
+indices respectively represent the leftmost and rightmost indices of the
+array partition to sort.  Similarly, in the implementation using a
+queue, two indices are enqueued at a time, where the first and second
+indices respectively represent the leftmost and rightmost indices of the
+array partition to sort. \textcolor{red}{Hint: the return type of
+\texttt{partition()} should be \texttt{int64\_t}.}
+
+\begin{pythonlisting}{Partition in Python}
+def partition(arr, lo, hi):
+    pivot = arr[lo + ((hi - lo) // 2)]; # Prevent overflow.
+    i = lo - 1
+    j = hi + 1
+    while i < j:
+        i += 1 # You may want to use a do-while loop.
+        while arr[i] < pivot:
+            i += 1
+        j -= 1
+        while arr[j] > pivot:
+            j -= 1
+        if i < j:
+            arr[i], arr[j] = arr[j], arr[i]
+    return j
+\end{pythonlisting}
+
+\begin{pythonlisting}{Quicksort in Python with a stack}
+def quick_sort_stack(arr):
+    lo = 0
+    hi = len(arr) - 1
+    stack = []
+    stack.append(lo) # Pushes to the top.
+    stack.append(hi)
+    while len(stack) != 0:
+        hi = stack.pop() # Pops off the top.
+        lo = stack.pop()
+        p = partition(arr, lo, hi)
+        if lo < p:
+            stack.append(lo)
+            stack.append(p)
+        if hi > p + 1:
+            stack.append(p + 1)
+            stack.append(hi)
+\end{pythonlisting}
+
+\begin{pythonlisting}{Quicksort in Python with a queue}
+def quick_sort_queue(arr):
+    lo = 0
+    hi = len(arr) - 1
+    queue = []
+    queue.append(lo) # Enqueues at the head.
+    queue.append(hi)
+    while len(queue) != 0:
+        lo = queue.pop(0) # Dequeues from the tail.
+        hi = queue.pop(0)
+        p = partition(arr, lo, hi)
+        if lo < p:
+            queue.append(lo)
+            queue.append(p)
+        if hi > p + 1:
+            queue.append(p + 1)
+            queue.append(hi)
+\end{pythonlisting}
+
+\medskip
+\begin{prelab}{Pre-lab Part 3}
+  \begin{enumerate}
+    \item Quicksort, with a worse case time complexity of
+      $\operatorname{O}(n^2)$, doesn't seem to live up to its name.
+      Investigate and explain why Quicksort isn't doomed by its worst
+      case scenario. Make sure to cite any sources you use.
+  \end{enumerate}
+\end{prelab}
+
+\subsection{Stacks}
+
+You will need to implement the \emph{stack} ADT for the first of your
+two iterative Quicksorts. An \textbf{ADT} is an \emph{abstract data
+type}. With any ADT comes an interface comprised of \emph{constructor},
+\emph{destructor}, \emph{accessor}, and \emph{manipulator} functions.
+The following subsections define the interface for a stack. A stack is
+an ADT that implements a \emph{last-in, first-out}, or \textbf{LIFO},
+policy. Consider a stack of pancakes. A pancake can only be placed
+(\emph{pushed}) on top of the stack and can only be removed
+(\emph{popped}) from the top of the stack. The header file containing
+the interface will be given to you as \texttt{stack.h}.
+\textcolor{red}{You may not modify this file.} If you borrow code from
+any place --- including Prof. Long --- you must cite it. It is \emph{far
+better} if you write it yourself.
+
+\subsubsection{\texttt{Stack}}
+
+The stack datatype will be abstracted as a \texttt{struct} called
+\texttt{Stack}. We will use a \texttt{typedef} to construct a new type,
+which you should treat as opaque --- which means that you cannot
+manipulate it directly. We will \emph{declare} the \texttt{stack} type
+in \texttt{stack.h} and you will define its concrete implementation in
+\texttt{stack.c}. \textcolor{red}{This means the following \texttt{struct} definition
+\emph{must} be in \texttt{stack.c}}.
+
+\begin{codelisting}{}
+struct Stack {
+  uint32_t top;       // Index of the next empty slot.
+  uint32_t capacity;  // Number of items that can be pushed.
+  int64_t *items;     // Array of items, each with type int64_t.
+};
+\end{codelisting}
+
+\subsubsection{\texttt{Stack *stack\_create(uint32\_t capacity)}}
+
+The constructor function for a \texttt{Stack}. The \texttt{top} of a
+stack should be initialized to 0. The capacity of a stack is set to the
+specified capacity. The specified capacity also indicates the number of
+items to allocate memory for, the items in which are held in the
+dynamically allocated array \texttt{items}. A working constructor for a
+stack is provided below. Note that it uses \texttt{malloc()} and
+\texttt{calloc()} for \emph{dynamic memory allocation}. Both these
+functions are included from \texttt{<stdlib.h>}.
+
+\begin{codelisting}{}
+Stack *stack_create(uint32_t capacity) {
+  Stack *s = (Stack *) malloc(sizeof(Stack));
+  if (s) {
+    s->top = 0;
+    s->capacity = capacity;
+    s->items = (int64_t *) calloc(capacity, sizeof(int64_t));
+    if (!s->items) {
+      free(s);
+      s = NULL;
+    }
+  }
+  return s;
+}
+\end{codelisting}
+
+\subsubsection{\texttt{void stack\_delete(Stack **s)}}
+
+The destructor function for a stack. A working destructor for a stack is
+provided below. Any memory that is allocated using one of
+\texttt{malloc()}, \texttt{realloc()}, or \texttt{calloc()} \emph{must}
+be freed using the \texttt{free()} function. The job of the destructor
+is to free all the memory allocated by the constructor.
+\textcolor{red}{Your programs are expected to be free of memory leaks.}
+A pointer to a pointer is used as the parameter because we want to avoid
+\emph{use-after-free} errors. A use-after-free error occurs when a
+program uses a pointer that points to freed memory. To avoid this, we
+pass the \emph{address of a pointer} to the destructor function. By
+\emph{dereferencing} this double pointer, we can make sure that the
+pointer that pointed to allocated memory is updated to be \texttt{NULL}.
+
+\begin{codelisting}{}
+void stack_delete(Stack **s) {
+  if (*s && (*s)->items) {
+    free((*s)->items);
+    free(*s);
+    *s = NULL;
+  }
+  return;
+}
+
+int main(void) {
+  Stack *s = stack_create();
+  stack_delete(&s);
+  assert(s == NULL);
+}
+\end{codelisting}
+
+
+\subsubsection{\texttt{bool stack\_empty(Stack *s)}}
+
+Since we will be using \texttt{typedef} to create \emph{opaque} data
+types, we need functions to access fields of a data type. These
+functions are called \emph{accessor} functions. An opaque data type
+means that users do not need to know its implementation outside of the
+implementation itself. This also means that it is incorrect to write
+\texttt{s->top} outside of \texttt{stack.c} since it violates opacity.
+This accessor function returns \texttt{true} if the stack is empty and
+\texttt{false} otherwise.
+
+\subsubsection{\texttt{bool stack\_full(Stack *s)}}
+
+Returns \texttt{true} if the stack is full and \texttt{false} otherwise.
+
+\subsubsection{\texttt{uint32\_t stack\_size(Stack *s)}}
+
+Returns the number of items in the stack.
+
+\subsubsection{\texttt{bool stack\_push(Stack *s, int64\_t x)}}
+
+The need for \emph{manipulator} functions follows the rationale behind
+the need for accessor functions: there needs to be some way to alter
+fields of a data type. \texttt{stack\_push()} is a manipulator function
+that pushes an item \texttt{x} to the top of a stack.
+
+This function returns a \texttt{bool} in order to signify either success
+or failure when pushing onto a stack. When can pushing onto a stack result
+in failure? \emph{When the stack is full.} If the stack is full prior to
+pushing the item \texttt{x}, return \texttt{false} to indicate failure.
+Otherwise, push the item and return \texttt{true} to indicate success.
+
+\subsubsection{\texttt{bool stack\_pop(Stack *s, int64\_t *x)}}
+
+This function pops an item off the specified stack, passing the value
+of the popped item back through the pointer \texttt{x}. Like with
+\texttt{stack\_push()}, this function returns a \texttt{bool} to
+indicate either success or failure. When can popping a stack result in
+failure? \emph{When the stack is empty.} If the stack is empty prior to
+popping it, return \texttt{false} to indicate failure. Otherwise, pop
+the item, set the value in the memory \texttt{x} is pointing to as the
+popped item, and return \texttt{true} to indicate success.
+
+\begin{codelisting}{}
+// Dereferencing x to change the value it points to.
+*x = s->items[s->top];
+\end{codelisting}
+
+\subsubsection{\texttt{void stack\_print(Stack *s)}}
+
+This is a debug function that you should write early on. It will help
+greatly in determining whether or not your stack implementation is
+working correctly.
+
+
+\subsection{Queues}
+
+You will need to implement the \emph{queue} ADT for the second of your
+two iterative Quicksorts. The following subsections define the interface
+for a queue. The header file containing the interface will be given to
+you as \texttt{queue.h}. \textcolor{red}{You may not modify this file.}
+A queue is an ADT that implements a \emph{first-in, first-out}, or
+\textbf{FIFO}, policy. Consider a checkout line. Customers are
+\emph{dequeued} from the front (the \emph{head}) of the line and
+\emph{enqueued} at the end (the \emph{tail}) of the line.
+
+\subsubsection{\texttt{Queue}}
+
+\textcolor{red}{The queue \texttt{struct} must be defined as follows in
+\texttt{queue.c}:}
+
+\begin{codelisting}{}
+struct Queue {
+  uint32_t head;      // Index of the head of the queue.
+  uint32_t tail;      // Index of the tail of the queue.
+  uint32_t size;      // The number of elements in the queue.
+  uint32_t capacity;  // Capacity of the queue.
+  int64_t *items;     // Holds the items.
+}
+\end{codelisting}
+
+\subsubsection{\texttt{Queue *queue\_create(uint32\_t capacity)}}
+
+The constructor for a \texttt{Queue}. The structure of this function is
+very similar to the stack constructor function given in \S 4.1.2. The
+\texttt{head} and \texttt{tail} of a queue should be initialized to 0.
+The capacity of a queue is set to the specified capacity. The capacity
+also indicates the number of items to allocate memory for, the items in
+which are contained in the dynamically allocated array \texttt{items}.
+The \texttt{size} of a queue tracks the number of enqueued items.
+Return a pointer to the dynamically allocated \texttt{Queue}. If
+\texttt{malloc()} or \texttt{calloc()} fail, return a \texttt{NULL}
+pointer to indicate failure.
+
+\subsubsection{\texttt{void queue\_delete(Queue **q)}}
+
+The destructor for a \texttt{Queue}.
+
+\subsubsection{\texttt{bool queue\_empty(Queue *q)}}
+
+Returns \texttt{true} if the queue is empty and \texttt{false}
+otherwise.
+
+\subsubsection{\texttt{bool queue\_full(Queue *q)}}
+
+Returns \texttt{true} if the queue is full and \texttt{false} otherwise.
+
+\subsubsection{\texttt{uint32\_t queue\_size(Queue *q)}}
+
+Returns the number of items in the queue.
+
+\subsubsection{\texttt{bool enqueue(Queue *q, int64\_t x)}}
+
+Enqueues an item \texttt{x} at the tail of a queue. If the queue is full prior to
+enqueuing \texttt{x}, return \texttt{false} to indicate failure.
+Otherwise, enqueue \texttt{x} and return \texttt{true} to indicate
+success.
+
+\subsubsection{\texttt{bool dequeue(Queue *q, int64\_t *x)}}
+
+Dequeues an item from the head of a queue, passing the value of the
+dequeued item back through the pointer \texttt{x}. If the queue is
+empty prior to dequeuing the item, return \texttt{false} to indicate
+failure. Otherwise, dequeue the item, set the value in the memory
+\texttt{x} is pointing to as the dequeued item, and return \texttt{true}
+to indicate success.
+
+\subsubsection{\texttt{void queue\_print(Queue *q)}}
+
+This is a debug function that you should write early on. It will help
+greatly in determining whether or not your queue implementation is
+working correctly.
+
+
+\section{Your Task}
+
+\epigraph{\emph{Die Narrheit hat ein gro\ss{}es Zelt; Es lagert bei ihr alle
+Welt, Zumal wer Macht hat und viel Geld.}}{---Sebastian Brant, \emph{Das
+Narrenschiff}}
+
+\noindent For this assignment you have 3 tasks:
+
+\begin{enumerate}
+  \item Implement Bubble Sort, Shell Sort, and both iterative Quicksorts
+    based on the provided Python pseudocode in \textbf{C}. The interface
+    for these sorts will be given as the header files \texttt{bubble.h},
+    \texttt{shell.h}, and \texttt{quick.h}. \textcolor{red}{You are not
+    allowed to modify these files for any reason other than gathering
+  statistics.}
+  \item Implement a test harness for your implemented sorting
+    algorithms. In your test harness, you will creating an array of
+    random elements and testing each of the sorts. Your test harness
+    \emph{must} be in the file \texttt{sorting.c}.
+  \item Gather statistics about each sort and its performance. The
+    statistics you will gather are the \emph{size} of the array, the
+    number of \emph{moves} required, and the number of
+    \emph{comparisons} required. \textcolor{red}{Note: a comparison is
+    counted only when two array elements are compared.} For the
+    iterative Quicksorts, you will additionally need to gather
+    statistics on the maximum stack and queue sizes. You will want to
+    create some graphs.
+\end{enumerate}
+
+
+\section{Specifics}
+
+\epigraph{\emph{Vielleicht sind alle Drachen unseres Lebens
+  Prinzessinnen, die nur darauf warten uns einmal sch\"on und mutig zu
+sehen. Vielleicht ist alles Schreckliche im Grunde das Hilflose, das von
+uns Hilfe will.}}{---Rainer Maria Rilke}
+
+\noindent The following subsections cover the requirements of your test harness.
+It is crucial that you follow the instructions.
+
+\subsection{Command-line Options}
+
+Your test harness must support any combination of the following
+command-line options:
+
+\begin{itemize}
+  \item \texttt{-a}\ : Enables \emph{all} sorting algorithms.
+  \item \texttt{-b}\ : Enables Bubble Sort.
+  \item \texttt{-s}\ : Enables Shell Sort.
+  \item \texttt{-q}\ : Enables the Quicksort that utilizes a stack.
+  \item \texttt{-Q}\ : Enables the Quicksort that utilizes a queue.
+  \item \texttt{-r seed}\ : Set the random seed to \texttt{seed}.
+    The \emph{default} seed should be 13371453.
+  \item \texttt{-n size}\ : Set the array size to \texttt{size}. The
+    \emph{default} size should be 100.
+  \item \texttt{-p elements}\ : Print out \texttt{elements} number of
+    elements from the array. The \emph{default} number of elements to
+    print out should be 100. \textcolor{red}{If the size of the array is
+      less than the specified number of elements to print, print out the
+    entire array and nothing more.}
+\end{itemize}
+
+It is important to read this \emph{carefully}. None of these options are
+\emph{exclusive} of any other (you may specify any number of them,
+including \emph{zero}). The most natural data structure for this
+problem is a \emph{set}.
+
+% \subsection{Sets}
+
+% For this assignment, you are required to implement simple
+% \emph{sets} using bits to track which command-line options are specified
+% when your program is run. The number of bits will be small, but in
+% subsequent assignments you will be implementing sets for an
+% \emph{arbitrary} number of bits. Your set will be initialized using an
+% unsigned int of a size equivalent to the number of bits as shown below.
+
+% \begin{codelisting}{}
+% typedef uint32_t Set;
+% \end{codelisting}
+
+% For manipulating the bits in a set, we use bit-wise operators. These
+% operators as the name suggests will perform an operation on every bit in
+% a number. The following are the six bit-wise operators specified in
+% \textbf{C}:
+
+% \begin{center}
+%   \begin{tabular}{|c|l|l|}
+%     \hline
+%     \verb|&| & bit-wise AND & Performs the AND operation on every bit
+%     of two numbers. \\
+%     \hline
+%     \verb||| & bit-wise OR & Performs the OR operation on every bit of
+%     two numbers. \\
+%     \hline
+%     \verb|~| & bit-wise NOT & Inverts all bits in the given number. \\
+%     \hline
+%     \verb|^| & bit-wise XOR & Performs the exclusive-OR operation on
+%     every bit of two numbers. \\
+%     \hline
+%     \verb|<<| & left shift & Shifts bits in a number to the left by a
+%     specified number of bits. \\
+%     \hline
+%     \verb|>>| & right shift & Shifts bits in a number to the right by a
+%     specified number of bits. \\
+%     \hline
+%   \end{tabular}
+% \end{center}
+
+% \noindent Recall that the basic set operations are: \emph{membership},
+% \emph{union}, \emph{intersection} and \emph{negation}. For this
+% assignment you will be implementing functions for these operations and a
+% few more helper functions. Using these functions, you will set (make the
+% bit 1) or clear (make the bit 0) bits in the \texttt{Set} depending on
+% the command-line options read by \texttt{getopt()}. You can then check
+% the states of all the bits (the members) of the \texttt{Set} using a
+% single \texttt{for} loop and execute the corresponding sort. Note: you
+% will not use all of the functions, but we will check their presence in
+% \texttt{set.c}. Again, you \emph{must} use sets to track which
+% command-line options are specified when running your program.
+
+% \subsubsection{\texttt{Set set\_empty(void)}}
+
+% This function is used to return an empty set. In this context, an empty
+% set would be a set in which all bits are equal to 0.
+
+% \subsubsection{\texttt{bool set\_member(Set s, uint8\_t x)}}
+
+% \begin{align*}
+%   x \in s \iff x\, \text{is a member of set}\, s
+% \end{align*}
+
+% % return (1 << x) & A
+% \noindent This function returns a \texttt{bool} indicating the presence
+% of the given value \texttt{x} in the set \texttt{s}. You will use the
+% bit-wise AND operator to determine set membership. The first operand for
+% the AND operation is the set \texttt{s}. The second operand is the value
+% obtained by left shifting 1 \texttt{x} number of times. If the result of
+% the AND operation is a non-zero value, then \texttt{x} is a member of
+% \texttt{s} and \texttt{true} is returned to indicate this. Return
+% \texttt{false} if the result of the AND operation is 0.
+
+% \subsubsection{\texttt{Set set\_insert(Set s, uint8\_t x)}}
+
+% This function returns a set with the bit corresponding to \texttt{x}
+% equal to 1. Here, the bit is set using the bit-wise OR operator. The
+% first operand for the OR operation is the set \texttt{s}. The second
+% operand is value obtained by left shifting 1 by \texttt{x} number of
+% bits.
+
+% \subsubsection{\texttt{Set set\_remove(Set s, uint8\_t x)}}
+
+% Similar to insertion, removing a member from the set means to clear the
+% bit corresponding to \texttt{x}. Here, the bit is cleared using the
+% bit-wise AND operator. The first operand for the AND operation is the
+% set \texttt{s}. The second operand is a negation of the number 1 left
+% shifted to the same position that \texttt{x} would occupy in the set.
+% This means that the second operand would be all 1s except for the bit at
+% \texttt{x}'s position. The function returns set \texttt{s} after
+% removing \texttt{x}.
+
+% \subsubsection{\texttt{Set set\_intersect(Set s, Set t)}}
+
+% \begin{align*}
+%   s \cap t = \{x | x \in s \land x \in  t\}
+% \end{align*}
+
+% % return A & B
+% An intersection of two sets is a collection of elements that are common
+% to both sets. Here, to calculate the intersection of the two sets,
+% \texttt{s} and \texttt{t} we need to use the AND operator. Only the bits
+% corresponding to members in both \texttt{s} and \texttt{t} need to be
+% equal to 1 and the new set is returned by the function.
+
+% \subsubsection{\texttt{Set set\_union(Set s, Set t)}}
+
+% \begin{align*}
+%   s \cup t = \{x | x \in s \lor x \in  t\}
+% \end{align*}
+
+% % return A | B
+% A union of two sets is a collection of all elements in both sets. Here,
+% to calculate the union of the two sets, \texttt{s} and \texttt{t} we
+% need to use the OR operator. The bits corresponding to members in
+% \texttt{s} or \texttt{t} equal to 1 therefore are in the new set is
+% returned by the function.
+
+% \subsubsection{\texttt{Set set\_complement(Set s)}}
+
+% This function is used to return the complement of a given set. By
+% complement we mean that all bits in the set are flipped using the NOT
+% operator.
+
+% \subsubsection{\texttt{Set set\_difference(Set s, Set t)}}
+
+% The difference of two sets refers to the elements of set \texttt{s}
+% which are not in set \texttt{t}. In other words, it refers to the
+% members of set \texttt{s} that are unique to set \texttt{s}. The
+% difference is calculated using the AND operator where the two operands
+% are set \texttt{s} and the negation of set \texttt{t}.
+
+% This function can be used to find the complement of a given set as well,
+% in which case the first operand would be the universal set $\mathbb{U}$
+% and the second operand would be the set you want to complement as shown
+% below.
+
+% \begin{align*}
+%   \overline{s} = \{ x | x \notin s\} = \mathbb{U} -s
+% \end{align*}
+
+% \subsection{Testing}
+
+% \begin{itemize}
+%   \item You will test each of the sorts specified by command-line option
+%     by sorting an array of pseudorandom numbers generated with
+%     \texttt{random()}. Each of your sorts should sort the \emph{same}
+%     pseudorandom array. \textcolor{red}{Hint: make use of
+%     \texttt{srandom()}.}
+%   \item The pseudorandom numbers generated by \texttt{random()} should
+%     be \emph{bit-masked} to fit in \emph{30} bits. \textcolor{red}{Hint: use
+%     bit-wise AND.}
+%   \item Your test harness \emph{must} be able to test your sorts with
+%     array sizes \emph{up to the memory limit of the computer}. That
+%     means that you will need to dynamically allocate the array.
+%   \item Your program should have no \emph{memory leaks}. Make sure you
+%     \texttt{free()} before exiting. \texttt{valgrind} should pass
+%     cleanly with any combination of the specified command-line options.
+%   \item Your algorithms \emph{must} correctly sort. Any algorithm that
+%     does not sort correctly will receive a \emph{zero}.
+% \end{itemize}
+
+% A large part of this assignment is understanding and comparing the
+% performance of various sorting algorithms. You essentially conducting an
+% experiment. As stated in \S 6, you \emph{must} collect the following
+% statistics on each algorithm:
+
+% \begin{itemize}
+%   \item The \emph{size} of the array,
+%   \item The number of \emph{moves} required (each time you transfer an
+%     element in the array, that counts), and
+%   \item The number of \emph{comparisons} required (comparisons
+%     \emph{only} count for \emph{elements}, not for logic).
+% \end{itemize}
+
+\subsection{Output}
+
+The output your test harness produces \emph{must} be formatted like in
+the following examples:
+
+\begin{lstlisting}[style=bashstyle]
+  $ ./sorting -bq -n 1000 -p 0
+  Bubble Sort
+  1000 elements, 758313 moves, 498465 compares
+  Quick Sort (Stack)
+  1000 elements, 7257 moves, 13643 compares
+  Max stack size: 22
+  $ ./sorting -bqQ -n 15 -r 2021
+  Bubble Sort
+  15 elements, 228 moves, 105 compares
+       45003895     46620555    199644728    203770850    218081181
+      230022357    273593510    314322227    377988577    458735007
+      553822818    570456718    653251166    802708864    890975627
+  Quick Sort (Stack)
+  15 elements, 60 moves, 98 compares
+  Max stack size: 6
+       45003895     46620555    199644728    203770850    218081181
+      230022357    273593510    314322227    377988577    458735007
+      553822818    570456718    653251166    802708864    890975627
+  Quick Sort (Queue)
+  15 elements, 60 moves, 98 compares
+  Max queue size: 8
+       45003895     46620555    199644728    203770850    218081181
+      230022357    273593510    314322227    377988577    458735007
+      553822818    570456718    653251166    802708864    890975627
+\end{lstlisting}
+
+For each sort that was specified, print its name, the statistics for the
+run, then the specified number of array elements to print. The array
+elements should be printed out in a table with 5 columns. Each array
+element should be printed with a width of 13. You should make use of the
+following \texttt{printf()} statement:
+
+\begin{codelisting}{}
+printf("%13" PRIu32); // Include <inttypes.h> for PRIu32.
+\end{codelisting}
+
+\medskip
+\begin{prelab}{Pre-lab Part 4}
+    \begin{enumerate}
+        \item Explain how you plan on keeping track of the number of
+          moves and comparisons since each sort will reside within its
+          own file.
+    \end{enumerate}
+\end{prelab}
+
+
+\section{Deliverables}
+
+\epigraph{\emph{Dr.\ Long, put down the Rilke and step away from the
+computer.}}{---Michael Olson}
+
+You will need to turn in:
+
+\begin{enumerate}
+  \item Your program \emph{must} have the following source and header files:
+  \begin{itemize}
+    \item Each sorting method will have its own pair of header file and source file.
+    \begin{itemize}
+      \item \texttt{bubble.h} specifies the interface to \texttt{bubble.c}.
+      \item \texttt{bubble.c} implements Bubble Sort.
+      \item \texttt{gaps.h} contains the Pratt gap sequence for Shell
+        Sort.
+      \item \texttt{shell.h} specifies the interface to \texttt{shell.c}.
+      \item \texttt{shell.c} implements Shell Sort.
+      \item \texttt{quick.h} specifies the interface to \texttt{quick.c}.
+      \item \texttt{quick.c} implements \emph{both} iterative Quicksorts.
+      \item \texttt{stack.h} specifies the interface to the stack ADT.
+      \item \texttt{stack.c} implements the stack ADT.
+      \item \texttt{queue.h} specifies the interface to the queue ADT.
+      \item \texttt{queue.c} implements the queue ADT.
+      % \item \texttt{set.h} specifies the interface to the set ADT.
+      % \item \texttt{set.c} implements the set ADT.
+    \end{itemize}
+    \item \texttt{sorting.c} contains \texttt{main()} and \emph{may}
+      contain any other functions necessary to complete the assignment.
+  \end{itemize}
+
+You can have other source and header files, but \emph{do not try to be
+overly clever}. The header files for each of the sorts are provided to
+you. Each sort function takes the array of \texttt{uint32\_t}s to sort
+as the first parameter and the length of the array as the second
+parameter.
+
+  \item \texttt{Makefile}: This is a file that will allow the grader to
+    type \texttt{make} to compile your program. Typing \texttt{make}
+    must build your program and \texttt{./sorting} alone as well as
+    flags must run your program.
+
+    \begin{itemize}
+      \item \texttt{CFLAGS=-Wall -Wextra -Werror -Wpedantic}
+        must be included.
+      \item \texttt{CC=clang} must be specified.
+      \item \texttt{make clean} must remove all files that are compiler
+        generated.
+      \item \texttt{make} should build your program, as should
+        \texttt{make all}.
+      \item \texttt{make format} should format all your source code,
+        including the header files.
+      \item Your program executable \emph{must} be named
+        \texttt{sorting}.
+    \end{itemize}
+
+  \item Your code must pass \texttt{scan-build} \emph{cleanly}.
+
+  \item \texttt{README.md}: This \emph{must} be in \emph{Markdown}.
+    This must describe how to use your program and \texttt{Makefile}.
+
+  \item \texttt{DESIGN.pdf}: This \emph{must} be a PDF. The design
+    document should contain answers to the pre-lab questions at the
+    beginning and describe your design for your program with enough
+    detail that a sufficiently knowledgeable programmer would be able to
+    replicate your implementation. This does not mean copying your
+    entire program in verbatim. You should instead describe how your
+    program works with supporting pseudo-code.
+
+  \item \texttt{WRITEUP.pdf}: This document \emph{must} be a PDF. The
+    writeup must include the following:
+    \begin{itemize}
+      \item Identify the respective time complexity for each sort and
+        include what you have to say about the constant.
+      \item What you learned from the different sorting algorithms.
+      \item How you experimented with the sorts.
+      \item How big do the stack and queue get? Does the size relate to
+        the input? How?
+      \item Graphs explaining the performance of the sorts on a variety
+        of inputs, such as arrays in reverse order, arrays with a small
+        number of elements, and arrays with a large number of elements.
+      \item Analysis of the graphs you produce.
+    \end{itemize}
+\end{enumerate}
+
+
+\section{Submission}
+
+\epigraph{\emph{Da\ss{} Gott ohn Arbeit Lohn verspricht, Verla\ss{} dich
+darauf und backe nicht Und wart, bis dir 'ne Taube gebraten Vom Himmel
+k\"onnt in den Mund geraten!}}{---Sebastian Brant, \emph{Das
+Narrenschiff}}
+
+To submit your assignment, refer back to \texttt{asgn0} for the steps on
+how to submit your assignment through \texttt{git}.  Remember:
+\emph{add, commit,} and \emph{push}!
+
+\textcolor{red}{Your assignment is turned in \emph{only} after you have
+  pushed \emph{and} submitted the commit ID on Canvas. If you forget to
+  push, you have not turned in your assignment and you will get a
+  \emph{zero}. ``I forgot to push'' is not a valid excuse. It is
+\emph{highly} recommended to commit and push your changes \emph{often}.}
+
+
+\section{Supplemental Readings}
+
+\epigraph{\emph{The more you read, the more things you will know. The more that
+you learn, the more places you'll go.}}{---Dr.\ Seuss}\noindent
+
+\begin{itemize}
+    \item \textit{The C Programming Language} by Kernighan \& Ritchie
+    \begin{itemize}
+	\item Chapter 1 \S 1.10
+	\item Chapter 3 \S 3.5
+        \item Chapter 4 \S 4.10--4.11
+        \item Chapter 5 \S 5.1--5.3 \& 5.10
+    \end{itemize}
+     \item  \emph{C in a Nutshell} by T.\ Crawford \& P.\ Prinz.
+     \begin{itemize}
+      \item Chapter 6 -- Example 6.5		% Not a section
+      \item Chapter 7 -- Recursive Functions
+      \item Chapter 8 -- Arrays as Arguments of Functions
+      \item Chapter 9 -- Pointers to Arrays
+      \end{itemize}
+\end{itemize}
+
+\begin{center}
+  \includegraphics[width=0.5\textwidth]{../../images/monkey-chainsaw.jpg} \\
+  \vspace{10pt}
+  \textbf{用C編程就像給猴子電鋸一樣 。}
+\end{center}
+
+\end{document}

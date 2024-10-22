@@ -1,0 +1,33 @@
+\section{Insertion Sort}
+
+Insertion Sort is a sorting algorithm that considers elements one at a
+time, placing them in their correct, ordered position. It is so simple
+and so ancient that we do not know who invented it. Assume an array of
+size $n$. For each $k$ in increasing value from $1 \le k \le n$ (using
+1-based indexing), Insertion Sort compares the $k$-th element with each
+of the preceding elements in descending order until its position is
+found. Assume we're sorting an array $A$ in increasing order. We start from
+and check if $A[k]$ is in the correct order by comparing it
+the element $A[k - 1]$. There are two possibilities at this point:
+
+\begin{enumerate}
+  \item \textbf{$A[k]$ is in the right place.} This means that $A[k]$ is
+    greater or equal to $A[k - 1]$, and thus we can move onto sorting
+    the next element.
+  \item \textbf{$A[k]$ is in the wrong place.} Thus, $A[k - 1]$ is
+    shifted up to $A[k]$, and the original value of $A[k]$ is further
+    compared to $A[k - 2]$. Intuitively, Insertion Sort simply shifts
+    elements back until the element to place in sorted order is slotted
+    in.
+\end{enumerate}
+
+\begin{pylisting}{Insertion Sort in Python}
+def insertion_sort(A: list):
+    for i in range(1, len(A)):
+        j = i
+        temp = A[i]
+        while j > 0 and temp < A[j - 1]:
+            A[j] = A[j - 1]
+            j -= 1
+        A[j] = temp
+\end{pylisting}

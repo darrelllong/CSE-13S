@@ -1,0 +1,116 @@
+\section{Deliverables}
+
+\epigraph{\emph{I would rather have questions that can't be answered than
+answers that can't be questioned.}}{---Richard P. Feynman}
+
+\noindent You will need to turn in the following source code and header files:
+
+\begin{enumerate}
+  \item \texttt{banhammer.c}: This contains \texttt{main()} and
+    \emph{may} contain the other functions necessary to complete the
+    assignment.
+
+  \item \texttt{messages.h}: Defines the mixspeak, badspeak, and
+    goodspeak messages that are used in \texttt{banhammer.c}.
+    \textcolor{red}{Do not modify this.}
+
+  \item \texttt{salts.h}: Defines the primary, secondary, and tertiary
+    salts to be used in your Bloom filter implementation. Also defines
+    the salt used by the hash table in your hash table implementation.
+
+  \item \texttt{speck.h}: Defines the interface for the hash function
+    using the SPECK cipher. \textcolor{red}{Do not modify this.}
+
+  \item \texttt{speck.c}: Contains the implementation of the hash
+    function using the SPECK cipher. \textcolor{red}{Do not modify this.}
+
+  \item \texttt{ht.h}: Defines the interface for the hash table ADT.
+    \textcolor{red}{Do not modify this.}
+
+  \item \texttt{ht.c}: Contains the implementation of the hash table
+    ADT.
+
+  \item \texttt{bst.h}: Defines the interface for the binary search tree
+    ADT. \textcolor{red}{Do not modify this.}
+
+  \item \texttt{bst.c}: Contains the implementation of the binary search
+    tree ADT.
+
+  \item \texttt{node.h}: Defines the interface for the node ADT.
+    \textcolor{red}{Do not modify this.}
+
+  \item \texttt{node.c}: Contains the implementation of the node ADT.
+
+  \item \texttt{bf.h}: Defines the interface for the Bloom filter ADT.
+    \textcolor{red}{Do not modify this.}
+
+  \item \texttt{bf.c}: Contains the implementation of the Bloom filter
+    ADT.
+
+  \item \texttt{bv.h}: Defines the interface for the bit vector ADT.
+    \textcolor{red}{Do not modify this.}
+
+  \item \texttt{bv.c}: Contains the implementation of the bit vector
+    ADT.
+
+  \item \texttt{parser.h}: Defines the interface for the regex parsing
+    module. \textcolor{red}{Do not modify this.}
+
+  \item \texttt{parser.c}: Contains the implementation of the regex
+    parsing module.
+\end{enumerate}
+
+You may have other source and header files, but \emph{do not try to be
+overly clever}. You will also need to turn in the following:
+
+\begin{enumerate}
+  \item \texttt{Makefile}: This is a file that will allow the grader to
+    type \texttt{make} to compile your program.
+
+    \begin{itemize}
+      \item \texttt{CC = clang} must be specified.
+      \item \texttt{CFLAGS = -Wall -Wextra -Werror -Wpedantic}
+        must be included.
+      \item \texttt{make} should build the \texttt{banhammer}
+        executable, as should \texttt{make all} and \texttt{make
+        banhammer}.
+      \item \texttt{make clean} must remove all files that are compiler
+        generated.
+      \item \texttt{make format} should format all your source code,
+        including the header files.
+    \end{itemize}
+
+  \item Your code must pass \texttt{scan-build} \emph{cleanly}. If there
+    are any bugs or errors that are false positives, document them and
+    explain why they are false positives in your \texttt{README.md}.
+
+  \item \texttt{README.md}: This must be in \emph{Markdown}. This must
+    describe how to use your program and \texttt{Makefile}. This
+    includes listing and explaining the command-line options that your
+    program accepts. Any false positives reported by \texttt{scan-build}
+    should go here as well.
+
+  \item \texttt{DESIGN.pdf}: This \emph{must} be a PDF. The design
+    document should describe your design for your program with enough
+    detail that a sufficiently knowledgeable programmer would be able to
+    replicate your implementation. This does not mean copying your
+    entire program in verbatim. You should instead describe how your
+    program works with supporting pseudocode. For this program, pay
+    extra attention to how you build each necessary component.
+
+  \item \texttt{WRITEUP.pdf}: This document \emph{must} be a PDF. The
+    writeup must include \emph{at least} the following:
+    \begin{itemize}
+      \item Graphs comparing the total number of lookups and average
+        binary search tree branches traversed as you vary the hash table
+        and Bloom filter size.
+        \begin{itemize}
+          \item How do the heights of the binary search trees change?
+          \item What are some factors that can change the height of a
+            binary search tree?
+          \item How does changing the Bloom filter size affect the
+            number of lookups performed in the hash table?
+        \end{itemize}
+      \item Analysis of the graphs you produce.
+    \end{itemize}
+\end{enumerate}

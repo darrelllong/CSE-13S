@@ -1,0 +1,65 @@
+\section{Shell Sort}
+
+\epigraph{\emph{There are two ways of constructing a software design.
+    One way is to make it so simple that there are obviously no
+    deficiencies, and the other way is to make it so complicated that
+    there are no obvious deficiencies. The first method is far more
+difficult.}}{---C.A.R. Hoare}
+
+\noindent Donald L. Shell (March 1, 1924--November 2, 2015) was an
+American computer scientist who designed the Shell sort sorting
+algorithm. He earned his Ph.D. in Mathematics from the University of
+Cincinnati in 1959, and published the Shell Sort algorithm in the
+Communications of the ACM in July that same year.
+
+Shell Sort is a variation of Insertion Sort and first sorts pairs of
+elements which are far apart from each other. The distance between these
+pairs of elements is called a \emph{gap}. Each iteration of Shell Sort
+decreases the gap until a gap of 1 is used. At this point, the elements
+are sorted. What is the expected time complexity of Shell Sort? It
+depends entirely upon the gap sequence.
+
+Any gap sequence that ends with a gap of 1 will produce a sorted array.
+That said, a gap sequences with either too many or too few gaps should
+be avoided as they either slow down passes through the array, or incur
+additional overhead. Perhaps one of the best known gap sequences is the
+sequence proposed by Vaughan Pratt in 1971 that is $\operatorname{O}(n
+\log^2 n)$. American computer scientist Donald Knuth later proposed his
+own gap sequence based off Pratt's in 1973 that is
+$\operatorname{O}(n^{\frac{3}{2}})$. Robert Sedgewick eventually
+proposed his own gap sequence in 1982. His gap sequence is
+$\operatorname{O}(n^{\frac{4}{3}})$.
+
+The following is the pseudocode for Shell Sort using Knuth's gap
+sequence. The sequence is produced using a \emph{generator} in
+\textbf{Python}. You are expected to implement exactly this gap
+sequence. Note that \textbf{C} \emph{does not} have generators, so you
+will need to find a way around this issue. For each \texttt{gap} in the
+gap sequence, the sort compares all the pairs in array \texttt{A} that
+are \texttt{gap} indices away from each other, shifting back array
+elements that are in the wrong order.
+
+\begin{pylisting}{Shell Sort in Python}
+from math import log
+
+def gaps(n: int):
+    for i in range(int(log(3 + 2 * n) / log(3)), 0, -1):
+        yield (3**i - 1) // 2
+
+def shell_sort(A: list):
+    for gap in gaps(len(A)):
+        for i in range(gap, len(A)):
+            j = i
+            temp = A[i]
+            while j >= gap and temp < A[j - gap]:
+                A[j] = A[j - gap]
+                j -= gap
+            A[j] = temp
+\end{pylisting}
+
+From the definition of the gap sequence generator, you should see that
+gaps are computed as $\lfloor \frac{3^k - 1}{2} \rfloor$ and the largest
+$k$ is $\lfloor \frac{\log(2n + 3)}{\log(3)} \rfloor$, where $n$ is the
+length of the array to sort. You be iterating over the gap sequence
+starting with the largest $k$ first, making your way down to a gap size
+of 1.

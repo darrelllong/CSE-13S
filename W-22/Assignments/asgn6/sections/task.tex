@@ -1,0 +1,21 @@
+\section{Your Task}\label{sec:task}
+
+Your task is to implement two programs called \texttt{encode} and
+\texttt{decode} which perform LZ78 compression and decompression, respectively.
+The requirements for your programs are as follows:
+
+\begin{enumerate}
+    \item \texttt{encode} can compress any file, text or binary.
+    \item \texttt{decode} can decompress any file, text or binary, that was
+        compressed with \texttt{encode}.
+    \item Both operate on both little and big endian systems.
+        \emph{Interoperability is required}.
+    \item Both use variable bit-length codes.
+    \item Both perform read and writes in efficient blocks of 4KB.
+    \item Both \texttt{encode} and \texttt{decode} must interoperate
+        with the provided binaries -- not just your code.
+\end{enumerate}
+
+You will need to implement some new ADTs to complete your encoder and decoder:
+\emph{tries} and \emph{words}. In addition to these new ADTs, you will need to
+be concerned about variable-length codes, I/O, and endianness.

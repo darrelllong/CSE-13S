@@ -1,0 +1,60 @@
+\section{Deliverables}
+
+\epigraphwidth=0.65\textwidth
+\epigraph{\emph{Travel isn't always pretty. It isn't always comfortable.
+Sometimes it hurts, it even breaks your heart. But that's okay. The
+journey changes you; it should change you. It leaves marks on your
+memory, on your consciousness, on your heart, and on your body. You take
+something with you. Hopefully, you leave something good
+behind.}}{---Anthony Bourdain }
+
+\noindent You will need to turn in the following source code and header files:
+
+\begin{enumerate}
+  \item Your program, called \texttt{tsp}, \emph{must} have the
+    following source and header files:
+  \begin{itemize}
+    \item \texttt{graph.h} specifies the interface to the graph ADT.
+    \item \texttt{graph.c} implements the graph ADT.
+    \item \texttt{path.h} specifies the interface to the path ADT.
+    \item \texttt{path.c} implements the path ADT.
+    \item \texttt{stack.h} specifies the interface to the stack ADT.
+    \item \texttt{stack.c} implements the stack ADT.
+    \item \texttt{tsp.c} contains \texttt{main()} and \emph{may} contain
+      any other functions necessary to complete the assignment.
+    \item \texttt{vertices.h} defines macros regarding vertices.
+  \end{itemize}
+\end{enumerate}
+
+You can have other source and header files, but \emph{do not try to be
+overly clever}. \textcolor{red}{You may not modify any of the supplied
+header files.} You will also need to turn in the following:
+
+\begin{enumerate}
+  \item \texttt{Makefile}:
+    \begin{itemize}
+      \item \texttt{CC = clang} must be specified.
+      \item \texttt{CFLAGS = -Wall -Wextra -Werror -Wpedantic} must be specified.
+      \item \texttt{make} must build the \texttt{tsp}
+        executable, as should \texttt{make all} and \texttt{make
+        tsp}.
+      \item \texttt{make clean} must remove all files that are compiler
+        generated.
+      \item \texttt{make format} should format all your source code,
+        including the header files.
+    \end{itemize}
+  \item \texttt{README.md}: This must use proper Markdown syntax. It
+    must describe how to use your program and \texttt{Makefile}. It
+    should also list and explain any command-line options that your
+    program accepts. Any false positives reported by \texttt{scan-build}
+    should be documented and explained here as well. Note down any known
+    bugs or errors in this file as well for the graders.
+  \item \texttt{DESIGN.pdf}: This document \emph{must} be a proper
+    PDF\@. This design document must describe your design and design
+    process for your program with enough detail such that a sufficiently
+    knowledgeable programmer would be able to replicate your
+    implementation. \textcolor{red}{This does not mean copying your
+    entire program in verbatim}. You should instead describe how your
+    program works with supporting pseudocode.
+  \item Your code must pass \texttt{scan-build} \emph{cleanly}.
+\end{enumerate}

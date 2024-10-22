@@ -1,0 +1,3 @@
+[submodule "resources"]
+	path = resources
+	url = git@git.ucsc.edu:cse13s/spring2021/resources.git

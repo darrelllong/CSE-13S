@@ -1,0 +1,334 @@
+\documentclass{article}
+\usepackage{fullpage,fourier,amsmath,amssymb}
+\usepackage{listings,color,url,hyperref}
+\usepackage{epigraph, graphicx}
+\usepackage[x11names]{xcolor}
+
+\title{Assignment 1 \\ Left, Right and Center}
+\author{Prof. Darrell Long \\
+CSE 13S -- Spring 2021}
+\date{Due: April 11$^\text{th}$ at 11:59\,pm}
+
+\input{../footer}
+\input{../lststyle}
+\lstset{language=C, style=c99}
+
+\newcommand\asgn[1]{asgn#1}
+
+\begin{document}\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+\epigraphwidth=0.5\textwidth
+\epigraph{\emph{The gambling known as business looks with austere disfavor
+upon the business known as gambling.}}{---Ambrose Bierce}
+
+\noindent We are going to implement a simple game called \emph{Left, Right, and Center}.
+A subset of philosophers will represent players of the game.
+It requires no skill, no real decision-making, and a philosopher that is out of the
+game can suddenly come back in and often win.
+
+Some of you may have religious or moral prohibitions against gambling. This
+program is not gambling, since (i) you neither win nor lose, and (ii) only
+fictitious people lose or win any money. But, if you do have any qualms, let
+us know and we will give you an alternative assignment involving vampires.
+
+\section{Playing the Game}
+\epigraphwidth=0.75\textwidth
+\epigraph{\emph{No sympathy for the devil; keep that in mind. Buy
+the ticket, take the ride\ldots and if it occasionally gets a little
+heavier than what you had in mind, well\ldots maybe chalk it off
+to forced conscious expansion: Tune in, freak out, get beaten.}}{---Hunter
+S. Thompson, \emph{Fear \& Loathing in Las Vegas}}\noindent
+
+Some number of $k$ players, $1 < k \le 14$, sit around a table.
+Each player has in her hand \$3. There are three dice, and each die
+has $6$ faces and is labeled: $3 \times \textbf{\textbullet}$, $1
+\times \textbf{L}$, $1 \times \textbf{R}$ or $1 \times \textbf{C}$.
+As a result, we know that there is a $50$\% chance of rolling
+\textbf{\textbullet}, and $16.6\overline{6}$\% chance of rolling
+each of \textbf{L}, \textbf{R}, or \textbf{C}.
+
+\begin{enumerate}
+\item
+Beginning with player $1$, roll the dice:
+\begin{enumerate}
+\item
+If the player has \$3 or more then she rolls three dice;
+if she has \$2 then she rolls two dice;
+if she has only \$1 then she rolls one die;
+if she has no money then she must pass.
+
+\item For each die:
+\begin{enumerate}
+\item If the player rolls \textbf{L} then she gives \$1 to the player on her \emph{left}.
+
+\item If the player rolls \textbf{R} then she gives \$1 to the player on her \emph{right}.
+
+\item If the player rolls \textbf{C} then she puts \$1 in the pot in the
+    \emph{center}.
+
+\item If the player rolls \textbf{\textbullet} then she ignores it.
+\end{enumerate}
+
+\end{enumerate}
+\item Move to the next player in sequence: to the
+right. The players are numbered. There is \texttt{you}. Then there
+is the left player which is (\texttt{you} $-$ 1) \texttt{mod} the number
+of players and there is the right player which is (\texttt{you} $+$
+1) \texttt{mod} the number of players.
+Be careful: What does \texttt{-2 \% 10} mean? Consequently, you may find this code useful:
+\begin{codelisting}{}
+//
+// Returns the position of the player to the left.
+//
+// pos:     The position of the current player.
+// players: The number of players in the game.
+//
+static inline uint8_t left(uint8_t pos, uint8_t players) {
+  return ((pos + players - 1) % players);
+}
+
+//
+// Returns the position of the player to the right.
+//
+// pos:     The position of the current player.
+// players: The number of players in the game.
+//
+static inline uint8_t right(uint8_t pos, uint8_t players) {
+  return ((pos + 1) % players);
+}
+\end{codelisting}
+
+\item Repeat until only one player has any money remaining (who then wins the pot).
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Your Task}
+\epigraphwidth=0.6\textwidth
+\epigraph{
+\emph{Any one who considers arithmetical methods of producing random digits
+is, of course, in a state of sin.}}{---John von Neumann, 1951}\noindent
+
+\begin{itemize}
+
+\item You must have one source file: \texttt{lrc.c}. Do not name
+your source file anything else. \textcolor{red}{You will lose points}.
+
+
+\item For grading purposes the numbering of the faces matters, and
+so they must be defined as follows (do not change it):
+
+\begin{codelisting}{}
+typedef enum faciem { PASS, LEFT, RIGHT, CENTER } faces;
+faces die[] = { LEFT, RIGHT, CENTER, PASS, PASS, PASS };
+\end{codelisting}
+
+\textcolor{red}{This means you may not use \texttt{int} as a substitute.}
+
+\item You must give your players names, and for grading purposes the names
+must correspond to these (do not change them):
+
+\begin{codelisting}{}
+char *philosophers[] = { "Immanuel Kant",
+                         "Martin Heidegger",
+                         "David Hume",
+                         "Georg Wilhelm Friedrich Hegel",
+                         "Arthur Schopenhauer",
+                         "Ludwig Wittgenstein",
+                         "Karl Wilhelm Friedrich Schlegel",
+                         "Friedrich Nietzsche",
+                         "Socrates",
+                         "John Stuart Mill",
+                         "Plato",
+                         "Aristotle",
+                         "Thomas Hobbes",
+                         "Rene Descartes" };
+\end{codelisting}
+
+This array of names is defined in \texttt{philos.h}, which can be found in
+the course resources repository.
+
+\item Typing \texttt{make} must build your program and
+\texttt{./lrc} must run your program. Since you have not learned
+about \texttt{Makefiles} yet, here is one that you can use for now.
+
+\begin{codelisting}{\texttt{Makefile}}
+CC = clang
+CFLAGS = -Wall -Wextra -Werror -Wpedantic
+
+all: lrc
+
+lrc: lrc.o
+    $(CC) -o lrc lrc.o
+
+lrc.o: lrc.c
+    $(CC) $(CFLAGS) -c lrc.c
+
+clean:
+    rm -f lrc lrc.o
+
+scan-build: clean
+    scan-build make
+\end{codelisting}
+
+\item You will need to use a random number generator to simulate
+rolling a dice. You can do this by calling the function \texttt{random()}
+(read the \emph{man page}) to get a random value. You can then use \texttt{mod}
+to limit this value to the range of 0--5 inclusive (in Computer Science, we start from 0).
+This value is used to determine what was rolled.
+
+\item In order that your program be \emph{reproducible}, you must start from a
+known place. This is accomplished by \emph{setting the random seed}
+using the function \texttt{srandom()} (again read the \emph{man page}).
+Your program will ask for two numbers: the random seed and the
+number of players. You should assign these inputs to variables to use
+in your program. The random seed completely determines the outcome of your program. If you give it
+the same random seed and the number of players you \emph{must} get
+the same answer. Here is an example of using \texttt{srandom()} and
+\texttt{random()}:
+\begin{codelisting}{}
+srandom(1);       // Sets the random seed as 1.
+int a = random(); // Set a as a pseudorandom number.
+\end{codelisting}
+
+\item \emph{Comment your code.} Include block comments to tell the grader what a certain block of code does. Use a line comment to explain something that is not as obvious.
+\textcolor{red}{Refer to the coding standards}.
+
+\item All source code should be formatted using \texttt{clang-format}.
+
+\item Your program \emph{must} compile and run on Ubuntu 20.04 with no
+  errors. If it does not, your program will receive a 0.
+
+\item Your program must pass \texttt{scan-build} with no errors.
+  Document any errors that are false positives in your \texttt{README.md}.
+
+\end{itemize}
+
+In lecture we talked briefly about \emph{random} and \emph{pseudo-random}
+numbers. As we know, computers produce pseudo-random numbers,
+and in this case it is to your benefit since \emph{reproducibility}
+is essential. That means that in reality you program though it
+appears to be random is actually \emph{deterministic}. This is why
+starting with the same seed produces the same sequence.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Resources}
+\epigraph{\emph{Common sense in an uncommon degree is what the
+world calls wisdom.}}{---Samuel Taylor Coleridge, \emph{Literary Remains}}\noindent
+
+A working example binary can be found in the course resources repository
+on \texttt{git.ucsc.edu}. The header file, \texttt{philos.h}, containing
+the names of the philosophers can be found here as well.
+
+For this assignment, running ``\texttt{./lrc}'' will prompt the user to
+enter a random seed and the number of players. It will then produce an
+output of the game which your program should also be able to produce
+given the same seed and number of players. Your program must be able to
+do \textit{exactly} the same.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Hints}
+\epigraph{\emph{It is no use trying to sum people up. One must follow hints,
+not exactly what is said, nor yet entirely what is done.}}{---Virginia Woolf}\noindent
+
+\begin{enumerate}
+
+\item \emph{\textcolor{red}{Start Now!}} You can always finish early.
+
+\item You may find it helpful to draw out and run through a game to get a feel
+    for the rules. Doing so may make it easier to visualize the game and design
+    your program.
+\item The game itself should be an \textit{infinite} loop, where the condition to break
+    out of this loop is when there is only one active player remaining.
+\item You should think carefully about what quantities that you
+must track in order for your program to function. At a \emph{minimum}
+you must keep track of the bank balance of each player, the amount
+of money in the pot, and the number of players that are \emph{in}.
+Be careful: players that were \emph{out} may be brought back in if
+money is passed to the \emph{left} or \emph{right}.
+
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Deliverables}
+\epigraph{\emph{The design process is about designing and prototyping and
+making. When you separate those, I think the final result
+suffers.}}{---Jonathan Ive}\noindent
+
+You will need to turn in:
+
+\begin{enumerate}
+\item \texttt{lrc.c}: The source file which is your program.
+\item \texttt{philos.h}: The header file containing the names of the
+  philosophers.
+\item \texttt{Makefile}: This is a file that will allow the grader to type
+    \texttt{make} to compile your program. Typing \texttt{make} with no
+    arguments must build your program.
+\begin{itemize}
+\item \texttt{CC=clang} must be specified.
+\item \texttt{CFLAGS=-Wall -Wextra -Werror -Wpedantic} must be included.
+\item \texttt{make clean} must remove all files that are compiler generated.
+\item \texttt{make} should build your program, as should \texttt{make all}.
+\item Your program executable must be named \texttt{lrc}.
+\end{itemize}
+
+\item \texttt{README.md}: This must be in markdown.
+This must describe how to use your program and \texttt{Makefile}.
+
+\item \texttt{DESIGN.pdf}: This must be in PDF format. The design document
+should describe your design for your program with enough detail
+that a sufficiently knowledgeable programmer would be able to
+replicate your implementation. This does not mean copying your
+entire program in verbatim. You should instead describe how your
+program works with supporting pseudo-code. For this program, pay
+extra attention to how you describe your logic flow/algorithm in
+\textbf{C}. \textcolor{red}{The commit ID containing the first draft of
+  your design document must be submitted no later than the Thursday
+  before the assignment is due, by 11:59 pm PST. Failing to submit this
+  first draft or submitting a insubstantial draft means receiving a 0
+for your design document.}
+
+\end{enumerate}
+
+All of these files must be in the directory \texttt{\asgn{1}}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Submission}
+\epigraphwidth=0.5\textwidth
+\epigraph{\emph{Better three hours too soon than a minute too
+late.}}{---William Shakespeare}
+
+To submit your assignment, refer back to \texttt{\asgn{0}} for the steps on how to submit your assignment through \texttt{git}. Remember: \emph{add, commit,} and \emph{push}!
+
+\textcolor{red}{Your assignment is turned in \emph{only} after you have pushed.
+If you forget to push, you have not turned in your assignment and you will get
+a \emph{zero}. ``I forgot to push'' is not a valid excuse. It is \emph{highly} recommended to commit and push your changes \emph{often}.}
+%\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Supplemental Readings}
+\epigraph{\emph{I was not proud of what I had learned but I never doubted that it was worth knowing.}}{---Hunter S. Thompson, \emph{The Rum Diary}}\noindent
+
+ \begin{itemize}
+
+ 	\item \textit{The C Programming Language} by Kernighan \& Ritchie
+	\begin{itemize}
+		\item Chapter 1 \S 1.6, 1.7
+		\item Chapter 2 \S 2.3
+		\item Chapter 3 \S 3.1-3.7
+	\end{itemize}
+ \end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{../mascot}
+
+\end{document}
+
+
+

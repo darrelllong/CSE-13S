@@ -1,0 +1,14 @@
+#!/bin/bash
+file="./students.txt"
+TMPDIR=~/cse13s
+rm -rf $TMPDIR
+mkdir $TMPDIR
+while IFS= read student
+do
+(
+  pushd $TMPDIR
+  git clone git@gitlab.soe.ucsc.edu:cse13s/winter20/$student.git
+  popd
+)
+  echo $student
+done < $file

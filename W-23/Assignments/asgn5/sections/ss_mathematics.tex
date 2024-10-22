@@ -1,0 +1,105 @@
+\section{Mathematics of SS}\label{proof}
+
+\epigraphwidth=0.7\textwidth
+\epigraph{\emph{If $\,{\cal P} = \NNP$, then all of modern cryptography collapses. On this happy thought\ldots}}{Michael O.\xspace Rabin, November 1998}
+
+\noindent
+The mathematics of SS are based on arithmetic in a set of integers
+modulo $n$, denoted $\mathbb{Z}/n$. This is the set $\{ 0, \ldots, n - 1
+\}$ and all sets that are equivalent to it. For example, $\{ n, \ldots,
+2n -1 \} \pmod{n} = \{ 0, \ldots, n - 1 \} \pmod{n}$, and there are an
+infinite number of such sets. Since they are \emph{all the same} we will
+only concern ourselves with the one with the smallest numbers. What do
+we mean when we say that are the same? We mean that if $x \equiv k
+\pmod{n}$ then $a n + x \equiv k \pmod{n}, \forall a \ge 0, a \in
+\mathbb{Z}$. In other words, additional integer products of $n$ do not
+matter.
+
+The Euler-Fermat theorem says that if $a\in\mathbb{N}$ and
+$n\in\mathbb{N}$ are \emph{coprime}, that is $\gcd(a, n) = 1$, then
+$$a^{\varphi(n)} \equiv 1 \pmod{n}.$$ This will allow us, for example,
+to take a message $M$ and have $M^{\varphi(n)} \equiv 1 \pmod{n}$.
+
+What is $\varphi(n)$? It is the Euler totient function, and gives the
+number of positive integers than that or equal to $n$ that are
+relatively prime to $n$. For any prime number $p$,
+$$
+\varphi(p) = p - 1.
+$$
+
+For the SS algorithm, we choose two large primes $p$ and $q$, where
+$p \nmid q - 1$ and $q \nmid p - 1$, and we make $n = p^2 q$.
+Then we calculate $d$ such that $d \cdot n \equiv 1 \pmod{\lcm(p - 1, q - 1)}$.
+What does this mean for us with respect to $\varphi(pq)$?
+\begin{align*}
+        \varphi(pq) & = \varphi(p) \times \varphi(q) \\
+        & = (p - 1) (q - 1) \\
+        & = pq - (p + q) + 1 .
+\end{align*}
+
+Now because we chose $p$ and $q$ such that $p \nmid q - 1$ and $q \nmid p - 1$,
+$n = p^2 q$ is relatively prime to $\varphi(pq)$,
+that is, $\gcd(n, \varphi(pq)) = 1$. Because of this we know that a decryption key $d$
+exists, such that $n \times d \equiv 1 \pmod{\varphi(pq)}$.
+Our encryption algorithm is simply $E(M) = M^n \pmod{n} = C$, and our
+decryption algorithm is $D(C) = C^d \pmod{pq} = M$.
+
+Observe that,
+\[
+  M^{n d} \equiv M^{k \varphi(pq) + 1} \pmod{pq}
+\]
+for some integer $k \ge 1$. This is true because, prior to the
+modular reduction, $nd$ must be one greater than some multiple of
+$\varphi(pq)$; applying the modulus is what makes
+$n d \equiv 1 \pmod{\varphi(pq)}$. We can rewrite this as
+\[
+  M^{n d} \equiv (M^{\varphi(pq)})^k \times M \pmod{pq}.
+\]
+Here we apply Euler's theorem, which states that if $a$ and $n$ are
+coprime integers, then $a^{\varphi(n)} \equiv 1 \pmod{n}$. So, assuming
+that $M$ is coprime with $pq$, we can simplify the above equation to
+\begin{align*}
+  M^{n d} &\equiv (1)^k \times M  &&\pmod{pq} \\
+          &\equiv (1) \times M  &&\pmod{pq} \\
+          &\equiv M  &&\pmod{pq}
+\end{align*}
+which proves that decryption really does work on encrypted messages.
+
+In practice, Carmichael's function can be used in place of Euler's totient in
+the computation of the SS key pair. Carmichael's function is denoted with
+$\lambda(n)$, where $\lambda(n) = \lcm(\lambda(p), \lambda(q))$.
+We indicate the least common multiple of some $a$ and $b$ with
+$\lcm(a, b)$. From the definition of the least common multiple, we
+see that
+\begin{align*}
+  \lambda(n) &= \lambda(pq) \\
+             &= \lcm(\lambda(p), \lambda(q)) \\
+             &= \frac{|\lambda(p) \times \lambda(q)|}{\gcd(\lambda(p), \lambda(q))}.
+\end{align*}
+If $p$ and $q$ are prime, then we know
+$\lambda(p) = \varphi(p) = p - 1$, and $\lambda(q) = \varphi(q) = q - 1$. Thus,
+\begin{align*}
+  \lambda(n) &= \frac{|\lambda(p) \times \lambda(q)|}{\gcd(\lambda(p), \lambda(q))} \\
+             &= \frac{|\varphi(p) \times \varphi(q)|}{\gcd(p - 1, q - 1)} \\
+             &= \frac{|\varphi(n)|}{\gcd(p - 1, q - 1)}.
+\end{align*}
+It should be clear from this that $\varphi(pq)$ is a multiple of $\lambda(pq)$.
+Therefore,
+\begin{align*}
+  M^{n d} &\equiv (M^{\varphi(pq)})^k \times M &&\pmod{pq} \\
+          &\equiv (M^{j \times \lambda(pq)})^k \times M &&\pmod{pq} \\
+          &\equiv (M^{\lambda(pq)})^{jk} \times M &&\pmod{pq}
+\end{align*}
+for some multiplier $j \ge 1$.
+
+From Carmichael's generalization of Euler's theorem, we know that
+$a^{\lambda(pq)} \equiv 1 \pmod{pq}$. Thus,
+\begin{align*}
+  M^{n d} &\equiv (M^{\lambda(pq)})^{jk} \times M &&\pmod{pq} \\
+          &\equiv (1)^{jk} \times M  &&\pmod{pq} \\
+          &\equiv (1) \times M  &&\pmod{pq} \\
+          &\equiv M  &&\pmod{pq},
+\end{align*}
+which demonstrates how $\lambda(pq)$ can be used in place of $\varphi(pq)$ for the
+computation of the SS key pair. For your assignment, you will be using
+Carmichael's function when computing your SS key pair.

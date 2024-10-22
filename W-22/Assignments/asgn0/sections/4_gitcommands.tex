@@ -1,0 +1,207 @@
+\section{Useful Git Commands}
+
+The following commands are used through \texttt{git} for version control. For
+this assignment, you will have used the \texttt{clone}, \texttt{add}, and
+\texttt{push} commands. This section will serve as a brief description and use
+of frequently used \texttt{git} commands that you will most likely use
+throughout the quarter, if not your entire career as a computing professional.
+
+\subsection{\texttt{git config}}
+
+This command lets you set configuration variables that tune \texttt{git}
+to operate the way you want it to. The main things you will likely want
+to do when you get started with \texttt{git} are establishing your
+identity, as well as the default text editor when typing up longer
+commits.
+
+Perform the following command to set your name and email address. Notice
+the \texttt{---global} in the command. That is a \emph{command-line
+option} and indicates that the following configuration should be used
+globally in every \texttt{git} repository you have. Unless otherwise
+specified, configurations by default are applied only to the local
+repository.
+
+\begin{shlisting}{}
+$ git config --global user.name "<your name>"
+$ git config --global user.email "<your email>"
+\end{shlisting}
+
+To set your default editor as \texttt{vim}:
+\begin{shlisting}{}
+$ git config --global core.editor vim
+\end{shlisting}
+
+To check all the configurations simply run:
+\begin{shlisting}{}
+$ git config --list
+\end{shlisting}
+
+To check the value of a specific key, or setting, just supply it as the
+sole argument after \texttt{git config}. For instance, to check the
+configured email:
+\begin{shlisting}{}
+$ git config user.email
+\end{shlisting}
+
+\subsection{\texttt{git help}}
+
+When starting out with \texttt{git}, you may find yourself frequently
+needing to refresh your memory on certain commands. The command
+\texttt{git help} will prove invaluable in this regard. There are three
+ways to display the \texttt{man} page for any \texttt{git} command:
+\begin{shlisting}{}
+$ git help <command>
+$ git <command> --help
+$ man git-<command>
+\end{shlisting}
+
+For example, to view the \texttt{man} page for \texttt{git clone}, the
+subject of the next section, any of the following can be run:
+
+\begin{shlisting}{}
+$ git help clone
+$ git clone --help
+$ man git-clone
+\end{shlisting}
+
+A \texttt{man} page (short for manual page) is software documentation
+for tools and programs found on \textsc{Unix} systems. To view a
+\texttt{man} page:
+
+\begin{shlisting}{}
+$ man <function, program, tool>
+\end{shlisting}
+
+These manual pages are typically divided into sections, depending on
+their respective purposes. General commands are found in section 1,
+system calls in section 2, and library functions, such as the
+\texttt{printf()} function used in this assignment, are found in section
+3. So, to view the \texttt{man} page for \texttt{printf()}:
+
+\begin{shlisting}{}
+$ man 3 printf
+\end{shlisting}
+
+\subsection{\texttt{git clone}}
+
+This command clones a repository from a server onto your local machine. This
+downloads a copy of the repository which is stored on a server for local
+editing. Meaning, any changes that need to be sent back to the server will need
+to be \emph{added}, \emph{committed} and \emph{pushed}. Here is an example of
+cloning over \texttt{ssh}:
+
+\begin{shlisting}{}
+$ git clone user@somemachine:path/to/repo
+\end{shlisting}
+
+\subsection{\texttt{git add}}
+
+This command allows you to add files into your repository and stages them to
+the \texttt{git} source tree. Any file that has been changed since the time it was last
+added needs to be added again.
+
+\begin{shlisting}{}
+$ git add file1 file2
+\end{shlisting}
+
+Keep in mind, adding files with this command does \emph{not} commit them. You
+still need to commit the changes with the \texttt{git commit} command.
+
+\subsection{\texttt{git commit}}
+
+This command creates a checkpoint for each file which was added using the
+previous command, \texttt{git add}. You can think of it like capturing a
+snapshot of the current staged changes. These snapshots are then safely
+committed. Each commit has an unique commit ID along with a message about the
+commit.
+
+\begin{shlisting}{}
+$ git commit -m "A short informative message about any changes"
+\end{shlisting}
+
+To commit all the changed files, you can use the command \texttt{git commit -a}
+which can also be combined with the \texttt{-m} option. This will only commit
+files that have been added and committed at least once before. Without the
+\texttt{-m} flag, you will be taken into the default \texttt{git} editor to enter your commit
+message. A forewarning: don't commit rude comments --- the TAs and
+graders will see them.
+
+You should commit working versions of your code frequently so in the case you
+mess something up, like accidentally deleting your code, you can use \texttt{git
+checkout HEAD} to revert to the most recent commit.
+
+\subsection{\texttt{git checkout}}
+
+This command allows you to set the state of your repository to the state
+of your repository at the time of a different commit. The reverting of
+state can be performed per file, meaning that you can use \texttt{git
+checkout} to restore a specific file to its state in a different commit.
+To checkout a commit:
+
+\begin{shlisting}{}
+$ git checkout <commit>
+\end{shlisting}
+
+To checkout restore a file to its state at a different commit:
+
+\begin{shlisting}{}
+$ git checkout <commit> -- <file>
+\end{shlisting}
+
+This last command also works to retrieve files that you may have
+accidentally deleted locally. This alone should provide good incentive
+to add, commit, and push changes to your files often.
+
+\subsection{\texttt{git log}}
+
+This command provides a list of the commits that have been made on the
+repository. It provides access to look up commit times, messages, and IDs.
+
+\begin{shlisting}{}
+$ git log
+\end{shlisting}
+
+
+\subsection{\texttt{git push}}
+
+This command pushes all of your local commits to the upstream repository. It
+pushes all of your changes to the directory which is stored on-line. You
+\emph{must} do this to turn in your work for this class. If you do not run this
+command after committing, \emph{none} of your work will be turned in.
+
+\begin{shlisting}{}
+$ git push
+\end{shlisting}
+
+\subsection{\texttt{git pull}}
+
+This command fetches and downloads content from a remote repository. Your local
+repository is immediately updated to match the fetched content. \texttt{git
+pull} is actually a combination of \texttt{git fetch} followed by \texttt{git
+merge}. The first half of \texttt{git pull} will execute \texttt{git fetch} on
+the local branch that HEAD is pointed at. After the contents are fetched, the
+second half of \texttt{git pull} will merge the work-flow creating a new merge
+commit ID and HEAD is updated to point to the new commit.
+
+\begin{shlisting}{}
+$ git pull
+\end{shlisting}
+
+\subsection{\texttt{git ls-files}}
+
+This command lists all files in the current directory that have been checked
+into the repository. This will be useful for making sure you have submitted all
+required deliverables for each assignment.
+
+\begin{shlisting}{}
+$ git ls-files
+\end{shlisting}
+
+\subsection{\texttt{git status}}
+
+This command provides a status of which files have been added and staged for the
+next commit, as well as unpushed changes.
+
+\begin{shlisting}{}
+$ git status
+\end{shlisting}

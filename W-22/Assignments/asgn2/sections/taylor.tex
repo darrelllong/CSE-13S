@@ -1,0 +1,60 @@
+\section{Taylor Series}
+
+\epigraphwidth=0.75\textwidth
+\epigraph{\emph{Let us change our traditional attitude to the construction of
+programs. Instead of imagining that our main task is to instruct a computer what
+to do, let us concentrate rather on explaining to human beings what we want a
+computer to do.}} {---Donald Knuth}
+
+\noindent As we know, computers are simple machines that carry out a sequence of
+very simple steps, albeit very quickly. Unless you have a special-purpose
+processor, a computer can only compute \emph{addition}, \emph{subtraction},
+\emph{multiplication}, and \emph{division}. If you think about it, you will see
+that the functions that might interest you when dealing with real or complex
+numbers can be built up from those four operations.  We use many of these
+functions in nearly every program that we write, so we ought to understand how
+they are created.
+
+If you recall from your calculus class, with some conditions a function $f(x)$
+can be represented by its Taylor series (Brook Taylor, 18 August 1685--29 December 1731)
+expansion near some point $a$:
+\[
+  f(x) = f(a) + \sum_{k=1}^\infty \frac{f^{(k)}(a)}{k!}{(x-a)}^k.
+\]
+\textcolor{red}{Note: when you see $\Sigma$ with definite limits, you should generally think of a
+\texttt{for} loop.}
+
+Since we cannot compute an infinite series, we must be content to calculate a
+finite number of terms. In general, the more terms that we compute, the more
+accurate our approximation.
+
+For example, if we expand to $10$ terms we get:
+\begin{align*}
+  f(x) = f(a) &+ \taylorterm{1} + \taylorterm{2} + \taylorterm{3} + \taylorterm{4} \\
+              &+ \taylorterm{5} + \taylorterm{6} + \taylorterm{7} + \taylorterm{8} \\
+              &+ \taylorterm{9} + \operatorname{O}({(x-a)}^{10}). \\
+\end{align*}
+In the case $a =0$, then it is called a \emph{Maclaurin series}.  Often we
+choose $0$ since it is simpler, but the closer to the value of $x$ the better we
+will approximate the function. \textcolor{red}{Note: $k! =
+k(k-1)(k-2)\times...\times1$, and by definition, $0! = 1$. }
+
+What is the $\operatorname{O}\left((x-a)^{10}\right)$ term? That is the \emph{error term} that
+is ``on the order of'' the value in parentheses. This is different from the
+\emph{big-O} that we will discuss with regard to algorithm analysis.
+
+The number $e$, also known as \emph{Euler's number} (Leonhard Euler,
+1707--1783), is an irrational mathematical constant approximately equal to
+$2.71828$, that appears pervasively in the natural and mathematical worlds. It
+is the base of the natural logarithm, it is the limit of
+$\lim_{n\rightarrow\infty} (1 + \frac{1}{n})^n$ which was discovered by Jacob
+Bernoulli (6 January 1655--16 August 1705) in his work on the calculation of
+compound interest.
+
+The function $f(x)=e^x$ is a very attractive function, since $f^{(k)}(x) = f^{(k-1)}(x) = \cdots = f^\prime(x) = f(x) = e^x$.
+This is one of the simplest series when centered at $0$, since $e^0 = 1$.
+\begin{align*}
+  e^x & = \sum_{k=0}^{\infty} \frac{x^k}{k!} = 1 + \mlterm{1} + \mlterm{2} +
+  \mlterm{3} + \mlterm{4} + \mlterm{5} + \mlterm{6} + \mlterm{7} + \mlterm{8} +
+  \mlterm{9} + \ldots
+\end{align*}

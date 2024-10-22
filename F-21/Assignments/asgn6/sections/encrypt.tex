@@ -1,0 +1,42 @@
+\section{Encryptor}
+\epigraph{\emph{The laws of mathematics are very commendable, but the only law that
+applies in Australia is the law of Australia.}}{---Malcolm Turnbull, Australian Prime Minister}
+
+Your encryptor program should accept the following command-line options:
+\begin{itemize}
+  \item \texttt{-i}\,: specifies the input file to encrypt (default:
+    \texttt{stdin}).
+  \item \texttt{-o}\,: specifies the output file to encrypt (default:
+    \texttt{stdout}).
+  \item \texttt{-n}\,: specifies the file containing the public key
+    (default: \texttt{rsa.pub}).
+  \item \texttt{-v}\,: enables verbose output.
+  \item \texttt{-h}\,: displays program synopsis and usage.
+\end{itemize}
+The program should follow these steps:
+\begin{enumerate}
+  \item Parse command-line options using \texttt{getopt()} and handle
+    them accordingly.
+  \item Open the public key file using \texttt{fopen()}. Print a helpful
+    error and exit the program in the event of failure.
+  \item Read the public key from the opened public key file.
+  \item If verbose output is enabled print the following, each with a
+    trailing newline, in order:
+    \begin{enumerate}
+      \item username
+      \item the signature \texttt{s}
+      \item the public modulus \texttt{n}
+      \item the public exponent \texttt{e}
+    \end{enumerate}
+    All of the \texttt{mpz\_t} values should be printed with information
+    about the number of bits that constitute them, along with their
+    respective values in \emph{decimal}. See the reference encryptor
+    program for an example.
+  \item Convert the username that was read in to an \texttt{mpz\_t}.
+    This will be the expected value of the verified signature. Verify
+    the signature using \texttt{rsa\_verify()}, reporting an error and
+    exiting the program if the signature couldn't be verified.
+  \item Encrypt the file using \texttt{rsa\_encrypt\_file()}.
+  \item Close the public key file and clear any \texttt{mpz\_t}
+    variables you have used.
+\end{enumerate}

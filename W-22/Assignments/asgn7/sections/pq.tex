@@ -1,0 +1,56 @@
+\section{Priority Queue}\label{sec:pq}
+
+You will use a priority queue to store the names of author along with the
+distance calculated between text authored by the author the anonymous sample of
+text. This interface for this priority queue is designed specifically for this
+task. It should enqueue and dequeue pairs of the author and the corresponding
+distance as separate parameters instead of as a single struct. This means that
+you can implement your priority queue as you wish, so long as you follow the
+defined API.
+
+\begin{funcdoc}{PriorityQueue *pq\_create(uint32\_t capacity)}
+  The constructor for a priority queue that holds up to \texttt{capacity}
+  elements. In the event that sufficient Memory cannot be allocated, the
+  function must return \texttt{NULL}. Else, it must return a
+  \texttt{PriorityQueue *}, or a pointer to an allocated \texttt{PriorityQueue}.
+  The priority queue should initially contain no elements.
+\end{funcdoc}
+
+\begin{funcdoc}{void pq\_delete(PriorityQueue **q)}
+  The destructor for a priority queue. Remember to set the pointer to
+  \texttt{NULL} after the memory associated with the priority queue is freed.
+  Anything left in the priority queue that hasn't been dequeued should be freed
+  as well.
+\end{funcdoc}
+
+\begin{funcdoc}{bool pq\_empty(PriorityQueue *q)}
+  Returns \texttt{true} if the priority queue is empty and \texttt{false}
+  otherwise.
+\end{funcdoc}
+
+\begin{funcdoc}{bool pq\_full(PriorityQueue *q)}
+  Returns \texttt{true} if the priority queue is full and \texttt{false}
+  otherwise.
+\end{funcdoc}
+
+\begin{funcdoc}{uint32\_t pq\_size(PriorityQueue *q)}
+  Returns the number of elements in the priority queue.
+\end{funcdoc}
+
+\begin{funcdoc}{bool enqueue(PriorityQueue *q, char *author, double dist)}
+  Enqueue the \texttt{author}, \texttt{dist} pair into the priority queue. If
+  the priority queue is full, return \texttt{false}. Otherwise, return
+  \texttt{true} to indicate success.
+\end{funcdoc}
+
+\begin{funcdoc}{bool dequeue(PriorityQueue *q, char **author, double *dist)}
+  Dequeue the \texttt{author}, \texttt{dist} pair from the priority queue. The
+  pointer to the author string is passed back with the \texttt{author} double
+  pointer. The distance metric value is passed back with the \texttt{dist}
+  pointer. If the priority queue is empty, return \texttt{false}. Otherwise,
+  return \texttt{true} to indicate success.
+\end{funcdoc}
+
+\begin{funcdoc}{void pq\_print(PriorityQueue *q)}
+  A debug function to print the priority queue.
+\end{funcdoc}

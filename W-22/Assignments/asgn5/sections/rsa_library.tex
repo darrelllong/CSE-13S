@@ -1,0 +1,198 @@
+\section{An RSA Library}
+\epigraph{\emph{If you think cryptography is the answer to your problem, then you don't know what your problem is.}}{---Peter G.\xspace Neumann}
+
+\noindent
+\begin{funcdoc}{void rsa\_make\_pub(mpz\_t p, mpz\_t q, mpz\_t n, mpz\_t e,
+uint64\_t nbits, uint64\_t iters)}
+  Creates parts of a new RSA public key: two large primes \texttt{p} and
+  \texttt{q}, their product \texttt{n}, and the public exponent
+  \texttt{e}.
+
+  \begin{enumerate}
+    \item Begin by creating primes \texttt{p} and \texttt{q} using
+      \texttt{make\_prime()}. We first need to decide the number of bits
+      that go to each prime respectively such that $\log_2(\texttt{n})
+      \ge \texttt{nbits}$. Let the number of bits for \texttt{p} be a
+                  random number in the range
+                  $\left [\texttt{nbits}/{4}, (3 \times \texttt{nbits})/{4} \right )$.
+                  The remaining bits will go to
+      \texttt{q}. The number of Miller-Rabin iterations is specified by
+      \texttt{iters}. You should obtain this random number using
+      \texttt{random()}.
+    \item Next, compute $\lambda(\texttt{n}) = \operatorname{lcm}(\texttt{p} -
+      1, \texttt{q} - 1)$. You will need to compute
+      $\operatorname{gcd}(\texttt{p} - 1, \texttt{q} - 1)$ for this.
+    \item We now need to find a suitable public exponent \texttt{e}. In a loop,
+      generate random numbers of around \texttt{nbits} using
+      \texttt{mpz\_urandomb()}. Compute the \texttt{gcd()} of each random number
+      and the computed $\lambda(\texttt{n})$. Stop the loop you have found a
+      number coprime with $\lambda(\texttt{n})$: that will be the public
+      exponent.
+  \end{enumerate}
+\end{funcdoc}
+
+\begin{funcdoc}{void rsa\_write\_pub(mpz\_t n, mpz\_t e, mpz\_t
+s, char username[], FILE *pbfile)}
+  Writes a public RSA key to \texttt{pbfile}. The format of a public key
+  should be \texttt{n}, \texttt{e}, \texttt{s}, then the
+  \texttt{username}, each of which are written with a trailing newline.
+  The values \texttt{n}, \texttt{e}, and \texttt{s} should be written as
+  \emph{hexstrings}. See the GMP functions for
+  \href{https://gmplib.org/manual/Formatted-Output-Functions}{formatted
+  output} for help with writing hexstrings.
+\end{funcdoc}
+
+\begin{funcdoc}{void rsa\_read\_pub(mpz\_t n, mpz\_t e, mpz\_t s,
+char username[], FILE *pbfile)}
+  Reads a public RSA key from \texttt{pbfile}. The format of a public
+  should be \texttt{n}, \texttt{e}, \texttt{s}, then the
+  \texttt{username}, each of which should have been written with a
+  trailing newline. The values \texttt{n}, \texttt{e}, and \texttt{s}
+  should have been written as \emph{hexstrings}. See the GMP functions
+  for
+  \href{https://gmplib.org/manual/Formatted-Input-Functions}{formatted
+  input} for help with reading hexstrings.
+\end{funcdoc}
+
+% //
+% // Generates the components for a new private RSA key.
+% // Requires an accompanying RSA public key to complete the pair.
+% // All mpz\_t arguments are expected to be initialized.
+% //
+% // d: will store the RSA private key.
+% // e: the precomputed public exponent.
+% // p: the first large prime from the public key generation.
+% // p: the second large prime from the public key generation.
+% //
+\begin{funcdoc}{void rsa\_make\_priv(mpz\_t d, mpz\_t e, mpz\_t
+p, mpz\_t q)}
+  Creates a new RSA private key \texttt{d} given primes \texttt{p} and
+  \texttt{q} and public exponent \texttt{e}. To compute \texttt{d}, simply
+  compute the inverse of \texttt{e} modulo $\lambda(\texttt{n}) =
+  \operatorname{lcm}(\texttt{p} - 1, \texttt{q} - 1)$.
+\end{funcdoc}
+
+\begin{funcdoc}{void rsa\_write\_priv(mpz\_t n, mpz\_t d, FILE
+*pvfile)}
+  Writes a private RSA key to \texttt{pvfile}. The format of a private key
+  should be \texttt{n} then \texttt{d}, both of which are written with a
+  trailing newline. Both these values should be written as hexstrings.
+\end{funcdoc}
+
+\begin{funcdoc}{void rsa\_read\_priv(mpz\_t n, mpz\_t d, FILE
+*pvfile)}
+  Reads a private RSA key from \texttt{pvfile}. The format of a private
+  key should be \texttt{n} then \texttt{d}, both of which should have
+  been written with a trailing newline. Both these values should have
+  been written as \emph{hexstrings}.
+\end{funcdoc}
+
+\begin{funcdoc}{void rsa\_encrypt(mpz\_t c, mpz\_t m, mpz\_t e,
+mpz\_t n)}
+  Performs RSA encryption, computing ciphertext \texttt{c} by encrypting
+  message \texttt{m} using public exponent \texttt{e} and modulus
+  \texttt{n}. Remember, encryption with RSA is defined as $E(m) = c =
+        m^e \pmod{n}$.
+\end{funcdoc}
+
+\begin{funcdoc}{void rsa\_encrypt\_file(FILE *infile, FILE *outfile,
+mpz\_t n, mpz\_t e)}
+  Encrypts the contents of \texttt{infile}, writing the encrypted
+  contents to \texttt{outfile}. The data in \texttt{infile} should be in
+  encrypted in \emph{blocks}. Why not encrypt the entire file? Because
+  of \texttt{n}. We are working modulo \texttt{n}, which means that the
+  value of the block of data we are encrypting must be strictly less
+  than \texttt{n}. We have two additional restrictions on the values of
+  the blocks we encrypt:
+  \begin{enumerate}
+    \item The value of a block cannot be 0: $E(0) \equiv 0 \equiv 0^e \pmod{n}$.
+    \item The value of a block cannot be 1. $E(1) \equiv 1 \equiv 1^e \pmod{n}$.
+  \end{enumerate}
+  A solution to these additional restrictions is to simply
+  \emph{prepend} a single byte to the front of the block we want to
+  encrypt. The value of the prepended byte will be \texttt{0xFF}. This
+  solution is not unlike the padding schemes such as PKCS and OAEP used
+  in modern constructions of RSA\@. To encrypt a file, follow these
+  steps:
+  \begin{enumerate}
+    \item Calculate the block size $k$. This should be
+      $k = \lfloor(\log_2({\texttt{n}}) - 1) / 8\rfloor$.
+    \item Dynamically allocate an array that can hold $k$ bytes. This
+      array should be of type \texttt{(uint8\_t *)} and will serve as
+      the block.
+    \item Set the zeroth byte of the block to \texttt{0xFF}. This
+      effectively prepends the workaround byte that we need.
+    \item While there are still unprocessed bytes in \texttt{infile}:
+      \begin{enumerate}
+        \item Read at most $k - 1$ bytes in from \texttt{infile}, and
+          let $j$ be the number of bytes actually read. Place the read
+          bytes into the allocated block starting from index 1 so as to
+          not overwrite the \texttt{0xFF}.
+        \item Using \texttt{mpz\_import()}, convert the read bytes,
+          including the prepended \texttt{0xFF} into an \texttt{mpz\_t
+          m}. You will want to set the \texttt{order} parameter of
+          \texttt{mpz\_import()} to \texttt{1} for most significant word
+          first, \texttt{1} for the \texttt{endian} parameter, and
+          \texttt{0} for the \texttt{nails} parameter.
+        \item Encrypt \texttt{m} with \texttt{rsa\_encrypt()}, then
+          write the encrypted number to \texttt{outfile} as a
+          \emph{hexstring} followed by a trailing newline.
+      \end{enumerate}
+  \end{enumerate}
+\end{funcdoc}
+
+\begin{funcdoc}{void rsa\_decrypt(mpz\_t m, mpz\_t c, mpz\_t d,
+mpz\_t n)}
+  Performs RSA decryption, computing message \texttt{m} by decrypting
+  ciphertext \texttt{c} using private key \texttt{d} and public modulus
+  \texttt{n}. Remember, decryption with RSA is defined as $D(c) = m =
+        c^d \pmod{n}$.
+\end{funcdoc}
+
+\begin{funcdoc}{void rsa\_decrypt\_file(FILE *infile, FILE *outfile,
+mpz\_t n, mpz\_t d)}
+  Decrypts the contents of \texttt{infile}, writing the decrypted
+  contents to \texttt{outfile}. The data in \texttt{infile} should be
+  decrypted in \emph{blocks} to mirror how \texttt{rsa\_encrypt\_file()}
+  encrypts in blocks. To decrypt a file, follow these steps:
+  \begin{enumerate}
+    \item Calculate the block size $k$. This should be
+      $k = \lfloor(\log_2({\texttt{n}}) - 1) / 8\rfloor$.
+    \item Dynamically allocate an array that can hold $k$ bytes. This
+      array should be of type \texttt{(uint8\_t *)} and will serve as
+      the block.
+    \item While there are still unprocessed bytes in \texttt{infile}:
+      \begin{enumerate}
+        \item Scan in a hexstring, saving the hexstring as a
+          \texttt{mpz\_t c}. Remember, each block is written as a
+          hexstring with a trailing newline when encrypting a file.
+        \item Using \texttt{mpz\_export()}, convert \texttt{c} back into
+          bytes, storing them in the allocated block. Let $j$ be the
+          number of bytes actually converted. You will want to set the
+          \texttt{order} parameter of \texttt{mpz\_export()} to
+          \texttt{1} for most significant word first, \texttt{1} for the
+          \texttt{endian} parameter, and \texttt{0} for the
+          \texttt{nails} parameter.
+        \item Write out $j - 1$ bytes starting from index 1 of the block
+          to \texttt{outfile}. This is because index 0 must be prepended
+          \texttt{0xFF}. Do not output the \texttt{0xFF}.
+      \end{enumerate}
+  \end{enumerate}
+
+\end{funcdoc}
+
+\begin{funcdoc}{void rsa\_sign(mpz\_t s, mpz\_t m, mpz\_t d, mpz\_t
+n)}
+  Performs RSA signing, producing signature \texttt{s} by signing
+  message \texttt{m} using private key \texttt{d} and public modulus
+        \texttt{n}. Signing with RSA is defined as $S(m) = s = m^d \pmod{n}$.
+\end{funcdoc}
+
+\begin{funcdoc}{bool rsa\_verify(mpz\_t m, mpz\_t s, mpz\_t e,
+mpz\_t n)}
+  Performs RSA verification, returning \texttt{true} if signature
+  \texttt{s} is verified and \texttt{false} otherwise. Verification is
+        the inverse of signing. Let $t = V(s) = s^e \pmod{n}$. The signature is
+  verified if and only if $t$ is the same as the expected message
+  \texttt{m}.
+\end{funcdoc}

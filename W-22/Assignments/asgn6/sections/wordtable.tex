@@ -1,0 +1,71 @@
+\section{Word Tables}\label{sec:wordtable}
+
+Although compression can be performed using a trie, decompression still needs to
+use a look-up table for quick code-to-word translation. This look-up table will
+be encapsulated in a \texttt{struct} called a \texttt{WordTable}, which contains
+an array of words. Since we only have $2^{16}$ codes, we can used a fixed array
+of size \texttt{MAX\_CODE}, as defined in \S\ref{sec:lz78}.
+
+\begin{clisting}{}
+struct WordTable {
+    Word *words[MAX_CODE];
+};
+
+\end{clisting}
+
+Each index of the word array is a pointer to a \texttt{Word}, a \texttt{struct}
+created to abstractly represent a word. A \texttt{Word} contains an array of
+symbols, each symbol in which is a byte. The length of this byte array is
+contained in the \texttt{Word} as well.
+
+\begin{clisting}{}
+struct Word {
+    uint8_t *syms;   // Array of bytes.
+    uint32_t length; // Length of array.
+};
+\end{clisting}
+
+The reason we aren't using strings for words is because we want to be able to
+encode and decode any file. Binary files typically have zeroes strewn
+throughout, which causes problems with strings since they are
+\texttt{NULL}-terminated in \textbf{C}. To avoid this, we use byte arrays to
+represent words. This approach, however, does require us to track the length of
+each byte array. You \emph{must} use the following specification for the
+\texttt{Word} and \texttt{WordTable} ADTs.
+
+\begin{funcdoc}{Word *word\_create(uint8\_t *syms, uint32\_t length)}
+  Constructor for a word where \texttt{syms} is the array of symbols a
+  \texttt{Word} represents. The length of the array of symbols is given by
+  \texttt{length}. To create the empty word, a \texttt{NULL} pointer is passed
+  for \texttt{syms} and a 0 is used for the \texttt{length}. How exactly the
+  empty word is created is up to you. Do keep in mind, however, that allocating
+  0 bytes using either \texttt{malloc()} or \texttt{calloc()} is undefined.
+\end{funcdoc}
+
+\begin{funcdoc}{Word *word\_append\_sym(Word *w, Symbol s)}
+  Returns a new \texttt{Word} containing the symbols in \texttt{w} appended with
+  the symbol \texttt{s}. Keep in mind that the word specified to append to may
+  be the empty word.
+\end{funcdoc}
+
+\begin{funcdoc}{void word\_delete(Word **w)}
+  Destructor for a \texttt{Word}. Like with \texttt{trie\_node\_create()}, a
+  double pointer is used here. Make sure to set the pointer to the word to
+  \texttt{NULL} after freeing all allocated memory.
+\end{funcdoc}
+
+\begin{funcdoc}{WordTable *wt\_create(void)}
+  Creates a new \texttt{WordTable}, initialized with the empty word. Make sure
+  the other indices in the table are initialized to \texttt{NULL}.
+\end{funcdoc}
+
+\begin{funcdoc}{void wt\_reset(WordTable *wt)}
+  Resets a \texttt{WordTable} to its initial state of only containing the empty
+  word. Make sure all the other words in the table have been deleted and
+  properly set to \texttt{NULL}.
+\end{funcdoc}
+
+\begin{funcdoc}{void wt\_delete(WordTable **wt)}
+  Destructor for a \texttt{WordTable}. Remember to set the passed pointer to
+  \texttt{NULL} after freeing all allocated memory.
+\end{funcdoc}

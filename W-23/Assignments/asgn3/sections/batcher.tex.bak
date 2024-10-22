@@ -1,0 +1,211 @@
+\section{Batcher's Odd-Even Merge Sort}
+
+\epigraph{\emph{There are two ways of constructing a software design.
+    One way is to make it so simple that there are obviously no
+    deficiencies, and the other way is to make it so complicated that
+    there are no obvious deficiencies. The first method is far more
+difficult.}}{---C.A.R. Hoare}
+
+Batcher's odd-even mergesort, or Batcher's method, is unlike the other presented
+sorts in that it is actually a \emph{sorting network}. What is a sorting
+network? Sorting networks, or \emph{comparator networks}, are circuits built for
+tbe express purpose of sorting a set number of inputs. Sorting networks are
+built with a fixed number of wires, one for each input to sort, and are
+connected using \emph{comparators}. Comparators compare the values traveling
+along the two wires they connect and swap the values if they're out of order.
+Since there are a fixed number of comparators, a sorting network must
+necessarily sort any input using a fixed number of comparisons. Refer to
+Figure~\ref{fig:batcher} for a diagram of a sorting network using Batcher's
+method.
+
+Sorting networks are typically limited to inputs that are powers of 2. Batcher's
+method is no exception to this. To remedy this, we apply Knuth's modification to
+Batcher's method to allow it sort arbitrary-size inputs. This modification on
+Batcher's method is also referred to as the \emph{Merge Exchange Sort}. You will
+be implementing the merge exchange sort, or Batcher's method, using the
+provided Python pseudocode.
+
+\begin{pylisting}{Merge Exchange Sort (Batcher's Method) in Python}
+def comparator(A: list, x: int, y: int):
+    if A[x] > A[y]:
+        A[x], A[y] = A[y], A[x]
+
+def batcher_sort(A: list):
+    if len(A) == 0:
+        return
+
+    n = len(A)
+    t = n.bit_length()
+    p = 1 << (t - 1)
+
+    while p > 0:
+        q = 1 << (t - 1)
+        r = 0
+        d = p
+
+        while d > 0:
+            for i in range(0, n - d):
+                if (i & p) == r:
+                    comparator(A, i, i + d)
+            d = q - p
+            q >>= 1
+            r = p
+
+        p >>= 1
+\end{pylisting}
+
+The pseudocode for Batcher's method can be a little mysterious, but it
+effectively acts as a parallel \emph{Shell Sort}. Shell Sort acts a variation of
+Insert Sort and first sorts pairs of elements which are far apart from each
+other. The distance between these pairs of elements is called a \emph{gap}. Each
+iteration of Shell Sort decreases the gap until a gap of $1$ is used.
+
+Batcher's method is similar, but instead of sorting pairs of elements that are a
+set gap apart, it \emph{$k$-sorts} the even and odd subsequences of the array,
+where $k$ is some power of $2$. Given an array $A$ where $A_i$ denotes the
+$i$-th index of $A$, an even subsequence refers to the sequence of values
+$\{A_0, A_2, A_4, \dots \}$. Similarly, an odd subsequence refers to the sequence
+of values $\{A_1, A_3, A_5, \dots \}$. The topic of $k$-sorting is beyond the
+scope of this course, but all that you are required to understand is that if an
+array is $k$-sorted, then all its elements are at most $k$ indices away from its
+sorted position.
+
+Consider an array of $16$ elements. Batcher's method first $8$-sorts the even
+and odd subsequences, then $4$-sorts them, then $2$-sorts them, and finally
+$1$-sorts them, \emph{merging} the sorted even and odd sequences. We will call
+each level of $k$-sorting a \emph{round}. As stated previously, Batcher's method
+works in \emph{parallel}. By virtue of the algorithm, any indices that appear in
+a pairwise comparison when $k$-sorting a subsequence do not appear as indices in
+another comparison during the same round. A clever use of the bitwise AND
+operator, \texttt{\&}, guarantees this property.
+
+When computing the bitwise AND operator of two integers $x$ and $y$, the
+resulting integer is composed of $0$-bits except in the positions where both $x$
+and $y$ have a $1$-bit. As an example, let $x = 10 = 1010_2$ and $y = 8 =
+1000_2$. Bitwise AND-ing $x$ and $y$ yields $z = 8 = 1000_2$. In the provided
+pseudocode, the variable \texttt{p} tracks the current round of $k$-sorting. It
+is always a power of 2 since it starts off as a power of 2, and is only halved
+in value using the right-shift operator (\verb|>>|). The condition on line 20 of
+the pseudocode first computes the bitwise AND of \texttt{i} and \texttt{p}. This
+effectively partitions values of \texttt{i} into partitions of size \texttt{p}.
+The variable \texttt{r} effectively represents which partitions can be
+considered for comparison. Thus, \texttt{(i \& p) == r} checks if the partition
+that \texttt{i} falls into is eligible for comparison, and if it is, to execute
+the comparison.
+
+Indices are only ever compared with indices that are \texttt{d} indices away.
+Since \texttt{p} is a power of $2$ and \texttt{d} is an odd multiple of
+\texttt{p}, it follows that \texttt{i \& p != (i + d) \& p} for any \texttt{i}.
+This means there is no overlap with any of the pairs of indices, which therefore
+means that these comparisons can be run simultaneously, or in \emph{parallel},
+with no ill effect. These parallel comparisons are shown clearly in
+Figure~\ref{fig:batcher}.
+
+Although Batcher's method can be run in parallel, your implementation of the
+sort will run \emph{sequentially}, sorting the input over several rounds. For an
+array size of $n$, the initial value to $k$-sort with is $k = \lceil \log_2(n)
+\rceil$. The even and odd subsequences are first $k$-sorted, then
+$\frac{k}{2}$-sorted, then $\frac{k}{4}$-sorted, and so on until they are
+$1$-sorted. You will want to edit the provided pseudocode to print out the pairs
+of indices that are being compared to see what is happening.
+
+\begin{figure}[htb]
+  \centering
+  \begin{tikzpicture}[>=latex',scale=1.25]
+    % Wire 0 line.
+    \node at (0,-1.0) (wire0) {};
+    \draw[-] (wire0.east) -- +(4.6,0);
+    \node at (0.5,-1.0) (c01) [circle,fill,inner sep=1.5pt]{};
+    \node at (1.0,-1.0) (c02) [circle,fill,inner sep=1.5pt]{};
+    \node at (2.25,-1.0) (c03) [circle,fill,inner sep=1.5pt]{};
+
+    % Wire 1 line.
+    \node at (0,-1.5) (wire1) {};
+    \draw[-] (wire1.east) -- +(4.6,0);
+    \node at (0.5,-1.5) (c11) [circle,fill,inner sep=1.5pt]{};
+    \node at (1.25,-1.5) (c12) [circle,fill,inner sep=1.5pt]{};
+    \node at (1.75,-1.5) (c13) [circle,fill,inner sep=1.5pt]{};
+    \node at (2.5,-1.5) (c14) [circle,fill,inner sep=1.5pt]{};
+    \node at (4.25,-1.5) (c15) [circle,fill,inner sep=1.5pt]{};
+
+    % Wire 2 line.
+    \node at (0,-2.0) (wire2) {};
+    \draw[-] (wire2.east) -- +(4.6,0);
+    \node at (0.5,-2.0) (c21) [circle,fill,inner sep=1.5pt]{};
+    \node at (1.0,-2.0) (c22) [circle,fill,inner sep=1.5pt]{};
+    \node at (1.75,-2.0) (c23) [circle,fill,inner sep=1.5pt]{};
+    \node at (2.75,-2.0) (c24) [circle,fill,inner sep=1.5pt]{};
+    \node at (3.5,-2.0) (c25) [circle,fill,inner sep=1.5pt]{};
+    \node at (4.25,-2.0) (c26) [circle,fill,inner sep=1.5pt]{};
+
+    % Wire 3 line.
+    \node at (0,-2.5) (wire3) {};
+    \draw[-] (wire3.east) -- +(4.6,0);
+    \node at (0.5,-2.5) (c31) [circle,fill,inner sep=1.5pt]{};
+    \node at (1.25,-2.5) (c32) [circle,fill,inner sep=1.5pt]{};
+    \node at (3.0,-2.5) (c33) [circle,fill,inner sep=1.5pt]{};
+    \node at (3.75,-2.5) (c34) [circle,fill,inner sep=1.5pt]{};
+    \node at (4.25,-2.5) (c35) [circle,fill,inner sep=1.5pt]{};
+
+    % Wire 4 line.
+    \node at (0,-3.0) (wire4) {};
+    \draw[-] (wire4.east) -- +(4.6,0);
+    \node at (0.5,-3.0) (c41) [circle,fill,inner sep=1.5pt]{};
+    \node at (1.0,-3.0) (c42) [circle,fill,inner sep=1.5pt]{};
+    \node at (2.25,-3.0) (c43) [circle,fill,inner sep=1.5pt]{};
+    \node at (3.5,-3.0) (c44) [circle,fill,inner sep=1.5pt]{};
+    \node at (4.25,-3.0) (c45) [circle,fill,inner sep=1.5pt]{};
+
+    % Wire 5 line.
+    \node at (0,-3.5) (wire5) {};
+    \draw[-] (wire5.east) -- +(4.6,0);
+    \node at (0.5,-3.5) (c51) [circle,fill,inner sep=1.5pt]{};
+    \node at (1.25,-3.5) (c52) [circle,fill,inner sep=1.5pt]{};
+    \node at (1.75,-3.5) (c53) [circle,fill,inner sep=1.5pt]{};
+    \node at (2.5,-3.5) (c54) [circle,fill,inner sep=1.5pt]{};
+    \node at (3.75,-3.5) (c55) [circle,fill,inner sep=1.5pt]{};
+    \node at (4.25,-3.5) (c56) [circle,fill,inner sep=1.5pt]{};
+
+    % Wire 6 line.
+    \node at (0,-4.0) (wire6) {};
+    \draw[-] (wire6.east) -- +(4.6,0);
+    \node at (0.5,-4.0) (c61) [circle,fill,inner sep=1.5pt]{};
+    \node at (1.0,-4.0) (c62) [circle,fill,inner sep=1.5pt]{};
+    \node at (1.75,-4.0) (c63) [circle,fill,inner sep=1.5pt]{};
+    \node at (2.75,-4.0) (c64) [circle,fill,inner sep=1.5pt]{};
+    \node at (4.25,-4.0) (c65) [circle,fill,inner sep=1.5pt]{};
+
+    % Wire 7 line.
+    \node at (0,-4.5) (wire7) {};
+    \draw[-] (wire7.east) -- +(4.6,0);
+    \node at (0.5,-4.5) (c71) [circle,fill,inner sep=1.5pt]{};
+    \node at (1.25,-4.5) (c72) [circle,fill,inner sep=1.5pt]{};
+    \node at (3.0,-4.5) (c73) [circle,fill,inner sep=1.5pt]{};
+
+    % Comparators.
+    \draw[-] (c01) -- (c11);
+    \draw[-] (c21) -- (c31);
+    \draw[-] (c41) -- (c51);
+    \draw[-] (c61) -- (c71);
+    \draw[-] (c02) -- (c22);
+    \draw[-] (c42) -- (c62);
+    \draw[-] (c12) -- (c32);
+    \draw[-] (c52) -- (c72);
+    \draw[-] (c13) -- (c23);
+    \draw[-] (c53) -- (c63);
+    \draw[-] (c03) -- (c43);
+    \draw[-] (c14) -- (c54);
+    \draw[-] (c24) -- (c64);
+    \draw[-] (c33) -- (c73);
+    \draw[-] (c25) -- (c44);
+    \draw[-] (c34) -- (c55);
+    \draw[-] (c15) -- (c26);
+    \draw[-] (c35) -- (c45);
+    \draw[-] (c56) -- (c65);
+  \end{tikzpicture}
+  \caption{
+    Batcher's odd-even mergesort sorting network with eight inputs. Inputs
+    traveling along the wires are sorted as they move from left to right.
+}
+  \label{fig:batcher}
+\end{figure}

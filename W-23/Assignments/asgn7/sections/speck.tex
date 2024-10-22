@@ -1,0 +1,41 @@
+\section{Hashing with the SPECK Cipher}\label{sec:speck}
+
+\noindent You will need a good hash function to use in your Bloom filter
+(discussed in \S\ref{sec:bloom}) and hash table (discussed in
+\S\ref{sec:hashtable}). We will have discussed hash functions in lecture, and
+rather than risk having a poor one implemented, we will simply provide you one.
+The SPECK\footnote{ Ray Beaulieu, Stefan Treatman-Clark, Douglas Shors, Bryan
+Weeks, Jason Smith, and Louis Wingers, ``The {SIMON} and {SPECK} lightweight
+block ciphers.'' In Proceedings of the 52nd ACM/EDAC/IEEE Design Automation
+Conference (DAC), pp.  1--6. IEEE, 2015.} block cipher is provided for use as a
+hash function.
+
+SPECK is a family of lightweight block ciphers publicly released by the
+National Security Agency (NSA) in June 2013.  SPECK has been optimized
+for performance in software implementations, while its sister algorithm,
+SIMON, has been optimized for hardware implementations. SPECK is an
+add-rotate-xor (ARX) cipher. The reason a cipher is used for this is
+because encryption generates random output given some input; exactly
+what we want for a hash.
+
+Encryption is the process of taking some file you wish to protect,
+usually called plaintext, and transforming its data such that only
+authorized parties can access it. This transformed data is referred to
+as ciphertext. Decryption is the inverse operation of encryption, taking
+the ciphertext and transforming the encrypted data back to its original
+state as found in the original plaintext. Encryption algorithms that
+utilize the same key for both encryption and decryption, like SPECK, are
+symmetric-key algorithms, and algorithms that don't, such as RSA, are
+asymmetric-key algorithms.
+
+You will be given two files, \texttt{speck.h} and \texttt{speck.c}. The
+former will provide the interface to using the SPECK hash function which
+has been named \texttt{hash()}, and the latter contains the
+implementation. The hash function \texttt{hash()} takes two parameters:
+a 128-bit salt passed in the form of an array of two
+\texttt{uint64\_t}s, and a key to hash. The function will return a
+\texttt{uint32\_t} which is exactly the index the key is mapped to.
+
+\begin{clisting}{}
+uint32_t hash(uint64_t salt[], char *key);
+\end{clisting}

@@ -1,0 +1,69 @@
+\section{Your Task}
+
+As stated previously, your task for this assignment is to write a shell script,
+or more specifically, a \Bash{} script. You will use this script to
+produce plots of a provided \C{} program. The provided program can be
+found in the resources repository.
+
+All the program does is print the Collatz sequence starting from some positive
+integer $n$. For those unacquainted with Collatz sequences, or more broadly, the
+\emph{Collatz conjecture}, the setup is as follows: We will create a sequence of
+integers $S$ starting with some positive integer $n$. That is, $S_1 = n$. The
+next term of the sequence is based on the previous term of the sequence. In this
+case, $S_2$, the second term of the sequence, is based on $S_1$, the first term
+of the sequence. For any $S_{k+1}$ where $k > 0$, the following relation holds:
+$$
+\begin{aligned}
+S_{k+1} =
+  \begin{cases}
+    1+3S_k  &\text{if $S_k$ is odd} \\
+    \frac{1}{2}S_k &\text{if $S_k$ is even}
+  \end{cases}
+\end{aligned}
+$$
+The conjecture itself is that any sequence following this relation always ends
+with the last term being $1$, no matter what $n$ was used to start the sequence
+with. This has never been proved. If you do find a sequence that does not terminate, then you \emph{may be famous}, but more likely \emph{your code has a bug}.
+According to Paul Erd\H{o}s, ``Mathematics may
+not be ready for such problems.''
+
+Using the provided Collatz program, you are expected to:
+\begin{enumerate}
+  \item Familiarize yourself with the syntax of \C{}.
+  \item Understand what the provided program is doing. You will want to attend
+    section for any parts you are unsure about.
+  \item Produce interesting plots using the Collatz sequences produced by the
+    provided program. You should use \texttt{gnuplot} to produce these plots,
+    and everything should be automated by means of a \Bash{} script.
+\end{enumerate}
+
+Refer to Figures \ref{figure:collatz-length}, \ref{figure:collatz-maxval}, and
+\ref{figure:collatz-hist} for example plots that were created using the provided
+program. Now that you know your task, we will now give a brief overview on
+\Bash{} scripting.
+
+\begin{figure}[htb]
+  \centering
+  \input{figures/collatz_length.tex}
+  \caption{\label{figure:collatz-length}
+    The length of Collatz sequences starting from $n \in \{\,2,\dots,10000\,\}$.
+  }
+\end{figure}
+
+\begin{figure}[bth]
+  \centering
+  \input{figures/collatz_maxval.tex}
+  \caption{\label{figure:collatz-maxval}
+    The maximum values for Collatz sequences starting from $n \in
+    \{\,2,\dots,10000\,\}$.
+  }
+\end{figure}
+
+\begin{figure}[bth]
+  \centering
+  \input{figures/collatz_hist.tex}
+  \caption{\label{figure:collatz-hist}
+    A histogram of Collatz sequence lengths starting from $n \in
+    \{\,2,\dots,10000\,\}$.
+  }
+\end{figure}

@@ -1,0 +1,22 @@
+\section{Your Task}
+\epigraph{\emph{``Personally,'' he said, ``my great ambition is to count all this,''---he waved
+vaguely at the treasure around him---``and possibly sort it into piles.''}}{---John C.\xspace Gardner, \emph{Grendel}}
+
+\noindent You will be creating three programs for this assignment:
+\begin{enumerate}
+  \item A key generator: \texttt{keygen}
+  \item An encryptor: \texttt{encrypt}
+  \item A decryptor: \texttt{decrypt}
+\end{enumerate}
+
+The \texttt{keygen} program will be in charge of key generation,
+producing SS public and private key pairs. The \texttt{encrypt} program
+will encrypt files using a public key, and the \texttt{decrypt} program
+will decrypt the encrypted files using the corresponding private key.
+
+You will need to implement two libraries and a random state module that
+will be used in each of your programs. One of the libraries will be hold
+functions relating to the mathematics behind SS, and the other library
+itself will contain implementations of routines for SS\@. You also need
+to learn to \emph{use} a library: the GNU multiple precision arithmetic
+library.

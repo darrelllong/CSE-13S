@@ -1,0 +1,935 @@
+\documentclass[11pt]{article}
+\usepackage{fullpage,fourier,euler,amsmath,graphicx,xspace}
+\usepackage{epigraph}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\title{CSE 13S Coding Standards}
+\author{Prof. Darrell Long \& Assistants}
+\date{Spring 2021}
+
+
+\input{../TeX/footer}
+\input{../TeX/lststyle}
+
+
+\begin{document}\maketitle
+
+\epigraphwidth=0.8\textwidth
+\epigraph{It is cold in the scriptorium, my thumb aches. I leave
+this manuscript, I do not know for whom; I no longer know what it
+is about: \emph{stat rosa pristina nomine, nomina nuda tenemus.}}{---Adso of
+Melk (Umberto Eco, \emph{Il nome della rosa})}
+
+\section{Introduction}
+
+It is absolutely vital to have coding standards in order to manage complexity
+since it's much harder to maintain and understand code that is inconsistent and
+lacks documentation. Code that is unintuitive or lacks obvious meaning requires
+time to understand. This impairs the process of adding on to the same code
+later on, wasting time on merely deciphering what the original code did.
+This document defines the coding standards and guidelines that
+will be used for CSE\,13S. \textbf{To get full points on your assignments, the
+coding standards must be followed completely.} Your assignments are expected to
+compile using \texttt{clang} and must be formatted using \texttt{clang-format}.
+The \texttt{clang-format} file that you will use can be found under Canvas
+files. To use this file to format your source and header files, make sure it
+exists in the same directory as your source and headers and run:
+
+\begin{codelisting}{}
+clang-format -i -style=file *.c *.h
+\end{codelisting}\\
+
+
+\noindent Custom style configurations can be specified directly using the command line option
+\texttt{-style=\emph{<style>}}. However, we use \texttt{-style=file} here to direct \texttt{clang-format}
+to look for the style configuration in the \texttt{.clang-format} file present in the same directory.
+
+More in depth information about the \textbf{C} programming language can be found
+in the books \emph{The C Programming Language, Second Edition} by Brian
+Kernighan and Dennis Ritchie (often called K\&R or Kernighan and Ritchie) and
+\emph{C in a Nutshell, Second Edition} by Tony Crawford and Peter Prinz.
+
+\section{General Principles}
+
+\epigraphwidth=0.7\textwidth
+\epigraph{\emph{I have deep faith that the principle of the universe will be
+beautiful and simple.}}{---Albert Einstein}\noindent
+
+\begin{enumerate}
+  \item \emph{Simplicity} and \emph{clarity} should be your goals; do not try to
+    be overly clever.
+
+  \item \emph{Global variables} are generally discouraged; you may use them only
+    if there is a \emph{very good reason} to do so, such as sharing variables
+    between files, storing ``constants'' like command line inputs, or making
+    code clearer if it's being obfuscated by an enormous number of parameters
+    being passed from function to function just to avoid the use of global
+    variables.
+
+  \item \emph{Static variables} outside of functions are slightly less
+    proscribed than global variables since their visibility is confined to the
+    file where they are defined; that being said, use them only if there is a
+    \emph{very good reason} to do so, such as making a value persist across
+    function calls.
+
+  \item The \emph{scope} of a variable should be kept as \emph{small} as possible:
+    defined and used locally.
+
+  \item Loop control variables (\texttt{for} loops) should be defined in the
+    statement so that you are not tempted to rely on their final value.
+
+  \item Variable names, function names, \emph{etc}., must be sensible and
+    reflect their purposes. Avoid excessively long variable names. The standard
+    variable naming convention for this class will be \emph{snake case} (more on
+    this later).
+
+  \item \emph{All} functions require the \texttt{return} keyword, even if the function
+    return-type is \texttt{void}.
+
+  \item Avoid excessive and uninformative comments: ``set x to 0'' is not
+    informative, unless there is an unclear reason why it needs to be set to 0.
+    Comments should explain what the goal is and, if necessary, why.  If your
+    code is so complex to the point that an explanation is needed for why it
+    works, consider refactoring it into smaller components. At the same time, \emph{do not}
+    artificially chop it into smaller pieces.
+
+  \item Indentation should be done using \emph{four} spaces. \textbf{Do not use tabs}.
+    Most, if not all, text editors support converting tabs to spaces, as well as
+    setting the default tab-width.
+
+  \item Line width should be limited to 100 characters. This avoids having
+    excessively long lines of code and forces you to be more clear and concise.
+
+  \item Line breaks, or blank lines, in code should be used to separate lines of
+    code to elucidate which lines of code are related or are used in conjunction
+    for some purpose.
+
+  \item Above all else, be \emph{consistent} in your coding style.
+\end{enumerate}
+
+
+\section{Compilation, External code, and Makefiles}
+
+All assignments are expected to compile using \texttt{clang} on your Ubuntu
+20.04 virtual machine using the following command.
+
+\begin{codelisting}{}
+clang -Wall -Wextra -Wpedantic -Wshadow -std=c17 <filename>
+\end{codelisting}
+
+\noindent Code must compile without warnings or errors, return no
+\texttt{scan-build} errors, and pass a \texttt{valgrind} leak check to recieve
+full credit.
+Code obtained from external sources such as \texttt{stackoverflow.com} must be
+cited using a comment block placed at the top of the file and before the code. The comment must specify
+the copied lines, the original author, and a link to the source. You will not
+recieve credit for code that is not your own. Functions and interfaces provided
+by the \textbf{C} standard library may be used unless otherwise specified by the
+instructors and/or assignment.
+
+A \texttt{Makefile} must be included with each assignment submission and should
+contain the following targets.  Additional targets can be included but should be
+detailed in an assignment's \texttt{README}.
+\begin{enumerate}
+  \item \texttt{all}: The default target that builds the program.
+  \item \texttt{clean}: Removes build artifacts, such as \texttt{*.o} files, and the executable.
+\end{enumerate}
+
+\section{scan-build}
+
+\texttt{scan-build} is a command line utility which allows you to run the \texttt{clang} static analyzer on your code.
+The static analyzer essentially finds bugs in your code which is really helpful when it comes to large projects
+which can have a lot of files and thousands of lines of code. However, only files which have been compiled are
+analyzed. To use the analyzer from the command line use the \texttt{scan-build} command before your build command
+as shown.
+
+\begin{codelisting}{}
+scan-build make
+\end{codelisting}
+
+
+\section{Formatting and Naming}
+
+\epigraphwidth=0.85\textwidth
+\epigraph{\emph{
+In hanc utilitatem clementes angeli saepe figuras, characteres, formas et voces
+invenerunt proposuerunt que nobis mortalibus et ignotas et stupendas nullius rei
+iuxta consuetum linguae usum significativas, sed per rationis nostrae summam
+admirationem in assiduam intelligibilium pervestigationem, deinde in illorum
+ipsorum venerationem et amorem inductivas.}}{---Johannes Reuchlin, De arte
+cabalistica, Hagenhau, 1517, III}
+
+
+\subsection{Braces, Parentheses, and Spaces}
+
+Keywords and whatever follows should be separated by a space except for
+semicolons. Function calls have \emph{no space} between
+the arguments and the function name.
+Curly braces surrounding a function or control structure's code block will have
+the opening curly brace on the same line as the function or control structure's
+definition. Objects enclosed within parentheses should not include padding spaces.
+
+\begin{codelisting}{}
+while (i < 5) {           //control structure
+    printf("i is %d\n", i); //function call
+    i++;
+}
+\end{codelisting}
+
+Control structure keywords, such as \texttt{while}, \texttt{if},
+\texttt{switch}, \texttt{for}, \emph{etc}., which appear at the start of code
+blocks, should always have opening and closing curly braces. Even if the
+contained statement is only one line. This provides a more consistent look,
+avoids possible bugs introduced while editing code, and makes it easier to add
+code between the braces later on.
+
+\begin{codelisting}{}
+if (i < 5) {
+    puts("This style is good!");
+}
+
+if (i > 5)
+    puts("This style is bad!");
+\end{codelisting}
+
+
+\subsection{Variable and Function Naming}
+
+Variable and function names must be \emph{snake cased}. This means that all
+characters are lower case and all words are separated by underscores.  Variable
+and function names should be concise and clearly describe their function and/or
+purpose. Exceptions are for iteration control variables, in which they can be
+single characters (such as \texttt{i}, \texttt{j}, and \texttt{k}), and
+temporary variables (such as \texttt{temp}).
+
+\begin{codelisting}{}
+// Example of snake case variable naming with a loop.
+uint32_t odd_count = 0;
+for (uint32_t i = 0; i < 4096; i += 1) {
+    if (i % 2 != 0) {
+        odd_count += 1;
+    }
+}
+\end{codelisting}
+
+In the case of pointers, the '*' is directly followed by the variable name.
+malloc returns type (void *), so we cast it to type (char *).
+
+\begin{codelisting}{}
+char *first_name = (char *) malloc(10 * sizeof(char));
+char *last_name = (char *) malloc(10 * sizeof(char));
+\end{codelisting}
+
+
+\subsection{Structure Naming}
+
+% TODO Typedef'd structs may be confusing for new programmers
+Structure names will be \emph{Pascal cased}. Pascal case is a subset of \emph{camel
+case} in which the first letter is also capitalized. Each \texttt{struct} should
+be \texttt{typedef}'d to create opaque, exportable types.
+
+\begin{codelisting}{}
+// Typedef struct TreeNode to be just TreeNode.
+typedef struct TreeNode TreeNode;
+
+//
+// Definition of struct TreeNode, a binary tree node.
+//
+// left:   The node's left child.
+// right:  The node's right child.
+// data:   The node's data.
+//
+typedef struct {
+    TreeNode *left;
+    TreeNode *right;
+    uint32_t data;
+} TreeNode;
+\end{codelisting}
+
+
+\section{Variables and Types}
+
+\epigraphwidth=0.35\textwidth
+\epigraph{\emph{When my code has tons of trouble\\ Wesley Mackey comes to me\\
+Speaking words of wisdom: \\ ``Code in C''}}{}
+
+
+\subsection{Booleans}
+
+\noindent Booleans should be of type \texttt{bool} and not \texttt{int}.  All
+boolean values in \textbf{C} are technically integers where $0$ is
+\texttt{false} and anything else is considered \texttt{true}. Although
+\texttt{bool} and \texttt{int} are functionally interchangeable when evaluating
+conditionals, using these different types communicates a specific variable's
+purpose and therefore clarifies otherwise vague code. The \texttt{bool} type is
+provided by the header file \texttt{stdbool.h}.
+
+For example, assume a function named \texttt{pop()} that pops an item off a
+stack. Depending on the implementation, \texttt{pop()} could either return the
+removed value or an exit status. For this example, assume the purpose of the
+function is to remove the item and return true if the item was removed
+successfully and false if it wasn't.
+
+\begin{codelisting}{}
+// Not using a boolean makes the purpose of the function
+// unclear.
+int pop(Stack *s, int *top);
+
+// Using a boolean makes the purpose of the function clearer.
+bool pop(Stack *s, int *top);
+\end{codelisting}
+
+
+\subsection{Integers}
+
+\noindent Include \texttt{stdint.h} or \texttt{inttypes.h} (the latter is a
+superset of the former) and use the fixed-width integer types for integer
+variables.  These are defined as \texttt{intN\_t} and \texttt{uintN\_t}, where
+\texttt{N} is either 8, 16, 32, or 64, and refers to the width of the integer in
+bits (\emph{e.g.} \texttt{uint64\_t} refers to a 64-bit unsigned integer). You
+should only use signed integers only if you need negative values.
+
+To maximize portability of passing integers to functions that operate on
+\texttt{printf}-like format strings, you should include \texttt{inttypes.h} to
+use defined format specifier macros. These macros are defined like
+\texttt{PRI\textbf{xN}}, where, \texttt{\textbf{x}} is a \texttt{printf} format
+specifier like \texttt{d} or \texttt{c}, and \texttt{\textbf{N}} is the width in
+bits of the variable.
+
+\begin{codelisting}{}
+// Example of printing an uint64_t with unsigned integer
+// formatting.
+uint64_t n = 42;
+printf("n equals %" PRIu64 "\n", n);
+
+// Printing an int32_t with decimal formatting.
+int32_t m = 360;
+printf("m equals %" PRId32 "\n", n);
+
+// Printing an integer in hexadecimal.
+printf("%" PRIx64 "\n", n);
+
+// Printing an integer in octal.
+printf("%" PRIo64 "\n", n);
+\end{codelisting}
+
+
+\subsection{Floats and Doubles}
+
+\noindent Both floats and doubles, denoted by \texttt{float} and \texttt{double}
+respectively, are used to represent floating point numbers. You can think of
+floating point numbers as real numbers with limited precision. A \texttt{double}
+has twice the precision of a \texttt{float}. However, since we are basically
+squeezing infinitely many real numbers into a finite number of bits, floating
+point numbers can only give an approximate representation, and thus are rounded.
+Due to this rounding, there can be errors in certain calculations and those errors
+can add up and snowball into very large errors. So how do you pick between using a \texttt{double} and a
+\texttt{float}? \emph{Use as much precision as is needed and nothing more.} A
+\texttt{float} can represent up to 7 decimal digits, and a \texttt{double} up to
+15 decimal digits. If you do not need more than 7 digits, use a \texttt{float}.
+When declaring a floating point number, add a `\texttt{.0}' after the significant to
+indicate that the value is not an integer.
+
+\begin{codelisting}{}
+// Example of declaring pi as a double and float.
+#define PI 3.141592653589793238462643383279502884197
+
+double life = 42.0 // Include the '.0' to show it's not an integer.
+float pi_float = PI;
+double pi_double = PI;
+
+printf("Pi as float: %0.20f\n", pi_float);
+// This gives up to 7 decimal points of precision.
+// Output: "Pi as float: 3.14159274101257324218"
+
+printf("Pi as double: %0.20lf\n", pi_double);
+// This gives up to 15 decimal points of precision.
+// Output: "Pi as double: 3.14159265358979311599"
+\end{codelisting}
+
+
+\subsection{Constants}
+
+The keyword \texttt{const} serves as a type \emph{qualifier}. In the type
+\texttt{int const}, \texttt{int} is the type \emph{specifier}, and
+\texttt{const} is the type \emph{qualifier}. You should always write the qualifier after the type in
+which it qualifies.  The purpose of \texttt{const} is to restrict the value of a
+variable to solely what it is initialized to. You can't assign a value to a
+\texttt{const} value after it has already been declared, even if the value to
+assign it is the same value it was declared with. You also can't assign a value
+to a \texttt{const} value even if it wasn't initialized to anything when it was
+first declared.
+
+\begin{codelisting}{}
+int const foo = 5;  // This is fine.
+foo = 6;            // This is not fine.
+foo = 5;            // This is still not fine.
+\end{codelisting}
+
+\noindent \texttt{const} pointers are a bit more difficult. Where the \texttt{*} appears
+in the declaration determines what is considered constant, the pointer or the
+data it is pointing two. In the case of \texttt{int const *foo} we have a
+pointer to a \texttt{int const} type. Here the pointer can be modified but the
+data it points to cannot. In the case of \texttt{int *const foo} we have a
+constant pointer to an \texttt{int}. The data can be modified but the pointer
+cannot. For this reason one must be careful when declaring \texttt{const}
+pointers.
+
+Constants are described in more detail in \S 2.4 of Kernighan and Ritchie and
+Chapter 11 of \emph{C in a Nutshell}.
+
+\begin{codelisting}{}
+int const *foo; // pointer to an int const, the pointer
+                // can be modified.
+int *const foo; // const pointer to an int, can
+                // modify the data.
+\end{codelisting}
+
+
+\subsection{\texttt{static}}
+
+There are two uses for the \texttt{static} keyword in \textbf{C}. A static
+variable is declared \emph{inside} a function if the value of the variable needs
+to persist across function calls and should only exist within the scope of the
+function it's declared in. A static variable is declared \emph{outside}, if the
+value of the variable needs to persist across function calls and should only
+exist within the scope of the file where it's declared.  Functions and global
+variables that are not accessed outside of the file where they are defined
+should be declared \texttt{static}.
+
+The example shown below demonstrates how \texttt{static} maintains the value of
+statically declared variables across function calls.
+
+\begin{codelisting}{\texttt{static.c}}
+static uint32_t x = 0; // Can only be accessed within static.c
+
+void increment() {
+    // This value will persist across function calls.
+    static uint32_t y = 0;
+
+    x += 1;
+    y += 2;
+
+    printf("%d ", x);
+    printf("%d\n", y);
+}
+
+void main() {
+    increment(); // 1 2 should be printed.
+    increment(); // 2 4 should be printed.
+}
+\end{codelisting}
+
+More information about \texttt{static} variables and functions can be found in
+\S 4.6 of Kernighan and Ritchie and Chapters 7 and 11 of \emph{C in a Nutshell}.
+
+
+\subsection{\texttt{extern}}
+
+The \texttt{extern} keyword extends the visibility of variables and functions so
+that they can be called from any one of the program's files, \emph{provided that
+the declaration is known.} By default, functions in \textbf{C} implicitly
+prepend an \texttt{extern} keyword and hence extern is not used in function declarations and definitions.
+Explicit use of the \texttt{extern} keyword generally revolves around variables that to for variable declarations.
+These variables are essentially, global variables. Variables can be declared any number of times but they can
+be defined only once.  By defining a variable we mean that memory is allocated to the variable. In the following
+example, \texttt{util.c} defines a variable declared as \texttt{extern} in \texttt{util.h}. A file that includes \texttt{util.h}
+will be able to see and modify the \texttt{extern} variable.
+
+\begin{codelisting}{\texttt{util.h}}
+#ifndef __UTIL_H__
+#define __UTIL_H__
+
+#include <stdbool.h>
+
+extern int counter; // External counter declaration.
+
+#endif __UTIL_H__
+\end{codelisting}
+
+\begin{codelisting}{\texttt{util.c}}
+#include <stdio.h>
+#include "util.h"
+
+int counter = 42; // Counter definition.
+
+int decrement(void) {
+    return counter--;
+}
+\end{codelisting}
+
+\texttt{extern} declarations and scoping rules are described more in \S 1.10 and
+\S 4.4 of Kernighan and Ritchie and Chapters 7 and 11 of \emph{C in a Nutshell}.
+
+
+\subsection{Type Casting}
+
+When an operation has operands of different types, \textbf{C} will try to
+convert the operands into a common type. In general, these automatic type
+conversions are those that convert a ``narrower'' type into a ``wider'' type. An
+example of this would be converting a \texttt{uint8\_t} into a
+\texttt{uint32\_t}, the former of which is smaller than the latter. Another
+example is in the case of integer division. In \textbf{C} integer division
+truncates, or returns an integer and discards the remainder.  Casting to a
+\texttt{float} or a \texttt{double} as shown in the example below will prevent
+truncation and return an accurate value. One must also take care to not cast
+from a double to a float as this will result in lost accuracy.
+
+In \textbf{C}, explicit type conversions can be forced using the unary
+\emph{cast} operator. Type casting is done through the construction of
+(\emph{type-name}) \emph{expression}. The following are examples of explicit
+type casting:
+
+\begin{codelisting}{}
+// Converts a char into a uint8_t.
+char a = 'a';
+uint8_t c = (uint8_t) a;
+
+// Avoiding truncation with integer division
+double f;
+f = 1/2;
+// This results in f=0.0. Since the operation was performed
+// as integer division the quotient was truncated and only
+// stored as a double.
+
+f = (double) 1/2;
+// This gives us f=0.5 as one of the two operands were cast
+// to a double.
+\end{codelisting}
+
+Type casting should be used whenever you allocate memory using
+\texttt{malloc}-like functions, like in the second example above. This is
+because \texttt{malloc}-like functions return \texttt{(void *)}'s. Other than
+for casting \texttt{(void *)}'s, type-casting should be done rarely and you
+should be careful with operator precedence if you must type-cast.
+
+\begin{codelisting}{}
+// Allocating memory for an int array.
+int *arr = (int *) malloc(10 * sizeof(int));
+\end{codelisting}
+
+Type conversions and casting is described in \S 2.7 and \S A6 of Kernighan and
+Ritchie and Chapter 4 of \emph{C in a Nutshell}.
+
+
+\subsection{Enumeration}
+
+Enumeration of constants, or assigning names to constants, is done using
+\texttt{enum}. Enumeration is typically used for a set of related symbols to
+give a unique value. A good example would be enumerating status codes. You
+should never enumerate magic numbers; always define magic numbers using
+\text{\#define}. Enumerations should be \texttt{typedef}'d. If the enumeration
+tokens aren't manually given a value, the first token will by default be
+assigned the value of 0, the next token assigned the value of 1, and so on and
+so forth. You can also specify what value to start enumerating from, and if you
+wish, manually assign values for each \texttt{enum} token.
+
+\begin{codelisting}
+// Example of enumerating a week.
+// Tue == 3, Wed == 4, etc.
+typedef enum { Mon = 2, Tue, Wed, Thu, Fri, Sat, Sun } Week;
+
+// How to use the enumeration.
+Week day = Mon;
+printf("%d\n", day); // This prints out 2.
+\end{codelisting}
+
+Enumerations are described in \S 2.3 of Kernighan and Ritchie and Chapter 2 of
+\emph{C in a Nutshell}.
+
+
+\section{Control Structures}
+
+\epigraphwidth=0.35\textwidth
+\epigraph{\emph{Code in C, Code in C, Code in C, ...\\ There will be an answer,
+Code in C.}}{}
+
+
+\subsection{If Statements}
+
+If-else statements directly follow one another. This means that that an
+\texttt{else} or \texttt{else if} statement following an \texttt{if} statement
+should be on the same line as the \texttt{if} statement's closing brace.
+
+\begin{codelisting}{}
+if (first condition) {
+    // Statements if first condition is true.
+} else if (second condition) {
+    // Statements if second condition is true.
+} else {
+    // Statements if neither are true.
+}
+\end{codelisting}
+
+If-else and Else-if are described further in \S 3.2 and \S 3.3 of Kernighan and
+Ritchie and Chapter 6 of \emph{C in a Nutshell}.
+
+
+\subsection{Loops}
+
+Infinite loops are to be written using \texttt{while} loops. Infinite loops
+should be exited using \texttt{break}. In reality, \texttt{goto} can also be
+used to since \texttt{goto}, like \texttt{break}, alters the normal execution of
+code, but using it without very good reason to do so is considered bad practice
+as explained in Dijkstra's letter, ``Go To Statement Considered
+Harmful''\footnote{Edsger W. Dijkstra. 1968. Letters to the editor: go to
+  statement considered harmful. Communications of the ACM 11, 3 (March 1968),
+147--148.}. Kernel programming sometimes uses \texttt{goto} for error handling,
+but you are not programming in the Kernel.
+
+\begin{codelisting}{}
+// Make sure to use the stdbool.h constant "true".
+while (true) {
+    printf("Deja vu");
+}
+
+// Example of a for loop.
+for (int i = 0; i < 5; i++) {
+    foo++;
+}
+
+// Example of a do-while loop.
+do {
+    foo++;
+} while (i < 5);
+\end{codelisting}
+
+ More information on loops can be found in \S 3.5 of Kernighan and Ritchie and
+Chapter 6 of \emph{C in a Nutshell}.
+
+
+\subsection{Switch Statements}
+
+Switch statements are an exception to the previously describe brace conventions.
+Although the switch statement, denoted by \texttt{switch}, does require braces
+like a loop or \texttt{if} statement. The encapsulated \texttt{case} statements
+\emph{do not} require them. Adding extra braces for clarity does not hurt and
+feel free to do so as long as you are consistent. The \texttt{break} statement
+must follow \emph{all} statements for a specific case, unless the goal is to
+fall through more than one case.  Fall-through is the act of not including the
+\texttt{break} statement so that more than one case can share code. You should
+generally avoid having a fall-through in your switch statements. All
+\texttt{switch} statements should also have a \texttt{default} case, which is
+invoked if no case conditions are met, even if it is empty. \emph{We will mark you down if you don't!}
+
+\begin{codelisting}{}
+switch (i % 2) {
+case 0:
+    printf("Variable i (\%d) is even!\n", i);
+    break;
+case 1:
+    printf("Variable i (\%d) is odd!\n", i);
+    break;
+default:
+    puts("How is it neither even nor odd?!");
+    break;
+}
+\end{codelisting}
+
+Switch statements and their specifics are more thoroughly described in \S 3.4 of
+Kernighan and Ritchie and Chapter 6 of \emph{C in a Nutshell}.
+
+
+\section{Includes and Defines}
+
+\epigraphwidth=0.6\textwidth
+\epigraph{\emph{Eleanor Rigby \\
+Sits at the keyboard and waits for a line on the screen \\
+Lives in a dream \\
+Waits for a signal \\
+Finding some code that will make the machine do some more.  \\
+What is it for? \\
+All the lonely users, where do they all come from? \\
+All the lonely users, why does it take so long?}}{}
+
+\noindent The first step of compiling a \textbf{C} program is running the
+preprocessor. The major tasks for the preprocessor are to include header files
+specified by \texttt{\#include} and to perform token replacement with
+\texttt{\#define}. The features of the preprocessor are more thoroughly
+described in \S 4.11 of Kernighan and Ritchie and Chapter 15 of \emph{C in a
+Nutshell}.\\
+
+The primary way to connect multiple files together into one program is through
+the use of \emph{header files} which are specified with the \texttt{.h} file
+extension. The contents of these files are included in your program through the
+\texttt{\#include} command. Header files should include prototypes and
+declarations for functions, structs, \emph{etc.} that will be visible outside of
+their encapsulating \texttt{.c} file. The use of header files is more thoroughly
+described in \S \ref{headers} of this document.
+
+The \texttt{\#define} macro tells the preprocessor to replace a string of text
+with another before the code is actually compiled. This can be used to give
+names to ``magic'' numbers, or numbers who's purpose is not obvious to the
+reader.  It is also useful to give names to constants that appear multiple times
+in a program such as block sizes or maximum values for a variable. Lastly, some
+basic functions or repeated commands can be represented through macros but this
+should be used with caution. The \texttt{\#define} macro also enables the
+programmer to modify all instances of a specific string or number while only
+editing a single line of code.
+
+Includes and defines are to be formatted the same way: no space after the '\#'
+character. Thus, includes and defines are formatted as shown in the following
+example. The names of \texttt{\#define} macros must be in snake case and all
+caps.
+
+\begin{codelisting}{}
+// Example of including standard I/O and boolean libraries.
+#include <stdio.h>
+#include <stdbool.h>
+// Example of including one of your own header files.
+#include "foobar.h"
+
+// Example of defining a block size macro.
+// Every instance of BLOCK_SIZE is replaced with 4096.
+#define BLOCK_SIZE 4096
+
+// Example of preventing duplicate macro definitions using #ifndef.
+// Macros that go between the #ifndef and #endif are guarded.
+#ifndef MAGIC
+#define MAGIC 0xdeadd00d
+// ... other defines ...
+#endif
+\end{codelisting}
+
+In general, you must be careful with macros. They use \emph{text substitution}
+and do not work through function calls. Some avoid using them as much as
+possible. It is our opinion that they should be used with care. A better
+alternative to macros that are more complex than a simple value is an
+\emph{inline function} as shown below.
+
+\begin{codelisting}{}
+// Dangerous under the right circumstances.
+#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+
+// A call like this.
+MAX(a++, b++)
+// Will be replaced with this, which increments the returned
+// value twice.
+(((a++) > (b++) ? (a++) : (b++))
+
+// A better macro using compiler builtins,
+// a bit complex and difficult to read.
+// Portability is also of concern.
+#define BETTER_MAX(X,Y) \
+    ({ __typeof__(X) _X = (X); \
+     __typeof__(Y) _Y = (Y);  \
+     _X > _Y ? _X : _Y; })
+
+// The best option is an inline function.
+inline int max(int a, int b) {
+    if (a > b) {
+        return a;
+    }
+
+    return b;
+}
+
+// Another inline funciton.
+inline int other_max(int a, int b) {
+    return a > b ? a : b;
+}
+\end{codelisting}
+
+The first macro can produce what is called a side effect, an unintended changed
+to a variable. In this case it can lead to the returned value being modified
+twice.  The second macro is a bit better but uses some arcane compiler
+incantations to create temporary copies of the two variables and therefore can
+be difficult to understand. The best solution that you should use is an
+\emph{inline function}, which performs the same task with better protections and
+similar behavior when compared to a macro. The last example uses the ternary
+operator or $?$, which helps write clean and simple code. Two ternary operator
+examples are shown below.
+
+\begin{codelisting}{}
+// condition ? true : false;
+x = a > b ? a-- : b++;
+return_code = a == b ? foo() : bar();
+\end{codelisting}\\
+
+When in doubt, seek to be easier to understand than clever.
+
+
+\section{Comments}
+
+\epigraphwidth=0.8\textwidth
+\epigraph{\emph{Life should not be a journey to the grave with the intention of arriving safely in a pretty and well preserved body, but rather to skid in broadside in a cloud of smoke, thoroughly used up, totally worn out, and loudly proclaiming ``Wow! What a Ride!''}}
+{---Hunter S. Thompson, \emph{The Proud Highway: Saga of a Desperate Southern Gentleman, 1955--1967}}
+
+\noindent You will be using ``\texttt{//}'' style comments, with a single space
+separating the ``\texttt{//}'' comment prefix and the comment itself. These are
+line comments and only comment out characters that follow it on the same line.
+We will \emph{not} be using the other bracket style comment ``\texttt{/* \ldots
+*/}'' as it is error-prone.  Again, avoid unnecessary and excessive comments.
+Commenting is a balancing act.  You do not want to comment too much or too
+little. The goal of is to explain what is being done or what is not immediately
+evident.
+
+All functions and structs must also provide a comment block right above their
+declarations, briefly explaining their usage, return value, and details of their
+inputs and outputs. Basically the following questions must be answered,
+"What does the function do?",
+"What are its inputs and outputs?" and "Are there any cases I need to watch out for?".
+An example of a basic comment block for a function using
+``//'' line comments:
+
+\begin{codelisting}{}
+//
+// Increments an integer that is passed as a parameter. Returns the new value of
+// of n on success and -1 on failure.
+//
+// n:  The unsigned integer to increment.
+//
+int increment_int(uint32_t *n) {
+    if (n != NULL) {
+        *n += 1;
+        return *n; //return the new value of n
+    } else {
+        return -1; //return an error
+  }
+}
+\end{codelisting}
+
+
+\section{Abstract Data Types (ADTs)}
+
+\epigraph{\emph{The public knows that human beings are fallible. Only
+people blinded by ideology fall into the trap of believing in their
+own infallibility.}}{---Freeman Dyson}
+
+\noindent You will be learning many data structures and making abstract data
+types using them this quarter. An ADT is a type, or class, for objects whose
+behavior is defined by a set of functions. These functions are split into three
+categories: constructor/destructor, accessor, and manipulator. An ADT
+constructor handles allocating memory for a new instance of the ADT, its
+destructor frees any allocated memory associated with the ADT. Accessor
+functions are mainly used in ADT implementations where the design of the ADT is
+not made explicit and used to get ADT fields. In this class, struct definitions
+of ADTs will go in header files, so this is not an issue. Manipulator functions
+serve to alter values stored in an ADT. ADTs should always have a source file
+(\textbf{C}-file) and a corresponding header file.
+
+
+\subsection{ADT Functions}
+
+All functions must have a comment block preceding it that gives a brief overview
+on the purpose and usage of not just the function, but also the input
+parameters, followed by the output parameters. Return types of functions must be
+explicitly stated, even if it is a \texttt{void}-type function. ADT functions
+must be written \emph{noun} then \emph{verb} style, where \emph{noun} refers to
+the ADT and \emph{verb} the action to perform on the ADT object.
+
+
+\subsection{ADT Header Files} \label{headers}
+
+Header files serve as ADT interfaces and contain function prototypes and
+definitions of functions implemented in their respective corresponding source
+files.
+
+Header files must have a header guard before all function prototypes to prevent
+duplicate definitions. Header guards are formatted as two underscores followed
+by the name of the header it guards, another underscore, an "H", then followed
+by another two underscores. Header guards are written using \texttt{\#ifndef},
+which reads as "if not defined". Always remember to close a \texttt{\#ifndef}
+with a corresponding \texttt{\#endif}. Header files must also have a comment at
+the top of the file explaining its purpose with regard to the ADT function
+prototypes.
+
+A header file will include the declarations for structs, global variables,
+function prototypes, \emph{etc.} that will be visible to other \texttt{.c}
+files. Variable definitions, function source code, and the like do not belong in
+a header file with the exception of inline functions.
+
+
+\subsection{ADT Source Files}
+
+These source files contain the implementations of all functions prototyped in
+their corresponding header files as well as definitions for their variables.
+Declarations of structs and variables and function prototypes that are not to be
+visible to other \texttt{.c} files also appear in a source file.  Excluding the
+header guard, all code in source files are commented and formatted the same way
+as in header files.
+
+
+\section{Example BitVector ADT}
+
+\epigraphwidth=0.55\textwidth
+\epigraph{\emph{
+Vector: You wanted to see me dad. \\
+Mr. Perkins: Oh yes, come in Victor. \\
+Vector: Actually, Victor was my nerd name.  Now its Vector! \\
+Mr. Perkins: Sit down!
+}}{\emph{Despicable Me}}
+
+\noindent In the given example, the \emph{bv\_create} function is an example of a constructor function and
+ \emph{bv\_delete} function is an example of a destructor function.
+
+\begin{codelisting}{\texttt{bv.h}}
+// bv.h - Contains the definitions used by the BitVector ADT.
+
+#ifndef __BV_H__ // Check if token has been defined already.
+#define __BV_H__
+
+#include <inttypes.h>
+
+//
+// A BitVector is a dynamically allocated vector of bits.
+//
+// vector: An array of bytes to store bits in.
+// length: The length in bits of the BitVector.
+//
+typedef struct BitVector BitVector;
+
+//
+// Creates and returns a BitVector.
+//
+// length: The number of bits the BitVector represents.
+//
+BitVector *bv_create(uint32_t length);
+
+//
+// Frees a BitVector.
+//
+// bv: The BitVector to free.
+//
+void bv_delete(BitVector **bv);
+\end{codelisting}
+
+\begin{codelisting}{\texttt{bv.c}}
+// bv.c - Contains the implementation of the BitVector ADT.
+
+#include <inttypes.h>
+#include "bv.h"
+
+struct BitVector {
+    uint8_t *vector;
+    uint32_t length;
+};
+
+//
+// Creates and returns a BitVector.
+//
+// length: The number of bits the BitVector represents.
+//
+BitVector *bv_create(uint32_t length) {
+    BitVector *bv = (BitVector *) malloc(sizeof(BitVector));
+    bv->length = length;
+    bv->vector = calloc(length / 8 + 1, sizeof(BitVector));
+    return bv;
+}
+
+//
+// Frees a BitVector.
+//
+// bv: The BitVector to free.
+//
+void bv_delete(BitVector **bv) {
+    free((*bv)->vector);
+    (*bv)->vector = NULL; // Always null a freed pointer.
+    free(*bv);
+    *bv = NULL;
+    return; // Return is always required, even for void-type functions.
+}
+\end{codelisting}
+
+\end{document}

@@ -1,0 +1,4 @@
+typedef struct {
+  uint64_t moves;
+  uint64_t comparisons;
+} Stats;

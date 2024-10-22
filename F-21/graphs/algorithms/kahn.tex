@@ -1,0 +1,29 @@
+\section{Kahn's Algorithm}
+
+\noindent
+\textbf{Input:} A directed acyclic graph $G = <V, E>$.
+
+\noindent
+\textbf{Output:} A list $L$ containing a topological ordering of $G$.
+
+\begin{codebox}
+  \Procname{\proc{Kahn}$(G)$}
+  \li $L \gets [\;]$ \>\>\Comment List storing topological ordering.
+  \li $S \gets \{\;\}$ \>\>\Comment Set of vertices with no incoming edges.
+  \li \For $v \in V$
+  \li \Then \If $v$ has no incoming edges
+  \li       \Then $S \gets S \cup \{ v \}$
+            \End
+      \End
+  \li \While $\lvert S \rvert > 0$
+  \li \Then remove some $v \in V$
+  \li       $L \gets L + [ v ]$
+  \li       \For each $u \in V$ where $e$ is $<v,u>$ and $e \in E$
+  \li       \Then $E \gets E - \{ e \}$
+  \li             \If $u$ has no incoming edges
+  \li             \Then $S \gets S \cup \{ u \}$
+                  \End
+            \End
+      \End
+  \li \Return $L$
+\end{codebox}

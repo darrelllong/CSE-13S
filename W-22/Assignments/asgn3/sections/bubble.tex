@@ -1,0 +1,55 @@
+\section{Bubble Sort}
+
+\epigraph{\emph{\textbf{C} is peculiar in a lot of ways, but it, like
+many other successful things, has a certain unity of approach that stems
+from development in a small group.}}{---Dennis Ritchie}
+
+\noindent Bubble Sort works by examining adjacent pairs of items, call
+them $i$ and $j$. If item $j$ is smaller than item $i$, swap them. As a
+result, the largest element \emph{bubbles} up to the top of the array in
+a single pass. Since it is in fact the largest, we do not need to
+consider it again. So in the next pass, we only need to consider $n-1$
+pairs of items. The first pass requires $n$ pairs to be examined; the
+second pass, $n-1$ pairs; the third pass $n-2$ pairs, and so forth. If
+you can pass over the entire array and no pairs are out of order, then
+the array is sorted.
+
+\medskip
+\begin{prelab}{Pre-lab Part 1}
+  \begin{enumerate}
+    \item How many rounds of swapping will need to sort the numbers ${8,
+      22, 7, 9, 31, 5, 13}$ in ascending order using Bubble Sort?
+    \item How many comparisons can we expect to see in the worse case
+      scenario for Bubble Sort? Hint: make a list of numbers and attempt
+      to sort them using Bubble Sort.
+  \end{enumerate}
+\end{prelab}
+
+In 1784, when Carl Friedrich Gau{\ss} was only 7 years old, he was
+reported to have amazed his elementary school teacher by how quickly he
+summed up the integers from $1$ to $100$. The precocious little
+Gau{\ss} produced the correct answer immediately after he quickly
+observed that the sum was actually 50 pairs of numbers, with each pair
+summing to 101 totaling to 5,050. We can then see that:
+
+\[
+  n+(n-1)+(n-2) + \ldots + 1 = \frac{n(n+1)}{2}
+\]
+
+\noindent so the \emph{worst case} time complexity is $O(n^2)$. However, it could
+be much better if the list is already sorted. If you haven't seen the
+inductive proof for this yet, you will in the discrete
+mathematics class, CSE 16.
+
+\begin{pylisting}{Bubble Sort in Python}
+def bubble_sort(arr):
+    n = len(arr)
+    swapped = True
+    while swapped:
+        swapped = False
+        for i in range(1, n):
+            if arr[i] < arr[i - 1]:
+                arr[i], arr[i - 1] = arr[i - 1], arr[i]
+                swapped = True
+        n -= 1
+\end{pylisting}

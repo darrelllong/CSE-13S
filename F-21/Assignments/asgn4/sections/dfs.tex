@@ -1,0 +1,36 @@
+\section{Depth-first Search}
+
+\epigraphwidth=0.65\textwidth \epigraph{\emph{Again it might have been
+the American tendency in travel. One goes, not so much to see but to
+tell afterward.}}{---John Steinbeck, \emph{Travels with Charley: In
+Search of Amerca}}
+
+\noindent
+We need a methodical procedure for searching through the graph. Once we
+have examined a vertex, we do not want to do so again---we don't want
+Denver going through cities where he has already been (he has been known
+to wear out his welcome: charming women and fighting men).
+
+Depth-first search (DFS) first marks the vertex $v$ as having been visited,
+then it iterates through all of the edges $\langle v, w \rangle$,
+recursively calling itself starting at $w$ if $w$ has not already been
+visited.
+
+\begin{clisting}{}
+procedure DFS(G,v):
+    label v as visited
+    for all edges from v to w in G.adjacentEdges(v) do
+       if vertex w is not labeled as visited then
+          recursively call DFS(G,w)
+    label v as unvisited
+\end{clisting}
+
+Finding a Hamiltonian path then reduces to:
+\begin{enumerate}
+\item
+Using DFS to find paths that pass through all vertices, and
+\item
+There is an edge from the last vertex to the first. The solutions to the
+Traveling Salesman Problem are then the shortest found Hamiltonian
+paths.
+\end{enumerate}

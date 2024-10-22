@@ -1,0 +1,58 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsmath,amssymb}
+\usepackage{clrscode3e}
+\usepackage{color}
+\usepackage{epigraph}
+\usepackage{fourier}
+%\usepackage{newcomputermodern}
+\usepackage{euler}
+\usepackage{fullpage}
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage[colorlinks=true,urlcolor=blue]{hyperref}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{xspace}
+\usepackage[shortlabels]{enumitem}
+
+\input{../footer.tex}
+\input{../functions.tex}
+\input{../lststyle.tex}
+\input{../monkey.tex}
+
+\title{Assignment 5 \\ Public Key Cryptography}
+\author{
+  Prof.\xspace Darrell D.\xspace E.\xspace Long \\
+  CSE 13S -- Winter 2022
+}
+\date{
+  First \texttt{DESIGN.pdf} draft due: February 6$^\text{th}$ at 11:59\,pm PST \\
+  Assignment due: February 16$^\text{th}$ at 11:59\,pm PST
+}
+
+\begin{document}
+
+\maketitle
+
+\input{sections/intro.tex}
+\input{sections/rsa_algorithm.tex}
+\input{sections/rsa_mathematics.tex}
+\input{sections/task.tex}
+\input{sections/gmp.tex}
+\input{sections/numtheory.tex}\label{numthm}
+\input{sections/rsa_library.tex}
+\input{sections/keygen.tex}
+\input{sections/encrypt.tex}
+\input{sections/decrypt.tex}
+\input{sections/deliverables.tex}
+\input{sections/submission.tex}
+\input{sections/readings.tex}
+
+\vfill{}
+\begin{center}
+  \includegraphics[width=0.35\linewidth]{../../images/zoom-bike.png} \\
+  \emph{et ecce simia pallidus et qui nomen illi \textbf{\textit{C}}  et inferus sequebatur eum}
+\end{center}
+
+\end{document}

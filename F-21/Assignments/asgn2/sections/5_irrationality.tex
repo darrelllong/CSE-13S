@@ -1,0 +1,122 @@
+\section{The Problem of Irrationality}
+\epigraph{\emph{What good your beautiful proof on the transcendence of $\pi$: Why investigate such problems, given that irrational numbers do not even exist?}}{---Leopold Kronecker}
+
+
+\noindent
+Hippasus of Metapontum (c.\xspace 530 -- c.\xspace 450 BC) was a
+Pythagorean philosopher, usually credited with the discovery of the
+\emph{irrational numbers}. According to Prof.\xspace Dimotakis, the
+existence of irrational numbers was known to the Pythagoreans but
+it was a closely guarded secret. Hippasus was so enthralled by the
+knowledge that he went to the center of town and expounded the
+discovery.  This so angered his fellow Pythagoreans, that they
+drowned him in the sea.  Pappus of Alexandria merely says that the
+knowledge of irrational numbers originated in the Pythagorean school,
+and that the member who first divulged the secret perished by
+drowning.
+
+\begin{quote}
+\emph{It is related to Hippasus that he was a Pythagorean, and that,
+owing to his being the first to publish and describe the sphere
+from the twelve pentagons, he perished at sea for his impiety, but
+he received credit for the discovery, though really it all belonged
+to \emph{him} (for in this way they refer to Pythagoras, and they
+do not call him by his name).}
+
+        \hfill{---Iamblichus the Syrian}
+\end{quote}
+
+Among irrational numbers are $\pi$ most commonly known as the ratio the
+circumference of a circle to its diameter, Euler's number $e$, the
+golden ratio $\varphi=\tfrac{1+\sqrt{5}}{2}$, and, as we know, the
+square root of two. In fact, one can show that all square roots of
+natural numbers, other than of perfect squares, are irrational.
+
+The irrational numbers are all the real numbers (denoted by
+$\mathbb{R}$) which are not rational numbers (denoted by $\mathbb{Q}$)
+and those are \emph{equinumerous} with the integers (denoted by
+$\mathbb{Z}$). That is, irrational numbers cannot be expressed as the
+ratio of two integers. You may also be surprised to learn that
+$|\mathbb{Q}| = |\mathbb{Z}|$.
+
+When the ratio of lengths of two line segments is an irrational number,
+the line segments are also described as being \emph{incommensurable},
+meaning that they share no \emph{measure} in common, that is, there is
+no length, no matter how short, that could be used to express the
+lengths of both of the two segments as integers. Consider the triangle
+$ABC$ where sides $a=1$ and $b=1$ then by the Pythagorean theorem $c^2 =
+a^2 + b^2$, thus, $c = \sqrt{a^2+b^2} = \sqrt{1^2+1^2} = \sqrt{2}$. And
+for this, Hippasus lost his life.
+
+The first number to be proved irrational was the $\sqrt{2}$, probably by
+our old friend Hippasus. Proofs by ancient Greeks were usually geometric
+in nature, and for many, difficult to follow. Instead, let us use this
+classical proof.  Suppose that $\sqrt{2}$ is rational, which means that
+there exist $p$ and $q$ such that $$\sqrt{2} = \frac{p}{q}.$$ We assume
+that $p$ and $q$ have no common factors, in other words, $\gcd(p,q) =1
+$. If there are common factors, then we simply cancel them using the
+usual method for reducing fractions. We then square both sides of the
+equation resulting in $$2 = \frac{p^2}{q^2},$$ which means that $p^2 = 2
+q^2$, and so $p^2$ is \emph{even}. That means that $p$ is even, and so
+$p^2$ is a multiple of $4$. We can divide out $2$ and the quotient is
+still even, including $q^2$, and so is $q$. If both $p$ and $q$ are
+even, then they share $2$ as a common factor, contradicting our
+assumption.
+
+Like all real numbers, irrational numbers can be expressed (approximately) in positional
+notation, notably as a decimal number. In the case of irrational
+numbers, the decimal expansion does not terminate, nor end with a
+repeating sequence. Conversely, a decimal expansion that terminates or
+repeats must be a rational number. These are provable properties of
+rational numbers and positional number systems, and are not used as
+definitions in mathematics.
+
+As a consequence of Georg Cantor's (1845--1918) proof that the real
+numbers are uncountable and the rationals countable, it follows that
+almost all real numbers are irrational. In other words, there are more
+irrational numbers than there are rational numbers (in fact,
+$|\mathbb{R}-\mathbb{Q}| = |\mathbb{R}|$).
+
+In practice, this means that we can never exactly represent an
+irrational number, even if we had infinite time and infinite space in
+which to do so. We must instead be content with approximations, but
+these must be of sufficient accuracy for us to engage in science,
+engineering, and technology (and in the case of $\varphi$, art and
+architecture).
+
+Since, aside from perfect squares, all square roots are irrational, we
+must have a method to approximately compute them. In our case, to
+compute $\sqrt{x}$, you will use Newton's method, also called the
+\emph{Newton-Raphson method}, by computing the inverse of $x^2$. It is
+an iterative algorithm to approximate roots of real-valued functions,
+\emph{i.e.}\xspace, solving $f(x) = 0$. Starting with an initial guess,
+each iteration of Newton's method produces successively better
+approximations. A \emph{Newton iterate} is defined as:
+$$
+x_{k+1} = x_k - \frac{f(x_k)}{f'(x_k)} .
+$$
+Each guess $x_{k+1}$ gives a successive improvement over the previous
+guess $x_k$. In essence, we are using the \emph{slope of the line} at
+the evaluation point to guide the next guess.  The function begins with
+an initial guess $x_0 = 1.0$ that it uses to compute better
+approximations. \texttt{sqrt()} is sufficiently calculated once the
+value converges, \emph{i.e.}\xspace when the difference between
+consecutive approximations is sufficiently small. In this case, $f(x) =
+x^2 - y$, so you can see that $f(x)=0$ when $x = \sqrt{y}$.
+
+\begin{pylisting}{}
+def sqrt(x):
+    z = 0.0
+    y = 1.0
+    while abs(y - z) > epsilon:
+        z = y
+        y = 0.5 * (z + x / z)
+    return y
+\end{pylisting}
+
+% $$
+% \frac{1}{32} \sqrt{\frac{1}{2} \left(2+\sqrt{2}\right) \left(2+\sqrt{2+\sqrt{2}}\right)
+%    \left(2+\sqrt{2+\sqrt{2+\sqrt{2}}}\right)
+%    \left(2+\sqrt{2+\sqrt{2+\sqrt{2+\sqrt{2}}}}\right)
+%    \left(2+\sqrt{2+\sqrt{2+\sqrt{2+\sqrt{2+\sqrt{2}}}}}\right)}
+% $$

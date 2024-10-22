@@ -1,0 +1,290 @@
+\section{Lempel-Ziv Compression}\label{sec:lz78}
+
+Abraham Lempel and Jacob Ziv published papers for two lossless compression
+algorithms, LZ77 and LZ78, published in 1977 and 1978, respectively. The core
+idea behind both of these compression algorithms is to represent repeated
+patterns in data with using pairs which are each comprised of a code and a
+symbol. A code is typically an unsigned 16-bit value and a symbol is a 8-bit
+ASCII character.
+
+\subsection{A Compression Example}
+
+We will explain this algorithm by working through an example. Assume we want to
+compress, or \emph{encode}, some sequence of symbols ``$abab$''. To do this, we
+will need a dictionary. Each dictionary entry is a key-value pair, where the key
+is some \emph{prefix} string, or a \emph{word}, and the value is a code. If we
+establish that codes can be any 16-bit unsigned value, then we have must have
+$2^{16}$ different codes.
+
+Two of these $2^{16}$ codes are \emph{reserved} for very specific purposes: the
+\emph{stop code} and the \emph{empty code}. The stop code is used to indicate
+the end of encoded data, and the empty code is used to indicate the \emph{empty
+word}, which is just a word consisting of zero symbols. The encoding dictionary
+is initialized with the empty word.
+
+\begin{clisting}{defines.h}
+#pragma once
+
+#include <stdint.h>
+
+typedef uint8_t Symbol;
+typedef uint32_t Code;
+
+#define STOP_CODE  0          // Signals end of encoding/decoding.
+#define EMPTY_CODE 1          // Code denoting the empty word.
+#define START_CODE 2          // Starting code of new words.
+#define MAX_CODE   (1 << 16)  // First unusable code.
+#define ALPHABET   256        // 256 symbols (ASCII + extended ASCII).
+#define MAGIC      0x8badbeef // 32-bit magic number.
+#define BLOCK      4096       // 4KB block size.
+\end{clisting}
+
+You may be wondering why a \texttt{Code} is \texttt{typedef}'d as a
+\texttt{uint32\_t} instead of a \texttt{uint16\_t}. After all, isn't a code just
+a unsigned 16-bit integer? The reason for this will be made clear at the end of
+this compression example.
+
+We start off the example by considering the first symbol: `$a$'. For the
+example, all symbols will be surrounded with single quotes, and all words will
+be surrounded with double quotes. We will need to track the word consisting of
+all previously seen symbols up to this point in time. We'll call this the
+\emph{current word}. Since we are currently on the first symbol, the current
+word must not contain anything, and thus must be the empty word.
+
+We now append the current symbol to the current word, which produces a new word:
+``$a$''. We check the dictionary to see if we've encountered this word before.
+You can refer to the state of the dictionary during each stage of this example
+in Figure~\ref{fig:compression-example}. Since this word isn't in the
+dictionary, we will need to add it, assigning it the next available code of 2,
+or \texttt{START\_CODE}, since this is the first non-reserved code that's been
+assigned. We then reset our current word back to being the empty word and output
+the pair (\texttt{EMPTY\_CODE},\;`$a$').
+
+\begin{figure}[H]
+    \begin{tabular}{ccc}
+        \begin{minipage}{.24\textwidth}
+            \caption*{\textbf{Initial state}}
+            \centering
+            \begin{tabular}{c|c}
+                \textbf{Word} & \textbf{Code} \\
+                \hline
+                ``'' & \texttt{EMPTY\_CODE} \\
+                \hline
+                     & \texttt{START\_CODE} \\
+                \hline
+                & 3 \\
+                \hline
+                & 4 \\
+                \hline
+                & $\ldots$ \\
+           \end{tabular}
+        \end{minipage}
+        \begin{minipage}{.24\textwidth}
+            \caption*{\textbf{Adding ``$a$''}}
+            \centering
+            \begin{tabular}{c|c}
+                \textbf{Word} & \textbf{Code} \\
+                \hline
+                ``'' & \texttt{EMPTY\_CODE} \\
+                \hline
+                ``$a$'' & \texttt{START\_CODE} \\
+                \hline
+                & 3 \\
+                \hline
+                & 4 \\
+                \hline
+                & $\ldots$ \\
+           \end{tabular}
+        \end{minipage}
+        \begin{minipage}{.24\textwidth}
+            \caption*{\textbf{Adding ``$b$''}}
+            \centering
+            \begin{tabular}{c|c}
+                \textbf{Word} & \textbf{Code} \\
+                \hline
+                ``'' & \texttt{EMPTY\_CODE} \\
+                \hline
+                ``$a$'' & \texttt{START\_CODE} \\
+                \hline
+                ``$b$'' & 3 \\
+                \hline
+                & 4 \\
+                \hline
+                & $\ldots$ \\
+           \end{tabular}
+        \end{minipage}
+        \begin{minipage}{.24\textwidth}
+            \caption*{\textbf{Adding ``$ab$''}}
+            \centering
+            \begin{tabular}{c|c}
+                \textbf{Word} & \textbf{Code} \\
+                \hline
+                ``'' & \texttt{EMPTY\_CODE} \\
+                \hline
+                ``$a$'' & \texttt{START\_CODE} \\
+                \hline
+                ``$b$'' & 3 \\
+                \hline
+                ``$ab$'' & 4 \\
+                \hline
+                & $\ldots$ \\
+           \end{tabular}
+        \end{minipage}
+    \end{tabular}
+    \caption{The state of the encoding dictionary at each stage of the LZ78
+    compression example.}
+    \label{fig:compression-example}
+\end{figure}
+
+This last step is important. Whenever appending a symbol to the current word
+yields a word that hasn't yet been encountered, it is assigned the next
+available code and added to the dictionary before emitting its corresponding
+pair. The pair itself is constructed using the code that corresponds to the
+current word and the symbol that was just processed.
+
+We continue on, now considering the second symbol: `$b$'. We append this
+symbol to our current word, which yields ``$b$'' as a new word. We check the
+dictionary to see if we've encountered this word before. Since we haven't, we
+add it to the dictionary and assign it the next available code of 3. We set the
+current word to the empty word and output the pair
+(\texttt{EMPTY\_CODE},\;`$b$').
+
+The next symbol we see is `$a$'. We append this symbol to our current word,
+which yields ``$a$'' as a new word. We check the dictionary to see if we've
+encountered this word before. Indeed we have. We update the current word to
+``$a$'' and proceed to the next symbol.
+
+We read in the last symbol, `$b$'. We append this character to our current word,
+which yields ``$ab$''. We check if this new word is in the dictionary. Since it
+isn't, we add it in, assigning it the next available code of 4. We then output
+the pair (2,\;`$b$'). Why is 2 used in the code? Because that is the code that
+corresponds to the current word, ``$a$''.
+
+To finish off the encoding, we output the final pair (\texttt{STOP\_CODE},\;0).
+As you can imagine, this pair signals the end of compressed data. The symbol in
+this final pair isn't used and the value is of no significance.
+
+Back to the earlier question of why a \texttt{Code} is \texttt{typedef}'d as a
+\texttt{uint32\_t} instead of a \texttt{uint16\_t}. It should be clear that
+codes are assigned in \emph{monotonically increasing order}. At one point, we
+will run out of codes to assign. How do we know when we've run out of codes?
+When the next available code to assign is equal to \emph{one more than the
+largest value that a 16-bit unsigned integer can hold.} This is $2^{16}$, or
+\texttt{MAX\_CODE}. Since a \texttt{uint16\_t} can't hold this value, a
+\texttt{uint32\_t} is used instead.
+
+\subsection{A Decompression Example}
+
+Of course, a compression algorithm is useless without a corresponding
+decompression algorithm. For this example, we will decode the output produced by
+the compression example from before. The output contains the following pairs in
+order: (\texttt{EMPTY\_CODE},\;`$a$'), (\texttt{EMPTY\_CODE},\;`$b$'),
+(2,\;`$b$'), (\texttt{STOP\_CODE},\,0). Similar to the compression algorithm,
+the decompression algorithm initializes a dictionary containing only the empty
+word. The catch is that the key and value for the decompressing dictionary is
+swapped; each key is instead a code and each value a word. As you might imagine,
+the decompression algorithm is the inverse of the compression algorithm, and
+thus from the output pairs, the decompression algorithm will recreate the same
+dictionary used during compression to output the decompressed data.
+
+We start with the first pair: (\texttt{EMPTY\_CODE},\;`$a$'). We append the
+symbol `$a$' to the word corresponding to \texttt{EMPTY\_CODE}, which is the
+empty word. Thus, the current word is ``$a$''. We add this word to the
+dictionary and assign it the next available code of 2, then output the current
+word ``$a$''. You can refer to the state of the dictionary at each stage of this
+example in Figure~\ref{fig:decompression-example}.
+
+We consider the next pair: (\texttt{EMPTY\_CODE},\;`$b$'). We append the symbol
+`$b$' to the word corresponding to \texttt{EMPTY\_CODE}, which is the empty
+word. Thus, the current word is ``$b$''. We add this word to the dictionary and
+assign it the next available code of 3, then output the current word ``$b$''.
+
+We consider the next pair: (2,\;`$b$'). We append the symbol `$b$' to the word
+corresponding to code 2, which we previously added to our dictionary. The word
+denoted by this code is ``$a$'', whence we obtain our current word of ``$ab$''.
+We add this word to the dictionary and assign it the next available code of 4,
+then output the current word ``$ab$''. Finally, we read in the last pair:
+(\texttt{STOP\_CODE},\;0). Since the code is \texttt{STOP\_CODE}, we know that
+we have finished decompression.
+
+\begin{figure}[htb]
+    \begin{tabular}{ccc}
+        \begin{minipage}{.24\textwidth}
+            \caption*{\textbf{Initial state}}
+            \centering
+            \begin{tabular}{c|c}
+                \textbf{Code} & \textbf{Word} \\
+                \hline
+                \texttt{EMPTY\_CODE} & ``'' \\
+                \hline
+                \texttt{START\_CODE} & \\
+                \hline
+                3 & \\
+                \hline
+                4 & \\
+                \hline
+                $\ldots$ & \\
+           \end{tabular}
+        \end{minipage}
+        \begin{minipage}{.24\textwidth}
+            \caption*{\textbf{Adding ``$a$''}}
+            \centering
+            \begin{tabular}{c|c}
+                \textbf{Code} & \textbf{Word} \\
+                \hline
+                \texttt{EMPTY\_CODE} & ``'' \\
+                \hline
+                \texttt{START\_CODE} & ``$a$'' \\
+                \hline
+                3 & \\
+                \hline
+                4 & \\
+                \hline
+                $\ldots$ & \\
+           \end{tabular}
+        \end{minipage}
+        \begin{minipage}{.24\textwidth}
+            \caption*{\textbf{Adding ``$b$''}}
+            \centering
+            \begin{tabular}{c|c}
+                \textbf{Code} & \textbf{Word} \\
+                \hline
+                \texttt{EMPTY\_CODE} & ``'' \\
+                \hline
+                \texttt{START\_CODE} & ``$a$'' \\
+                \hline
+                3 & ``$b$'' \\
+                \hline
+                4 & \\
+                \hline
+                $\ldots$ & \\
+           \end{tabular}
+           \label{ahaha}
+        \end{minipage}
+        \begin{minipage}{.24\textwidth}
+            \caption*{\textbf{Adding ``$ab$''}}
+            \centering
+            \begin{tabular}{c|c}
+                \textbf{Code} & \textbf{Word} \\
+                \hline
+                \texttt{EMPTY\_CODE} & ``'' \\
+                \hline
+                \texttt{START\_CODE} & ``$a$'' \\
+                \hline
+                3 & ``$b$'' \\
+                \hline
+                4 & ``$ab$'' \\
+                \hline
+                $\ldots$ & \\
+           \end{tabular}
+        \end{minipage}
+    \end{tabular}
+    \caption{The state of the decoding dictionary at each stage of the LZ78
+    decompression example.}
+    \label{fig:decompression-example}
+\end{figure}
+
+If the basic idea behind the compression and decompression algorithms do not
+immediately make sense to you, or if you desire a more visual representation of
+how the algorithms work, make sure to attend section and get help early!
+\textcolor{red}{Things will not get easier as time goes on.}

@@ -1,0 +1,90 @@
+\section{Hash Tables}\label{sec:hashtable}
+
+You will require some method to quickly store and retrieve unique words in a
+sample of text, as well as the count of each unique word. A hash table would be
+the best data structure for this purpose. A hash table maps keys to values and
+provides, on average, fast \emph{constant time} look-ups. It does so typically
+by taking a key $k$, hashing it with some hash function $h(x)$, and placing the
+key's corresponding value in an underlying array at index $h(k)$. This is the
+perfect way to store all unique words in a sample of text along with their
+respective counts. So what happens when two words have the same hash value? This
+is called a \emph{hash collision}, and must be resolved. To resolve these
+collisions, you will perform \emph{open addressing} using \emph{linear probing}.
+
+The open addressing method of resolving hash collisions requires searching
+through the hash table if index $h(k)$ for some key $k$ doesn't contain $k$.
+This act of searching, or \emph{probing}, can be done in multiple ways, the
+simplest of which is \emph{linear probing}. With linear probing, successive
+indices of the hash table starting from $h(k)$ are probed until either $k$ is
+found, or an empty slot shows up. If an empty slot shows up before $k$ is found,
+it means $k$ was never inserted. Using open addressing, it's possible that a key
+cannot be inserted into a hash table because it is completely filled up.
+
+A hash function maps data of arbitrary size to fixed-size values. Its values are
+called hash values, hash codes, digests, or simply hashes, which index a
+fixed-size table called a hash table.  Hash functions and their associated hash
+tables are used in data storage and retrieval applications to access data (on
+average) at a nearly constant time per retrieval. They require a storage space
+that is only fractionally greater than the total space needed for the data.
+Hashing avoids the non-linear access time of ordered and unordered lists and
+some trees and the often exponential storage requirements of direct access of
+large state spaces.
+
+Hash functions rely on statistical properties of key and function interaction:
+worst-case behavior is an exhaustive search but with a vanishingly small
+probability, and average-case behavior can be nearly constant (with minimal
+collisions).
+
+Below is the \texttt{struct} definition for a hash table. The hash table
+contains a salt that will be passed to the given hash function, \texttt{hash()}
+--- more on this in \S\ref{sec:speck}. Each hash table entry is a \texttt{Node}
+that contains a unique word and its count: the number of times is appears in a
+sample of text. The node ADT will be discussed in \S\ref{sec:node}. Since we are
+resolving hash collisions with open addressing, it only makes sense to store
+these nodes in an array.
+
+\begin{clisting}{}
+struct HashTable {
+  uint64_t salt[2]; // The salt to use for the hash function.
+  uint32_t size;    // The number of slots in the hash table.
+  Node **slots;     // The array of hash table items.
+};
+\end{clisting}
+
+This \texttt{struct} definition \emph{must} go in \texttt{ht.c}.
+
+\begin{funcdoc}{\texttt{HashTable *ht\_create(uint32\_t size)}}
+  The constructor for a hash table. The \texttt{size} parameter denotes the
+  number of slots that the hash table can index up to. The salt for the hash
+  table is provided in \texttt{salts.h}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void ht\_delete(HashTable **ht)}}
+  The destructor for a hash table. This should free any remaining nodes left in
+  the hash table. Remember to set the pointer to the freed hash table to
+  \texttt{NULL}.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{uint32\_t ht\_size(HashTable *ht)}}
+  Returns the hash table's size, the number of slots it can index up to.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{Node *ht\_lookup(HashTable *ht, char *word)}}
+  Searches for an entry, a node, in the hash table that contains \texttt{word}.
+  If the node is found, the pointer to the node is returned. Otherwise, a
+  \texttt{NULL} pointer is returned.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{Node *ht\_insert(HashTable *ht, char *word)}}
+  Inserts the specified \texttt{word} into the hash table. If the word already
+  exists in the hash table, increment its count by 1. Otherwise, insert a new
+  node containing \texttt{word} with its count set to 1. Again, since we're
+  using open addressing, it's possible that an insertion fails if the hash table
+  is filled. To indicate this, return a pointer to the inserted node if the
+  insertion was successful, and return \texttt{NULL} if unsuccessful.
+\end{funcdoc}
+
+\begin{funcdoc}{\texttt{void ht\_print(HashTable *ht)}}
+  A debug function to print out the contents of a hash table.
+  \textcolor{red}{Write this immediately after the constructor}.
+\end{funcdoc}
